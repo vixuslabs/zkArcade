@@ -5,7 +5,8 @@ export default function Dashboard() {
   const user = auth();
 
   return (
-    <DashboardExample />
+    // <DashboardExample />
+    <></>
     // <div className="min-h-screen bg-gray-100 p-6">
     //   {/* Header */}
     //   <header className="mb-8 flex items-center justify-between">
