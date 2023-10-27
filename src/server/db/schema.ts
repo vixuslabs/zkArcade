@@ -5,8 +5,11 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   index,
+  int,
   mysqlTableCreator,
+  text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -30,5 +33,33 @@ export const posts = mysqlTable(
   },
   (example) => ({
     nameIndex: index("name_idx").on(example.name),
-  })
+  }),
 );
+
+export const users = mysqlTable(
+  "user",
+  {
+    id: varchar("id", { length: 512 }).primaryKey(),
+    username: varchar("username", { length: 256 }).notNull().unique(),
+    firstName: varchar("firstName", { length: 256 }),
+    email: varchar("email", { length: 256 }).notNull().unique(),
+    // createdAt: timestamp("created_at")
+    //   .default(sql`CURRENT_TIMESTAMP`)
+    //   .notNull(),
+    // updatedAt: timestamp("updatedAt")
+    //   .default(sql`CURRENT_TIMESTAMP`)
+    //   .onUpdateNow(),
+  },
+  (user) => ({
+    usernameIndex: uniqueIndex("username_idx").on(user.username),
+  }),
+);
+// PLANETSCALE DOES NOT ALLOW FOREIGN KEYS
+// export const friendships = mysqlTable("friendships", {
+//   userId: varchar("userId", { length: 256 })
+//     .notNull()
+//     .references(() => users.id),
+//   friendId: varchar("friendId", { length: 256 })
+//     .notNull()
+//     .references(() => users.id),
+// });
