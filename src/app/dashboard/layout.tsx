@@ -1,5 +1,9 @@
 import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
 import { DashboardTabProvider } from "@/components/client/providers";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { currentUser } from "@clerk/nextjs";
+
+import UserAvatar from "@/components/client/Avatar";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -10,7 +14,7 @@ interface DashboardLayoutProps {
   settings: React.ReactNode;
 }
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   primary, // top right container content
   secondary, // bottom right container content
   home,
@@ -18,25 +22,37 @@ export default function DashboardLayout({
   leaderboard,
   settings,
 }: DashboardLayoutProps) {
+  const user = await currentUser();
+
+  // console.log(user);
+
+  if (!user) return;
+
   return (
     <>
       <DashboardTabProvider>
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
-          <div className="flex flex-col gap-y-4">
-            <div className="flex h-16 shrink-0 items-center justify-center">
-              <img
-                width={32}
-                height={32}
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
+          <div className="flex h-full flex-col items-center justify-between">
+            <div className="flex w-full flex-col gap-y-4">
+              <div className="flex h-16 shrink-0 items-center justify-center">
+                <img
+                  width={32}
+                  height={32}
+                  className="h-8 w-auto"
+                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                  alt="Your Company"
+                />
+              </div>
+              <SidebarNav />
             </div>
-            {/* <nav className="mt-8"> */}
-            <SidebarNav />
+
+            <UserAvatar imageUrl={user.imageUrl} username={user.username} />
+            {/* <Avatar>
+              <AvatarImage src={user?.imageUrl} />
+              <AvatarFallback>HC</AvatarFallback>
+            </Avatar> */}
           </div>
-          {/* </nav> */}
         </div>
         <main className="lg:pl-20">
           <div className="xl:pl-96">
