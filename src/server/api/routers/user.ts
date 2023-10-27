@@ -5,15 +5,21 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { users } from "@/server/db/schema";
+import { users } from "@/server/db/schema/users";
+import { eq } from "drizzle-orm";
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure
-    .input(z.object({ id: z.string().min(1) }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.users.findFirst({
-        with: { id: input.id },
-      });
+    .input(z.object({ username: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      // testing prepared statements
+      const query = ctx.db.query.users
+        .findFirst({
+          where: eq(users.username, input.username),
+        })
+        .prepare();
+
+      return await query.execute();
     }),
 
   createUser: publicProcedure
@@ -26,14 +32,18 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("input", input);
-      console.log(`ctx`, ctx);
       await ctx.db.insert(users).values({
         id: input.id,
         username: input.username,
         firstName: input.firstName,
         email: input.email,
       });
+    }),
+
+  deleteUser: protectedProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(users).where(eq(users.id, input.id));
     }),
 
   // updateUser: protectedProcedure.
