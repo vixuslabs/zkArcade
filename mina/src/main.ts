@@ -1,14 +1,10 @@
 import { HotnCold } from './HotnCold.js';
 import {
-  isReady,
-  shutdown,
   Field,
   Mina,
   PrivateKey,
   AccountUpdate,
 } from 'o1js';
-
-await isReady;
 
 console.log('o1js loaded');
 
@@ -29,7 +25,7 @@ const salt = Field.random();
 const zkAppPrivateKey = PrivateKey.random();
 const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
-const zkAppInstance = new IncrementSecret(zkAppAddress);
+const zkAppInstance = new HotnCold(zkAppAddress);
 const deployTxn = await Mina.transaction(deployerAccount, () => {
   AccountUpdate.fundNewAccount(deployerAccount);
   zkAppInstance.deploy();
@@ -56,5 +52,3 @@ console.log('state after txn1:', num1.toString());
 // ----------------------------------------------------
 
 console.log('Shutting down');
-
-await shutdown();
