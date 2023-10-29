@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   varchar,
   primaryKey,
+  mysqlEnum,
 } from "drizzle-orm/mysql-core";
 import { users } from "./users";
 
@@ -42,20 +43,31 @@ export const friendshipsRelations = relations(friendships, ({ one }) => ({
   }),
 }));
 
-export const friendRequests = mysqlTable("friendRequest", {
-  requestId: bigint("requestId", { mode: "number" })
-    .primaryKey()
-    .autoincrement(),
-  senderId: varchar("senderId", { length: 256 }).notNull(),
-  receiverId: varchar("receiverId", { length: 256 }).notNull(),
-  status: varchar("status", { length: 50 }).notNull().default("pending"),
-  createdAt: timestamp("createdAt")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .onUpdateNow(),
-});
+export const friendRequests = mysqlTable(
+  "friendRequest",
+  {
+    requestId: bigint("requestId", { mode: "number" })
+      .primaryKey()
+      .autoincrement(),
+    senderId: varchar("senderId", { length: 256 }).notNull(),
+    receiverId: varchar("receiverId", { length: 256 }).notNull(),
+    status: mysqlEnum("status", ["pending", "accepted", "declined"])
+      .notNull()
+      .default("pending"),
+    createdAt: timestamp("createdAt")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .onUpdateNow(),
+  },
+  (t) => ({
+    requestIndex: uniqueIndex("request_idx").on(t.requestId),
+    senderIndex: index("sender_idx").on(t.senderId),
+    receiverIndex: index("receiver_idx").on(t.receiverId),
+    // statusIndex: index("status_idx").on(t.status),
+  }),
+);
 
 export const friendRequestRelations = relations(friendRequests, ({ one }) => ({
   sender: one(users, {
