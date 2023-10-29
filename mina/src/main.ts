@@ -34,6 +34,25 @@ await deployTxn.prove();
 await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
 
 const objectHash = zkAppInstance.objectHash.get();
-console.log('Commited on-chain hash:', objectHash);
-console.log('Computed object hash: ', Poseidon.hash([object.center.x, object.center.y, object.center.z, object.radius]))
+// console.log('Commited on-chain hash:', objectHash);
+// console.log('Computed object hash: ', Poseidon.hash([object.center.x, object.center.y, object.center.z, object.radius]))
 
+// ----------------------------------------------------
+
+const a = Point.fromCoords(Field(100), Field(100), Field(100));
+const b = Point.fromCoords(Field(200), Field(200), Field(200));
+const box = Box.fromPoints(a, b);
+
+// box.assertIsOutside(object);
+
+const plane = Plane.fromPoints(Point.fromCoords(Field(0), Field(0), Field(0)), Point.fromCoords(Field(0), Field(0), Field(1)), Point.fromCoords(Field(1), Field(0), Field(0)), Point.fromCoords(Field(1), Field(0), Field(1)));
+const room = Room.fromPlanesAndBoxes([plane], [box]);
+// room.assertNoCollisions(object);
+
+const txn1 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.validateObject(object, room);
+});
+await txn1.prove();
+await txn1.sign([senderKey]).send();
+
+// ----------------------------------------------------
