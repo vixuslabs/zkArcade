@@ -14,17 +14,19 @@ async function Notifications({
     type: "pending",
   });
 
-  const cleanedFriendRequests = friendRequests.map(async (request) => {
-    const { username, firstName, imageUrl } = await clerkClient.users.getUser(
-      request.senderId,
-    );
-    return {
-      requestId: request.requestId,
-      username,
-      firstName,
-      imageUrl,
-    };
-  });
+  const cleanedFriendRequests = friendRequests
+    .filter((r) => r.status === "pending")
+    .map(async (request) => {
+      const { username, firstName, imageUrl } = await clerkClient.users.getUser(
+        request.senderId,
+      );
+      return {
+        requestId: request.requestId,
+        username,
+        firstName,
+        imageUrl,
+      };
+    });
 
   const finalFriendRequest = await Promise.all(cleanedFriendRequests);
 
