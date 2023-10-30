@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { EmailAddressJSON, WebhookEvent } from "@clerk/nextjs/server";
 import { api } from "@/trpc/server";
 
+import { env } from "@/env.mjs";
+
 /**
  * Need to add better error handling and add queue for processing
  * @param req webhook event from svix
@@ -10,7 +12,7 @@ import { api } from "@/trpc/server";
  */
 
 export async function POST(req: Request) {
-  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+  const WEBHOOK_SECRET = env.WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
     throw new Error(
@@ -50,7 +52,7 @@ export async function POST(req: Request) {
 
     // now test the type of the end point and update db accordingly
 
-    let id: string,
+    let id: string | undefined,
       username: string | null,
       image_url: string,
       first_name: string,
@@ -91,7 +93,6 @@ export async function POST(req: Request) {
           );
         }
 
-        break;
       case "user.updated":
         console.log("User updated");
 
@@ -99,10 +100,40 @@ export async function POST(req: Request) {
 
         ({ id, username, image_url } = evt.data);
 
-        break;
       case "user.deleted":
         console.log("User deleted");
-        break;
+
+        try {
+          ({ id } = evt.data);
+
+          if (!id) {
+            return new Response(
+              `Received 'user.deleted' webhook, but did not have id so not updated db.`,
+              {
+                status: 200,
+              },
+            );
+          }
+
+          await api.users.deleteUser.mutate({
+            id,
+          });
+
+          await api.friendships.deleteAllFriends.mutate({
+            userId: id,
+          });
+
+          return new Response(`Account ${id} Deleted`, { status: 201 });
+        } catch (err) {
+          console.error("Error processing 'user.deleted' event:", err);
+          return new Response(
+            `Received 'user.deleted' webhook, but an error occurred during processing.`,
+            {
+              status: 200,
+            },
+          );
+        }
+
       default:
         console.log("Unknown event type");
         break;
