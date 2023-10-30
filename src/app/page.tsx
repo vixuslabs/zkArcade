@@ -49,11 +49,13 @@ export default function Home() {
                 // @ts-expect-error SignInButton can take className
                 className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
                 mode="modal"
+                redirectUrl="/dashboard"
               />
               <SignUpButton
                 // @ts-expect-error SignUpButton can take className
                 className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
                 mode="modal"
+                redirectUrl="/dashboard"
               />
             </ClerkLoaded>
           </SignedOut>

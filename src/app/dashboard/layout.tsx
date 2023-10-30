@@ -1,9 +1,12 @@
 import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
+import { Notifications } from "@/components/server";
 import { DashboardTabProvider } from "@/components/client/providers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { currentUser } from "@clerk/nextjs";
 
 import UserAvatar from "@/components/client/Avatar";
+import { redirect } from "next/navigation";
+import { api } from "@/trpc/server";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -24,9 +27,18 @@ export default async function DashboardLayout({
 }: DashboardLayoutProps) {
   const user = await currentUser();
 
-  // console.log(user);
+  if (!user) {
+    redirect("/");
+    return null;
+  }
 
-  if (!user) return;
+  if (!user.username) {
+    throw new Error("No username found");
+  }
+
+  // const dbUser = await api.users.getUser.query({ username: user.username });
+
+  // console.log(dbUser);
 
   return (
     <>
@@ -47,11 +59,10 @@ export default async function DashboardLayout({
               <SidebarNav />
             </div>
 
-            <UserAvatar imageUrl={user.imageUrl} username={user.username} />
-            {/* <Avatar>
-              <AvatarImage src={user?.imageUrl} />
-              <AvatarFallback>HC</AvatarFallback>
-            </Avatar> */}
+            <div className="flex flex-shrink flex-col items-center">
+              <Notifications username={user.username} id={user.id} />
+              <UserAvatar imageUrl={user.imageUrl} username={user.username} />
+            </div>
           </div>
         </div>
         <main className="lg:pl-20">
@@ -60,7 +71,7 @@ export default async function DashboardLayout({
               <div className="inset-y-0 flex flex-col gap-y-8">
                 {/* Top Container  */}
                 <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-slate-500 p-2 shadow-lg">
-                  <div className="relative m-1 flex flex-grow flex-col items-center rounded-md bg-white">
+                  <div className="relative m-1 flex h-full flex-grow flex-col items-center rounded-md bg-white">
                     {primary}
                   </div>
                 </div>
