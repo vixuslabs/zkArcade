@@ -1,4 +1,4 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 
@@ -14,18 +14,28 @@ export default authMiddleware({
   //   // Execute next-intl middleware before Clerk's auth middleware
   //   return intlMiddleware(req);
   // },
-  publicRoutes: [
-    "/",
-    "/api/trpc/post.hello", // makes it so this api endpoint is public
-    "/((?!.+\\.[\\w]+$|_next).*)", // For testing, turning off all auth
-    "/(api|trpc)(.*)",
-    "/favicon.ico",
-  ],
-  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)", "/api/trpc/post.hello"],
+  publicRoutes: ["/"],
+  // publicRoutes: [
+  //   "/",
+  //   "/api/trpc/post.hello", // makes it so this api endpoint is public
+  //   "/((?!.+\\.[\\w]+$|_next).*)", // For testing, turning off all auth
+  //   "/(api|trpc)(.*)",
+  //   "/favicon.ico",
+  //   "",
+  // ],
+  afterAuth(auth, req, evt) {
+    if (!auth.userId && !auth.isPublicRoute) {
+      console.log("redirecting to sign in");
+      console.log("auth", auth);
+      console.log("req", req);
+      redirectToSignIn({ returnBackUrl: "/" });
+    }
+  },
+  // ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)", "/api/trpc/post.hello"],
   authorizedParties: ["http://localhost:3000"],
 });
 
 export const config = {
-  // matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
   // publicRoutes: ["/"],
 };

@@ -17,8 +17,6 @@ import type { User } from "@clerk/nextjs/dist/types/server";
 import { useClerk } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 
-// import { use}
-
 interface UserAvatarProps {
   imageUrl?: string;
   username: string | null;
@@ -33,8 +31,8 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
             <AvatarImage src={imageUrl} alt="Profile Picture" />
             <AvatarFallback>SC</AvatarFallback>
           </Avatar>
