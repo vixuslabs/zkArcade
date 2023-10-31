@@ -110,7 +110,7 @@ export const friendshipRouter = createTRPCRouter({
         );
     }),
 
-  deleteAllFriends: protectedProcedure
+  deleteAllFriends: publicProcedure
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db

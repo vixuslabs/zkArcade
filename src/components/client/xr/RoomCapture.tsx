@@ -15,8 +15,9 @@ import { clippingEvents } from "@coconut-xr/koestlich";
 // import { useRouter } from "next/navigation";
 import Router from "next/router";
 import { Button } from "@/components/ui/button";
-import BuildRoom from "./BuildRoom";
-import TestBox from "./TestBox";
+// import BuildRoom from "./BuildRoom";
+// import TestBox from "./TestBox";
+import { BuildRoom, TestBox, GameFog } from "@/components/client/xr";
 const sessionOptions: XRSessionInit = {
   requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
 };
@@ -69,7 +70,11 @@ function RoomCapture({ user }: RoomCaptureProps) {
           <NonImmersiveCamera />
 
           <TestBox position={[0, 0, -0.5]} />
-          <ImmersiveSessionOrigin position={[0, 0, 0]}>
+          <ImmersiveSessionOrigin
+            position={[0, 0, 0]}
+            // cameraContent={}
+          >
+            <GameFog />
             <TestBox color="black" />
             <Controllers />
             <Hands />

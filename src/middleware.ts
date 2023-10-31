@@ -15,14 +15,6 @@ export default authMiddleware({
   //   return intlMiddleware(req);
   // },
   publicRoutes: ["/"],
-  // publicRoutes: [
-  //   "/",
-  //   "/api/trpc/post.hello", // makes it so this api endpoint is public
-  //   "/((?!.+\\.[\\w]+$|_next).*)", // For testing, turning off all auth
-  //   "/(api|trpc)(.*)",
-  //   "/favicon.ico",
-  //   "",
-  // ],
   afterAuth(auth, req, evt) {
     if (!auth.userId && !auth.isPublicRoute) {
       console.log("redirecting to sign in");
@@ -35,5 +27,4 @@ export default authMiddleware({
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
-  // publicRoutes: ["/"],
 };
