@@ -26,8 +26,6 @@ export default authMiddleware({
   afterAuth(auth, req, evt) {
     if (!auth.userId && !auth.isPublicRoute) {
       console.log("redirecting to sign in");
-      console.log("auth", auth);
-      console.log("req", req);
       redirectToSignIn({ returnBackUrl: "/" });
     }
   },
