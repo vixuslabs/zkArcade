@@ -1,14 +1,19 @@
+/* eslint @typescript-eslint/no-unsafe-call: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-return: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-member-access: 0 */
+
 import { Field, Struct, SmartContract, state, State, method, Poseidon } from 'o1js';
 
 export class Point extends Struct({ x: Field, y: Field, z: Field }) {
-  static fromCoords(x: Field, y: Field, z: Field) {
+  static fromCoords(x: Field, y: Field, z: Field): Point {
     return new Point({ x, y, z });
   }
 }
 
 // An object is a sphere.
 export class Object3D extends Struct({ center: Point, radius: Field }) {
-  static fromCenterAndRadius(center: Point, radius: Field) {
+  static fromCenterAndRadius(center: Point, radius: Field): Object3D {
     return new Object3D({ center, radius });
   }
 

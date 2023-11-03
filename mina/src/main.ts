@@ -1,3 +1,8 @@
+/* eslint @typescript-eslint/no-unsafe-call: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-return: 0 */ 
+/* eslint @typescript-eslint/no-unsafe-member-access: 0 */
+
 import { HotnCold, Point, Object3D, Plane, Box, Room } from './HotnCold.js';
 import {
   Field,
@@ -43,7 +48,7 @@ const a = Point.fromCoords(Field(100), Field(100), Field(100));
 const b = Point.fromCoords(Field(200), Field(200), Field(200));
 const box = Box.fromPoints(a, b);
 
-// box.assertIsOutside(object);
+box.assertIsOutside(object);
 
 const plane = Plane.fromPoints(Point.fromCoords(Field(0), Field(0), Field(0)), Point.fromCoords(Field(0), Field(0), Field(1)), Point.fromCoords(Field(1), Field(0), Field(0)), Point.fromCoords(Field(1), Field(0), Field(1)));
 const room = Room.fromPlanesAndBoxes([plane], [box]);
