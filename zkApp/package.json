@@ -26,6 +26,7 @@
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",
+    "@types/three": "^0.158.1",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
     "eslint": "^8.7.0",
@@ -37,5 +38,8 @@
   },
   "peerDependencies": {
     "o1js": "0.13.*"
+  },
+  "dependencies": {
+    "three": "^0.158.0"
   }
 }
