@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, createContext, useContext, useMemo } from "react";
-
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import React, { Fragment } from "react";
 
 import {
   Card,
@@ -13,18 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { api } from "@/trpc/react";
+import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-interface FriendsInfo {
-  friends: {
-    username: string;
-    firstName: string | null;
-    imageUrl: string;
-    id?: string;
-  }[];
-}
+function FriendsList() {
+  const { activeFriends } = useFriendsProvider();
 
-function FriendsList({ friends }: FriendsInfo) {
   return (
     <>
       <Card className="w-full">
@@ -35,12 +27,9 @@ function FriendsList({ friends }: FriendsInfo) {
         <Separator />
         <CardContent>
           <ul role="list" className="divide-y divide-gray-100">
-            {friends.map(({ username, firstName, imageUrl, id }) => (
-              <>
-                <li
-                  key={id ?? username}
-                  className="flex items-center justify-between gap-x-6 py-5"
-                >
+            {activeFriends.map(({ username, firstName, imageUrl, id }) => (
+              <Fragment key={username ?? id}>
+                <li className="flex items-center justify-between gap-x-6 py-5">
                   <div className="flex min-w-0 gap-x-4">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={imageUrl} alt="Profile Picture" />
@@ -63,7 +52,7 @@ function FriendsList({ friends }: FriendsInfo) {
                   </a>
                 </li>
                 <Separator />
-              </>
+              </Fragment>
             ))}
           </ul>
         </CardContent>

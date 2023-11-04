@@ -1,7 +1,7 @@
 "use client";
 import { BellIcon } from "@heroicons/react/24/outline";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 
 import {
   DropdownMenu,
@@ -17,6 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { api } from "@/trpc/react";
 import { toast } from "@/components/ui/use-toast";
 
+import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
+
 type PendingFriendRequests = {
   requestId: number;
   imageUrl: string;
@@ -24,11 +26,9 @@ type PendingFriendRequests = {
   firstName: string | null;
 };
 
-function NotificationButton({
-  pendingFriendRequests,
-}: {
-  pendingFriendRequests: PendingFriendRequests[];
-}) {
+function NotificationButton() {
+  const { pendingFriendRequests } = useFriendsProvider();
+
   const acceptRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();
   const declineRequestMutation =
