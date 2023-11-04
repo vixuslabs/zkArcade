@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { TRPCReactProvider } from "@/trpc/react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/client/providers";
+import { PusherClientProvider } from "@/pusher/client";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
@@ -35,9 +36,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TRPCReactProvider headers={headers()}>
-              {children}
-            </TRPCReactProvider>
+            <PusherClientProvider>
+              <TRPCReactProvider headers={headers()}>
+                {children}
+              </TRPCReactProvider>
+            </PusherClientProvider>
           </ThemeProvider>
           <Toaster />
         </body>
