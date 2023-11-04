@@ -34,12 +34,12 @@ function SpacialPlane({
 
   return (
     <>
-      {test && (
+      {/* {test && (
         <mesh position={test}>
           <sphereGeometry args={[0.1, 50, 50]} />
           <meshBasicMaterial color="red" />
         </mesh>
-      )}
+      )} */}
       <TrackedPlane ref={ref} plane={plane}>
         {color ? (
           <meshPhongMaterial wireframe color={color} />

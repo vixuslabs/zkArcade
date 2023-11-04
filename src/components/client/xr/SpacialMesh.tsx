@@ -30,12 +30,12 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
 
   return (
     <>
-      {test && (
+      {/* {test && (
         <mesh position={test}>
           <sphereGeometry args={[0.1, 50, 50]} />
           <meshBasicMaterial color="blue" />
         </mesh>
-      )}
+      )} */}
       <TrackedMesh ref={ref} mesh={mesh}>
         {color ? (
           <meshBasicMaterial
