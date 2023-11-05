@@ -3,7 +3,7 @@
 /* eslint @typescript-eslint/no-unsafe-return: 0 */ 
 /* eslint @typescript-eslint/no-unsafe-member-access: 0 */
 
-import { Point, Object3D, Plane, Box, Room, ThreeBox, ThreeObject } from './structs.js';
+import { Point, Object3D, Plane, Box, Room } from './structs.js';
 import { HotnCold } from './HotnCold.js';
 import {
   Field,
@@ -14,40 +14,27 @@ import {
   Poseidon
 } from 'o1js';
 import { boxes, planes, realWorldHiddenObject } from './scene.js' 
-import * as THREE from 'three';
+import { 
+  computeInverseMatrix,
+  computeTranslationToOriginMatrix,
+  computeTranslationToPositiveCoordsMatrix
+} from './utils.js';
 
-const o1jsBoxes: { o1jsBox: Box; o1jsObject: Object3D; }[] = [];
-boxes.forEach((box) => {
-  const vertices = new Float32Array(Object.values(box.vertices));
-  const matrix = new THREE.Matrix4();
-  matrix.fromArray(box.matrix);
-  const inverseMatrix = new THREE.Matrix4().copy(matrix).invert();
-  const hiddenObject = new THREE.Vector3(...realWorldHiddenObject.coords);
-  hiddenObject.applyMatrix4(inverseMatrix);
+type BoxAndObject = {box: Box, object: Object3D};
 
-  const translationToOrigin = new THREE.Vector3(vertices[0], vertices[1], vertices[2]);
-  translationToOrigin.negate(); // Translation to origin is the negative of the first vertex
-  const translationToOriginMatrix = new THREE.Matrix4().makeTranslation(translationToOrigin.x, translationToOrigin.y, translationToOrigin.z);
-  hiddenObject.applyMatrix4(translationToOriginMatrix);
-
-  const translationToPositiveCoords = new THREE.Vector3();
-  const objRadius = realWorldHiddenObject.radius;
-  translationToPositiveCoords.x = hiddenObject.x - objRadius < 0 ? -hiddenObject.x + objRadius : 0;
-  translationToPositiveCoords.y = hiddenObject.y - objRadius< 0 ? -hiddenObject.y + objRadius : 0;
-  translationToPositiveCoords.z = hiddenObject.z - objRadius < 0 ? -hiddenObject.z + objRadius : 0;
-  const translationToPositiveCoordsMatrix = new THREE.Matrix4().makeTranslation(translationToPositiveCoords.x, translationToPositiveCoords.y, translationToPositiveCoords.z);  
-  hiddenObject.applyMatrix4(translationToPositiveCoordsMatrix);
-
-  const translationMatrix = translationToOriginMatrix.clone().multiply(translationToPositiveCoordsMatrix);
-  const threeBox = new ThreeBox(vertices, translationMatrix);
-  const o1jsBox = threeBox.toO1jsBox();
-  const threeObject = new ThreeObject(hiddenObject, realWorldHiddenObject.radius);
-  const o1jsObject = threeObject.toO1jsObject();
-  o1jsBoxes.push({o1jsBox, o1jsObject});
+const boxesAndObjects: BoxAndObject[] = [];
+boxes.forEach((b) => {
+  const vertices = new Float32Array(Object.values(b.vertices));
+  const inverseMatrix = computeInverseMatrix(b.matrix);
+  const translationToOriginMatrix = computeTranslationToOriginMatrix(vertices);
+  const translationToPositiveCoordsMatrix = computeTranslationToPositiveCoordsMatrix(realWorldHiddenObject);  
+  const object = Object3D.fromObjectAndTranslationMatrices(realWorldHiddenObject, {inverseMatrix, translationToOriginMatrix, translationToPositiveCoordsMatrix});
+  const box = Box.fromVerticesAndTranslationMatrices(vertices, {translationToOriginMatrix, translationToPositiveCoordsMatrix});
+  boxesAndObjects.push({box, object});
 });
 
-const testObject: Object3D = o1jsBoxes[0].o1jsObject;
-const testBox: Box = o1jsBoxes[0].o1jsBox;
+const testObject: Object3D = boxesAndObjects[0].object;
+const testBox: Box = boxesAndObjects[0].box;
 
 
 const useProof = false;
