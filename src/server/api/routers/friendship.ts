@@ -111,14 +111,20 @@ export const friendshipRouter = createTRPCRouter({
   getAllRequestsToUser: protectedProcedure
     .input(
       z.object({
-        type: z.enum(["all", "pending", "accepted", "declined"]).default("all"),
+        type: z.enum(["pending", "accepted", "declined"]).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.auth.userId;
       const friendRequestsPrepared = ctx.db.query.friendRequests
         .findMany({
-          where: eq(friendRequests.receiverId, userId),
+          where:
+            input.type !== undefined
+              ? and(
+                  eq(friendRequests.receiverId, userId),
+                  eq(friendRequests.status, input.type),
+                )
+              : eq(friendRequests.receiverId, userId),
         })
         .prepare();
 
@@ -256,8 +262,8 @@ export const friendshipRouter = createTRPCRouter({
 
       // should only do this when they are online
       await pusher.trigger(
-        "friends",
-        `user:${input.receiverId}:friend-request-pending`,
+        `user-${input.receiverId}-friends`,
+        `friend-request-pending`,
         {
           username: user.username,
           firstName: user.firstName,
@@ -315,8 +321,8 @@ export const friendshipRouter = createTRPCRouter({
       const user = await clerkClient.users.getUser(friendRequest.receiverId);
 
       await pusher.trigger(
-        "friends",
-        `user:${friendRequest.receiverId}:friend-added`,
+        `user-${friendRequest.receiverId}-friends`,
+        `friend-added`,
         {
           username: friend.username,
           firstName: friend.firstName,
@@ -328,8 +334,8 @@ export const friendshipRouter = createTRPCRouter({
       // Will need to config this so it only works when the user
       // is online. Otherwise, it will be a waste.
       await pusher.trigger(
-        "friends",
-        `user:${friendRequest.senderId}:friend-added`,
+        `user-${friendRequest.senderId}-friends`,
+        `friend-added`,
         {
           username: user.username,
           firstName: user.firstName,

@@ -26,13 +26,13 @@ export const userRouter = createTRPCRouter({
         return null;
       }
 
-      const userClerk = await clerkClient.users.getUser(userDB.id);
+      // const userClerk = await clerkClient.users.getUser(userDB.id);
 
       return {
         id: userDB.id,
         username: userDB.username,
         firstName: userDB.firstName,
-        image_url: userClerk.imageUrl,
+        image_url: userDB.imageUrl,
       };
     }),
 
@@ -53,7 +53,7 @@ export const userRouter = createTRPCRouter({
       id: userClerk.id,
       username: userDB.username,
       firstName: userDB.firstName,
-      image_url: userClerk.imageUrl,
+      image_url: userDB.imageUrl,
     };
   }),
 
@@ -63,6 +63,7 @@ export const userRouter = createTRPCRouter({
         id: z.string().min(1),
         username: z.string().min(1),
         firstName: z.string().min(1).optional(),
+        imageUrl: z.string().min(1),
         email: z.string().min(1),
       }),
     )
@@ -71,6 +72,7 @@ export const userRouter = createTRPCRouter({
         id: input.id,
         username: input.username,
         firstName: input.firstName,
+        imageUrl: input.imageUrl,
         email: input.email,
       });
     }),
