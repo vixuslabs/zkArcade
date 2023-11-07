@@ -13,7 +13,6 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { User } from "@clerk/nextjs/dist/types/server";
 import { useClerk } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 

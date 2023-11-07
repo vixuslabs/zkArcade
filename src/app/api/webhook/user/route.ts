@@ -1,9 +1,10 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { EmailAddressJSON, WebhookEvent } from "@clerk/nextjs/server";
 import { api } from "@/trpc/server";
 
 import { env } from "@/env.mjs";
+
+import type { EmailAddressJSON, WebhookEvent } from "@clerk/nextjs/server";
 
 /**
  * Need to add better error handling and add queue for processing
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
         console.log("User created");
 
         try {
-          ({ id, username, email_addresses, first_name } = evt.data);
+          ({ id, username, email_addresses, first_name, image_url } = evt.data);
 
           if (!email_addresses[0]?.email_address) {
             return new Response(
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
             username: username ?? "",
             firstName: first_name,
             email: email_addresses[0]?.email_address,
+            imageUrl: image_url,
           });
 
           return new Response(`Account ${id} Created`, { status: 201 });

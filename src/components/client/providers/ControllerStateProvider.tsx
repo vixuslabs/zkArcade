@@ -4,7 +4,7 @@ import React, { useContext, useState, useCallback, useMemo } from "react";
 
 import { initialPointerState } from "@/lib/constants";
 
-import { PointerState, ControllerStateContextValue } from "@/lib/types";
+import type { PointerState, ControllerStateContextValue } from "@/lib/types";
 
 const ControllerStateContext = React.createContext<
   ControllerStateContextValue | undefined

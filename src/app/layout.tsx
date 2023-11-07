@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 
-import { Inter } from "next/font/google";
+import { Jura } from "next/font/google";
 import { headers } from "next/headers";
 
 import { TRPCReactProvider } from "@/trpc/react";
@@ -8,10 +8,13 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/client/providers";
 import { PusherClientProvider } from "@/pusher/client";
 import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({
+const jura = Jura({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: "600",
+  style: "normal",
+  variable: "--font-jura",
 });
 
 export const metadata = {
@@ -27,9 +30,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      {/* <html lang="en" className="h-full"> */}
       <html lang="en" suppressHydrationWarning>
-        <body className={`font-sans ${inter.variable} h-full`}>
+        <body
+          className={cn(
+            `min-h-screen bg-background font-jura antialiased`,
+            jura.variable,
+          )}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

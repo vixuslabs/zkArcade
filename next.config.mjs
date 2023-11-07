@@ -2,7 +2,7 @@
 /* eslint @typescript-eslint/no-unsafe-member-access: 0 */ // for module
 /* eslint @typescript-eslint/no-unsafe-return: 0 */ // for config return
 
-await import("./src/env.mjs");
+import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
 const config = {

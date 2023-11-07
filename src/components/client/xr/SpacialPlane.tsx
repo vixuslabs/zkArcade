@@ -32,6 +32,10 @@ function SpacialPlane({
     }
   });
 
+  /**
+   * ONLY NEEDS TO BE WALLS, FLOOR, AND CEILING
+   */
+
   return (
     <>
       {/* {test && (
@@ -41,11 +45,20 @@ function SpacialPlane({
         </mesh>
       )} */}
       <TrackedPlane ref={ref} plane={plane}>
-        {color ? (
-          <meshPhongMaterial wireframe color={color} />
+        {/* {color ? (
+          <meshPhongMaterial transparent opacity={0.1} color={color} />
         ) : (
-          <meshPhongMaterial wireframe color="black" />
-        )}
+          <meshPhongMaterial transparent opacity={0.2} color="black" />
+        )} */}
+
+        <meshPhysicalMaterial
+          color={"#000000"}
+          clearcoatRoughness={0.5}
+          metalness={0}
+          clearcoat={0.5}
+          // transparent
+          // opacity={0.5}
+        />
       </TrackedPlane>
     </>
   );

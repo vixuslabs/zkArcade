@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, createContext, useContext, useMemo } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import React from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
 import {
   ChartPieIcon,
@@ -22,7 +22,6 @@ function SidebarNav() {
       defaultValue="home"
       role="list"
       className="h-[25vh] bg-inherit"
-      // className="flex flex-col items-center space-y-1"
       onValueChange={(value) => setActiveTab(value as ActiveDashboardTab)}
       orientation="vertical"
       asChild
@@ -79,8 +78,6 @@ function SidebarNav() {
           </TabsTrigger>
         </>
       </TabsList>
-
-      {/* <TabsContent value="home"></TabsContent> */}
     </Tabs>
   );
 }

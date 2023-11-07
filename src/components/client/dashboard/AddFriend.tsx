@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "@/trpc/react";
-// import { api } from "@/trpc/server";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
@@ -24,7 +23,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -41,9 +39,9 @@ function AddFriend() {
     id: string;
     username: string;
     firstName: string | null;
-    image_url: string;
-  } | null>(null);
-  //   const [username, setUsername] = useState("");
+    image_url: string | null;
+  }>();
+
   const [loading, setLoading] = useState(false);
   const [noUserFound, setNoUserFound] = useState(false);
 
@@ -94,7 +92,7 @@ function AddFriend() {
     if (!user) {
       setNoUserFound(true);
       setLoading(false);
-      retrievedUser !== null && setRetrievedUser(null);
+      retrievedUser !== undefined && setRetrievedUser(undefined);
       return;
     }
 
@@ -104,8 +102,6 @@ function AddFriend() {
   }
 
   const handleSendFriendRequest = (retrieveId: string) => {
-    // await utils.friendships
-
     sendFriendRequestMutation.mutate({
       receiverId: retrieveId,
     });
@@ -144,17 +140,17 @@ function AddFriend() {
               <div className="my-2 flex min-w-0 gap-x-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
-                    src={retrievedUser.image_url}
+                    src={retrievedUser.image_url ?? undefined}
                     alt="Profile Picture"
                   />
                   <AvatarFallback>SC</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-auto">
-                  <p className="text-sm font-semibold leading-6 text-gray-900">
-                    {retrievedUser.firstName}
-                  </p>
-                  <p className="mt-1 truncate text-xs leading-5 text-gray-500">
+                  <p className="text-sm font-semibold leading-6">
                     {retrievedUser.username}
+                  </p>
+                  <p className="mt-1 truncate text-xs leading-5">
+                    {retrievedUser.firstName}
                   </p>
                 </div>
                 <Button
@@ -180,7 +176,8 @@ function AddFriend() {
                     <FormControl>
                       <Input
                         onChangeCapture={() =>
-                          retrievedUser !== null && setRetrievedUser(null)
+                          retrievedUser !== undefined &&
+                          setRetrievedUser(undefined)
                         }
                         datatype={"none"}
                         placeholder="minamaxi"

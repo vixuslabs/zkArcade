@@ -1,7 +1,7 @@
 "use client";
 import { BellIcon } from "@heroicons/react/24/outline";
 
-import React, { Fragment, useState } from "react";
+import React, { Fragment } from "react";
 
 import {
   DropdownMenu,
@@ -13,28 +13,23 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { api } from "@/trpc/react";
 import { toast } from "@/components/ui/use-toast";
 
 import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
-
-type PendingFriendRequests = {
-  requestId: number;
-  imageUrl: string;
-  username: string | null;
-  firstName: string | null;
-};
+import { useRouter } from "next/navigation";
 
 function NotificationButton() {
-  const { pendingFriendRequests } = useFriendsProvider();
+  const { allNotifications } = useFriendsProvider();
+  const router = useRouter();
 
   const acceptRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();
   const declineRequestMutation =
     api.friendships.declineFriendRequest.useMutation();
+  const acceptGameInviteMutation = api.games.acceptGameInvite.useMutation();
 
-  const handleAcceptRequest = async (
+  const handleAcceptFriendRequest = async (
     requestId: number,
     username: string | null,
   ) => {
@@ -51,7 +46,7 @@ function NotificationButton() {
     });
   };
 
-  const handleDeclineRequest = (requestId: number) => {
+  const handleDeclineFriendRequest = (requestId: number) => {
     declineRequestMutation.mutate({
       requestId,
     });
@@ -63,12 +58,19 @@ function NotificationButton() {
     });
   };
 
+  const handleAcceptGameInvite = async (gameId: string, url: string) => {
+    await acceptGameInviteMutation.mutateAsync({
+      lobbyId: gameId,
+    });
+
+    console.log(url);
+
+    console.log("joining game");
+    router.push(url);
+  };
+
   return (
     <div className="mb-6 text-gray-400 hover:text-gray-300">
-      {/* <button type="button" className=" mb-6 text-gray-400 hover:text-gray-300">
-        <span className="sr-only">View notifications</span>
-        <BellIcon className="h-6 w-6" aria-hidden="true" />
-      </button> */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="rounded-full">
@@ -94,57 +96,95 @@ function NotificationButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup className="my-2">
-            {pendingFriendRequests.length ? (
-              pendingFriendRequests.map((request) => (
-                <Fragment key={request.requestId}>
-                  <div className="my-2 flex flex-1 justify-between">
-                    <DropdownMenuItem>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {request.username}
-                        </p>
-                        <p className="text-xs leading-none">
-                          sent you a friend request
-                        </p>
+            {allNotifications.length ? (
+              allNotifications.map((noti) => {
+                if (noti.type === "GameInvite") {
+                  return (
+                    <Fragment key={noti.gameId}>
+                      <div className="my-2 flex flex-1 justify-between">
+                        <DropdownMenuItem>
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {noti.sender.username} invited you to a game!
+                            </p>
+                          </div>
+                        </DropdownMenuItem>
+                        <div className="flex gap-x-2">
+                          <Button
+                            variant="secondary"
+                            onClick={() =>
+                              void handleAcceptGameInvite(
+                                noti.gameId,
+                                `/${noti.sender.username}/${noti.gameId}`,
+                              )
+                            }
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              console.log("cannot decline rn");
+                              // handleDeclineGameInvite(
+                              //   noti.gameId,
+                              //   noti.sender.username,
+                              // );
+                            }}
+                          >
+                            Decline
+                          </Button>
+                        </div>
                       </div>
-                    </DropdownMenuItem>
-                    <div className="flex gap-x-2">
-                      <Button
-                        variant="secondary"
-                        onClick={() =>
-                          handleAcceptRequest(
-                            request.requestId,
-                            request.username,
-                          )
-                        }
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDeclineRequest(request.requestId)}
-                      >
-                        Decline
-                      </Button>
-                    </div>
-                  </div>
-                  <Separator />
-                </Fragment>
-              ))
+                    </Fragment>
+                  );
+                } else if (noti.type === "PendingFriendRequest") {
+                  return (
+                    <Fragment key={noti.requestId}>
+                      <div className="my-2 flex flex-1 justify-between">
+                        <DropdownMenuItem>
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {noti.username} sent you a friend request!
+                            </p>
+                          </div>
+                        </DropdownMenuItem>
+                        <div className="flex gap-x-2">
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              console.log("accepting friend request");
+                              void handleAcceptFriendRequest(
+                                noti.requestId,
+                                noti.username,
+                              );
+                            }}
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            onClick={() => {
+                              handleDeclineFriendRequest(noti.requestId);
+                            }}
+                          >
+                            Decline
+                          </Button>
+                        </div>
+                      </div>
+                    </Fragment>
+                  );
+                }
+              })
             ) : (
               <DropdownMenuItem>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    No new friend requests
+                    No new Notifications
                   </p>
                 </div>
               </DropdownMenuItem>
             )}
-            {/* <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem> */}
           </DropdownMenuGroup>
-          {/* <DropdownMenuSeparator />
-          <DropdownMenuItem>Log out</DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
