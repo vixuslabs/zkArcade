@@ -18,7 +18,7 @@ export default authMiddleware({
   publicRoutes: ["/"],
   afterAuth(auth, req, evt) {
     // console.log(auth);
-    if (!auth.userId && !auth.isPublicRoute && !auth.isApiRoute) {
+    if (!auth.userId && !auth.isPublicRoute) {
       console.log("redirecting to sign in");
       redirectToSignIn({ returnBackUrl: "/" });
     }
@@ -27,6 +27,7 @@ export default authMiddleware({
   authorizedParties: [
     "http://localhost:3000",
     `https://${process.env.VERCEL_URL!}`,
+    `https://hot-n-cold.vercel.app`,
   ],
 });
 
