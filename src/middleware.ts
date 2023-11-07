@@ -22,7 +22,10 @@ export default authMiddleware({
     }
   },
   // ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)", "/api/trpc/post.hello"],
-  authorizedParties: ["http://localhost:3000"],
+  authorizedParties: [
+    "http://localhost:3000",
+    `https://${process.env.VERCEL_URL!}`,
+  ],
 });
 
 export const config = {
