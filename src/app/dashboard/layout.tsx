@@ -1,5 +1,4 @@
 import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
-import { Notifications } from "@/components/server";
 import { currentUser, clerkClient } from "@clerk/nextjs";
 
 import UserAvatar from "@/components/client/Avatar";
@@ -10,6 +9,7 @@ import {
   FriendsChannelProvider,
 } from "@/components/client/providers";
 import { NotificationButton } from "@/components/client/dashboard";
+import Image from "next/image";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -24,7 +24,7 @@ interface FriendInfo {
   username: string;
   firstName: string | null;
   imageUrl: string;
-  id?: string;
+  id: string;
 }
 
 type PendingFriendRequest = {
@@ -33,6 +33,11 @@ type PendingFriendRequest = {
   username: string;
   firstName: string | null;
 };
+
+interface Invite {
+  sender: FriendInfo;
+  gameId: string;
+}
 
 export default async function DashboardLayout({
   primary, // top right container content
@@ -44,6 +49,7 @@ export default async function DashboardLayout({
 }: DashboardLayoutProps) {
   const friendsInfo: FriendInfo[] = [];
   const pendingFriendRequests: PendingFriendRequest[] = [];
+  const filteredInvites: Invite[] = [];
   const user = await currentUser();
 
   if (!user) {
@@ -57,11 +63,26 @@ export default async function DashboardLayout({
   const usersFriends = await api.friendships.getUsersFriends.query();
   const rawPendingFriendRequests =
     await api.friendships.getAllRequestsToUser.query({ type: "pending" });
+  const rawGameInvites = await api.games.getGameInvites.query();
 
   /**
    * ABSOLUTELY NEED TO REFACTOR DB SCHEMA
    * THIS IS DISGUSTING
    */
+  for (const invite of rawGameInvites) {
+    const requestClerkInfo = await clerkClient.users.getUser(invite.senderId);
+
+    filteredInvites.push({
+      gameId: invite.lobbyId,
+      sender: {
+        username: requestClerkInfo.username!,
+        firstName: requestClerkInfo.firstName,
+        imageUrl: requestClerkInfo.imageUrl,
+        id: invite.senderId,
+      },
+    });
+  }
+
   for (const request of rawPendingFriendRequests) {
     const requestClerkInfo = await clerkClient.users.getUser(request.senderId);
     pendingFriendRequests.push({
@@ -87,19 +108,20 @@ export default async function DashboardLayout({
       <FriendsChannelProvider
         initFriendsInfo={friendsInfo}
         initFriendRequests={pendingFriendRequests}
+        initGameInvites={filteredInvites}
         userId={user.id}
       >
         <DashboardTabProvider>
           {/* Static sidebar for desktop */}
-          <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
+          <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-20 md:overflow-y-auto md:bg-gray-900 md:pb-4">
             <div className="flex h-full flex-col items-center justify-between">
               <div className="flex w-full flex-col gap-y-4">
                 <div className="flex h-16 shrink-0 items-center justify-center">
-                  <img
+                  <Image
                     width={32}
                     height={32}
-                    className="h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                    className="h-10 w-auto"
+                    src="/hotNcold.png"
                     alt="Your Company"
                   />
                 </div>
@@ -117,8 +139,8 @@ export default async function DashboardLayout({
               <div className="relative h-full px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
                 <div className="inset-y-0 flex flex-col gap-y-8">
                   {/* Top Container  */}
-                  <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-slate-500 p-2 shadow-lg">
-                    <div className="relative m-1 flex h-full flex-grow flex-col items-center rounded-md bg-white">
+                  <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-slate-500 bg-opacity-20 p-2 shadow-lg">
+                    <div className="relative m-1 flex h-full flex-grow flex-col items-center rounded-md">
                       {primary}
                     </div>
                   </div>
@@ -132,9 +154,9 @@ export default async function DashboardLayout({
                     </div>
                   </div>
                   {/* Bottom container */}
-                  <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 p-2 shadow-lg">
+                  <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
                     {/* hello{" "} */}
-                    <div className="relative m-1 flex flex-grow flex-col items-center rounded-md bg-white bg-gradient-to-t from-neutral-300 to-[#ffffff]">
+                    <div className="relative m-1 flex flex-grow flex-col items-center rounded-md ">
                       {secondary}
                     </div>
                   </div>

@@ -1,9 +1,13 @@
-import StartGameButton from "@/components/client/dashboard/StartGameButton";
+import {
+  CreateMatchButton,
+  StartGameButton,
+} from "@/components/client/dashboard/";
 
 function PrimaryContent() {
   return (
-    <div className="flex h-full w-full flex-grow flex-col items-center justify-center">
+    <div className="gapy-y-2 flex h-full w-full flex-grow flex-col items-center justify-around">
       <StartGameButton />
+      <CreateMatchButton />
     </div>
   );
 }
