@@ -10,13 +10,15 @@ import type { NextRequest } from "next/server";
 //   });
 
 export default authMiddleware({
+  debug: true,
   // beforeAuth: (req) => {
   //   // Execute next-intl middleware before Clerk's auth middleware
   //   return intlMiddleware(req);
   // },
   publicRoutes: ["/"],
   afterAuth(auth, req, evt) {
-    if (!auth.userId && !auth.isPublicRoute) {
+    // console.log(auth);
+    if (!auth.userId && !auth.isPublicRoute && !auth.isApiRoute) {
       console.log("redirecting to sign in");
       redirectToSignIn({ returnBackUrl: "/" });
     }
