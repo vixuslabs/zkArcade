@@ -4,7 +4,7 @@
 /* eslint @typescript-eslint/no-unsafe-member-access: 0 */
 
 import { Field, Struct, SmartContract, state, State, method, Poseidon } from 'o1js';
-import { Object3D, Room } from './structs';
+import { Object3D, Room } from './structs.js';
 
 // The HotnCold contract allows users to commit an object hash and then validate that:
 // 1. A given object matches the previously commited hash.

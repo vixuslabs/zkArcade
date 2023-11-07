@@ -53,31 +53,31 @@ const { privateKey: senderKey, publicKey: senderAccount } =
 const zkAppPrivateKey = PrivateKey.random();
 const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
-// const zkAppInstance = new HotnCold(zkAppAddress);
-// const deployTxn = await Mina.transaction(deployerAccount, () => {
-//   AccountUpdate.fundNewAccount(deployerAccount);
-//   zkAppInstance.deploy();
-//   zkAppInstance.commitObject(object);
-// });
-// await deployTxn.prove();
-// await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+const zkAppInstance = new HotnCold(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+  zkAppInstance.commitObject(testObject);
+});
+await deployTxn.prove();
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
 
-// const objectHash = zkAppInstance.objectHash.get();
+const objectHash = zkAppInstance.objectHash.get();
 // console.log('Commited on-chain hash:', objectHash);
-// console.log('Computed object hash: ', Poseidon.hash([object.center.x, object.center.y, object.center.z, object.radius]))
+// console.log('Computed object hash: ', Poseidon.hash([testObject.center.x, testObject.center.y, testObject.center.z, testObject.radius]))
 
 // ----------------------------------------------------
 
-testBox.assertIsOutside(testObject);
+// testBox.assertIsOutside(testObject);
 
-// const plane = Plane.fromPoints(Point.fromCoords(Field(0), Field(0), Field(0)), Point.fromCoords(Field(0), Field(0), Field(1)), Point.fromCoords(Field(1), Field(0), Field(0)), Point.fromCoords(Field(1), Field(0), Field(1)));
-// const room = Room.fromPlanesAndBoxes([plane], [testBox]);
-// room.assertNoCollisions(object);
+const plane = Plane.fromPoints(Point.fromCoords(Field(0), Field(0), Field(0)), Point.fromCoords(Field(0), Field(0), Field(1)), Point.fromCoords(Field(1), Field(0), Field(0)), Point.fromCoords(Field(1), Field(0), Field(1)));
+const room = Room.fromPlanesAndBoxes([plane], [testBox]);
+room.assertNoCollisions(testObject);
 
-// const txn1 = await Mina.transaction(senderAccount, () => {
-//   zkAppInstance.validateObject(object, room);
-// });
-// await txn1.prove();
-// await txn1.sign([senderKey]).send();
+const txn1 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.validateObject(testObject, room);
+});
+await txn1.prove();
+await txn1.sign([senderKey]).send();
 
 // ----------------------------------------------------

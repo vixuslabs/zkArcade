@@ -7,7 +7,7 @@ import { Field, Struct } from 'o1js';
 import * as THREE from 'three';
 
 export class Point extends Struct({ x: Field, y: Field, z: Field }) {
-    static fromCoords(x: Field, y: Field, z: Field): Point {
+    static fromCoords(x: Field, y: Field, z: Field) {
       return new Point({ x, y, z });
     }
   }
@@ -27,6 +27,10 @@ export class Object3D extends Struct({ center: Point, radius: Field }) {
                                                    Field(Math.round(center.z * scale))), 
                           radius: Field(Math.round(radius * 1000000)) 
                         });
+    }
+  
+    static fromPointAndRadius(center: Point, radius: Field) {
+      return new Object3D({ center, radius });
     }
 
     // The object's bounding box.
