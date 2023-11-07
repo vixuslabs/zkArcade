@@ -14,7 +14,7 @@ import {
   CogIcon,
 } from "@heroicons/react/24/outline";
 
-import { cn } from "@/utils";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 interface NavigationItem {
@@ -82,14 +82,6 @@ export default function DashboardExample() {
 
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-white">
-        <body class="h-full">
-        ```
-      */}
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -248,10 +240,14 @@ export default function DashboardExample() {
           <div className="xl:pl-96">
             <div className="relative h-full px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
               <div className="inset-y-0 flex flex-col gap-y-8">
-                <div className="min-h-[43vh] rounded-lg bg-slate-500 p-4 shadow-md">
-                  hello{" "}
+                {/* Top Container  */}
+                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-slate-500 p-2 shadow-lg">
+                  <div className="relative m-1 flex flex-grow flex-col items-center rounded-md bg-white">
+                    <div className="">hi</div>
+                  </div>
                 </div>
-                <div className="relative">
+                {/* Divider */}
+                <div className="relative mx-[20%]">
                   <div
                     className="absolute inset-0 flex items-center"
                     aria-hidden="true"
@@ -264,8 +260,12 @@ export default function DashboardExample() {
                     </span> */}
                   </div>
                 </div>
-                <div className="min-h-[43vh] rounded-md bg-neutral-300">
-                  hello{" "}
+                {/* Bottom container */}
+                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 p-2 shadow-lg">
+                  {/* hello{" "} */}
+                  <div className="relative m-1 flex flex-grow flex-col items-center rounded-md bg-white bg-gradient-to-t from-neutral-300 to-[#ffffff]">
+                    <div className="">hi</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function DashboardExample() {
 
         <aside className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
           {/* Secondary column (hidden on smaller screens) */}
-          <div className="h-full rounded-md bg-neutral-300 bg-opacity-20 shadow-lg ">
+          <div className="h-full rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
             hello{" "}
           </div>
         </aside>

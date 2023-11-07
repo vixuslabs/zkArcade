@@ -3,14 +3,13 @@ import Link from "next/link";
 import {
   ClerkLoaded,
   ClerkLoading,
-  SignedIn,
-  SignedOut,
   SignInButton,
   SignUpButton,
 } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs";
 
-export default function Home() {
-  // const hello = await api.post.hello.query({ text: "from tRPC" });
+export default async function Home() {
+  const user = await currentUser();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#d34545] to-[#1ecddd] text-white">
@@ -25,7 +24,7 @@ export default function Home() {
           <span className="underline underline-offset-2">your</span> room.
         </p>
         <div className="flex items-center justify-between gap-x-12">
-          <SignedIn>
+          {user ? (
             <Link
               className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
               href="/dashboard"
@@ -33,48 +32,34 @@ export default function Home() {
             >
               Dashboard
             </Link>
-          </SignedIn>
-
-          <SignedOut>
-            <ClerkLoading>
-              <div className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm">
-                Sign in
-              </div>
-              <div className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm">
-                Sign up
-              </div>
-            </ClerkLoading>
-            <ClerkLoaded>
-              <SignInButton
-                // @ts-expect-error SignInButton can take className
-                className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
-                mode="modal"
-              />
-              <SignUpButton
-                // @ts-expect-error SignUpButton can take className
-                className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
-                mode="modal"
-              />
-            </ClerkLoaded>
-          </SignedOut>
+          ) : (
+            <>
+              <ClerkLoading>
+                <div className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm">
+                  Sign in
+                </div>
+                <div className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm">
+                  Sign up
+                </div>
+              </ClerkLoading>
+              <ClerkLoaded>
+                <SignInButton
+                  // @ts-expect-error SignInButton can take className
+                  className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
+                  mode="modal"
+                  redirectUrl="/dashboard"
+                />
+                <SignUpButton
+                  // @ts-expect-error SignUpButton can take className
+                  className="rounded-md bg-black px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
+                  mode="modal"
+                  redirectUrl="/dashboard"
+                />
+              </ClerkLoaded>
+            </>
+          )}
         </div>
       </div>
     </main>
   );
 }
-
-// async function CrudShowcase() {
-// const latestPost = await api.post.getLatest.query();
-
-//   return (
-//     <div className="w-full max-w-xs">
-//       {latestPost ? (
-//         <p className="truncate">Your most recent post: {latestPost.name}</p>
-//       ) : (
-//         <p>You have no posts yet.</p>
-//       )}
-
-//       <CreatePost />
-//     </div>
-//   );
-// }
