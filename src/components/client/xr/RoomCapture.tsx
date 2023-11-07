@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { XRCanvas, Hands, Controllers } from "@coconut-xr/natuerlich/defaults";
+import { useState } from "react";
+import { XRCanvas, Hands } from "@coconut-xr/natuerlich/defaults";
 import {
   useEnterXR,
   NonImmersiveCamera,
@@ -9,8 +9,6 @@ import {
   useHeighestAvailableFrameRate,
   useNativeFramebufferScaling,
   useInputSources,
-  SpaceGroup,
-  useXR,
   useSessionChange,
 } from "@coconut-xr/natuerlich/react";
 import { clippingEvents } from "@coconut-xr/koestlich";
@@ -20,17 +18,21 @@ import { getInputSourceId } from "@coconut-xr/natuerlich";
 
 import Router from "next/router";
 import { Button } from "@/components/ui/button";
-import { BuildRoom, TestBox, GameFog } from "@/components/client/xr";
-import FogParticles from "./FogParticles";
+import { BuildRoom, TestBox } from "@/components/client/xr";
 
 import Lamp from "./Lamp";
-import { WebGLRenderer } from "three";
-
-import FogSphere from "./FogSphere";
 import { ControllerStateProvider } from "@/components/client/providers";
+import { Flashlight } from "@/components/client/xr/inputDevices";
 
 const sessionOptions: XRSessionInit = {
-  requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
+  requiredFeatures: [
+    "local-floor",
+    "mesh-detection",
+    "plane-detection",
+    "layers",
+    "depth-sorted-layers",
+  ],
+  // optionalFeatures: ["light-estimation"],
 };
 
 // One day :((
@@ -51,7 +53,7 @@ type AppUser = {
   id: string;
   username: string;
   firstName: string | null;
-  image_url: string;
+  image_url: string | null;
 } | null;
 
 interface RoomCaptureProps {
@@ -102,7 +104,6 @@ function RoomCapture({ user }: RoomCaptureProps) {
           frameRate={frameRate}
           // dpr={1}
           dpr={[1, 2]}
-          shadows
           // @ts-expect-error - import error
           events={clippingEvents}
           gl={{ localClippingEnabled: true }}
@@ -112,14 +113,8 @@ function RoomCapture({ user }: RoomCaptureProps) {
         >
           <NonImmersiveCamera />
 
-          {/* Fog and Light */}
-
-          {/* <ambientLight intensity={0.5} color={"#ffffff"} /> */}
-          {/* <FogParticles /> */}
-          <ambientLight intensity={0.2} />
-          {/* <fogExp2 attach="fog" args={["#cccccc", 2]} /> */}
-          {/* <GameFog /> */}
-          {/* <Lamp position={[0, 5, 0]} /> */}
+          {/* <Lamp position={[0, 7, 0]} /> */}
+          {/* <ambientLight color={"#ffffff"} intensity={1} /> */}
 
           <TestBox position={[0, 0, -0.5]} />
           {/* <FogSphere /> */}
@@ -138,6 +133,7 @@ function RoomCapture({ user }: RoomCaptureProps) {
                   inputSource={inputSource}
                 />
               ))}
+              {/* <Flashlight /> */}
             </ControllerStateProvider>
 
             {/* <Controllers /> */}

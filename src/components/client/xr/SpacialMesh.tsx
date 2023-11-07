@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import { ExtendedXRMesh, TrackedMesh } from "@coconut-xr/natuerlich/react";
 import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 
@@ -18,6 +18,7 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
   const [test, setTest] = React.useState<Vector3>();
+  const id = useId();
 
   useEffect(() => {
     // console.log(`box ref for ${name}`, ref.current);
@@ -25,8 +26,32 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
       const world = ref.current.getWorldPosition(ref.current.position);
       // console.log(`world position for mesh named ${name}`, world);
       setTest(world);
+
+      // const mesh = ref.current;
     }
   });
+
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     const body = JSON.stringify(
+  //       { name: `${name}-${id}`, mesh: ref.current },
+  //       null,
+  //       2,
+  //     );
+
+  //     console.log(body);
+
+  //     if (name === "global mesh") return;
+
+  //     void fetch("/api/room", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: body,
+  //     });
+  //   }
+  // }, []);
 
   return (
     <>
