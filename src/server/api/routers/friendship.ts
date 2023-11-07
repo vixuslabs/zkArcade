@@ -260,18 +260,16 @@ export const friendshipRouter = createTRPCRouter({
         requestId: Number(res.insertId),
       });
 
+      const cutId = input.receiverId.split("_")[1];
+
       // should only do this when they are online
-      await pusher.trigger(
-        `user-${input.receiverId}-friends`,
-        `friend-request-pending`,
-        {
-          username: user.username,
-          firstName: user.firstName,
-          imageUrl: user.imageUrl,
-          requestId: res.insertId,
-          showToast: true,
-        },
-      );
+      await pusher.trigger(`user-${cutId}-friends`, `friend-request-pending`, {
+        username: user.username,
+        firstName: user.firstName,
+        imageUrl: user.imageUrl,
+        requestId: res.insertId,
+        showToast: true,
+      });
     }),
 
   getFriendRequest: publicProcedure
@@ -320,29 +318,24 @@ export const friendshipRouter = createTRPCRouter({
 
       const user = await clerkClient.users.getUser(friendRequest.receiverId);
 
-      await pusher.trigger(
-        `user-${friendRequest.receiverId}-friends`,
-        `friend-added`,
-        {
-          username: friend.username,
-          firstName: friend.firstName,
-          imageUrl: friend.imageUrl,
-          showToast: false,
-        },
-      );
+      const cutReceiverId = friendRequest.receiverId.split("_")[1];
+      const cutSenderId = friendRequest.senderId.split("_")[1];
+
+      await pusher.trigger(`user-${cutReceiverId}-friends`, `friend-added`, {
+        username: friend.username,
+        firstName: friend.firstName,
+        imageUrl: friend.imageUrl,
+        showToast: false,
+      });
 
       // Will need to config this so it only works when the user
       // is online. Otherwise, it will be a waste.
-      await pusher.trigger(
-        `user-${friendRequest.senderId}-friends`,
-        `friend-added`,
-        {
-          username: user.username,
-          firstName: user.firstName,
-          imageUrl: user.imageUrl,
-          showToast: true,
-        },
-      );
+      await pusher.trigger(`user-${cutSenderId}-friends`, `friend-added`, {
+        username: user.username,
+        firstName: user.firstName,
+        imageUrl: user.imageUrl,
+        showToast: true,
+      });
     }),
 
   declineFriendRequest: protectedProcedure

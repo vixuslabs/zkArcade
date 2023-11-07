@@ -39,6 +39,7 @@ export const gameInvites = mysqlTable(
     inviteId: bigint("inviteId", { mode: "number" })
       .primaryKey()
       .autoincrement(),
+    lobbyId: varchar("lobbyId", { length: 256 }).notNull().unique(),
     senderId: varchar("senderId", { length: 256 }).notNull(),
     receiverId: varchar("receiverId", { length: 256 }).notNull(),
     status: mysqlEnum("status", ["sent", "accepted", "declined", "cancelled"])
@@ -53,7 +54,7 @@ export const gameInvites = mysqlTable(
   },
   (invite) => ({
     inviteIndex: index("invite_idx").on(invite.inviteId),
-    senderIndex: index("sender_idx").on(invite.senderId),
+    lobbyIndex: uniqueIndex("lobby_idx").on(invite.lobbyId),
     receiverIndex: index("receiver_idx").on(invite.receiverId),
     statusIndex: index("status_idx").on(invite.status),
   }),

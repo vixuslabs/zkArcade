@@ -26,8 +26,6 @@ export const userRouter = createTRPCRouter({
         return null;
       }
 
-      // const userClerk = await clerkClient.users.getUser(userDB.id);
-
       return {
         id: userDB.id,
         username: userDB.username,
@@ -82,6 +80,4 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(users).where(eq(users.id, input.id));
     }),
-
-  // updateUser: protectedProcedure.
 });
