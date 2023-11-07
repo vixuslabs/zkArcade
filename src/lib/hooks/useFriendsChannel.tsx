@@ -1,46 +1,43 @@
-import { useState, useEffect } from "react";
-import Pusher from "pusher-js";
+import { useEffect } from "react";
 import { usePusherClient } from "@/pusher/client";
-import type { Channel } from "pusher-js";
+import { useUser } from "@clerk/nextjs";
 
 interface FriendData {
   username: string;
   firstName: string | null;
   imageUrl: string;
-  id?: string;
+  id: string;
   requestId?: number;
+  friendId?: string;
   showToast?: boolean;
+  gameId?: string;
 }
 
 type FriendEvents =
-  | `user:${string}:friend-added`
-  | `user:${string}:friend-deleted`
-  | `user:${string}:friend-request-pending`
-  | `user:${string}:friend-request-accepted`
-  | `user:${string}:friend-request-declined`;
+  | `friend-added`
+  | `friend-deleted`
+  | `friend-request-pending`
+  | `friend-request-accepted`
+  | `friend-request-declined`
+  | `invite-sent`
+  | "invite-accepted";
 
 type EventCallback = (data: FriendData) => void;
 
 type EventMap = {
-  [key in string]: EventCallback;
+  [key in FriendEvents]?: EventCallback;
 };
 
-export const useFriendsChannel = (events: EventMap = {}) => {
-  //   const [activeFriends, setActiveFriends] =
-  //     useState<FriendData[]>(initialFriends);
+export const useFriendsChannel = (events: EventMap) => {
   const { pusher, isLoading } = usePusherClient();
-  // const [init, setInit] = useState(false);
-  //   const [channel, setChannel] = useState<Channel | null>(null);
-
-  console.log("in useFriendsChannel: ", pusher, isLoading);
+  const user = useUser();
 
   useEffect(() => {
     if (isLoading || !pusher) return;
-    // setInit(true);
 
-    const friendsChannel = pusher.subscribe("friends");
+    const rawId = user.user?.id.split("_")[1];
 
-    console.log("rerender pusher hook");
+    const friendsChannel = pusher.subscribe(`user-${rawId}-friends`);
 
     // Bind additional events passed in
     Object.entries(events).forEach(([eventName, handler]) => {
@@ -49,17 +46,12 @@ export const useFriendsChannel = (events: EventMap = {}) => {
 
     console.log("added events to friend channel", friendsChannel);
 
-    // setChannel(friendsChannel);
-
     return () => {
       console.log("unsubscribing from friends channel");
       Object.keys(events).forEach((eventName) => {
         friendsChannel.unbind(eventName);
       });
-      pusher.unsubscribe("friends");
-      //   setChannel(null);
+      pusher.unsubscribe(`user-${user.user?.id}-friends`);
     };
-  }, [isLoading]);
-
-  //   return activeFriends;
+  }, [isLoading, user.user?.id, events]);
 };

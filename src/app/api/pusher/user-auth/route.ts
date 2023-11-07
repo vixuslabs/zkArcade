@@ -1,15 +1,39 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { env } from "@/env.mjs";
-import { appRouter } from "@/server/api/root";
-import { createTRPCContext } from "@/server/api/trpc";
+import { pusher } from "@/pusher/server";
 
-const handler = (req: NextRequest) => {
-  // do something to check if user in body matches the current user.
-  // will leave like this for now
+export async function POST(request: Request) {
+  const body = await request.text();
 
-  return NextResponse.json("hello", { status: 200 });
-};
+  // Parse the URL-encoded string.
+  const params = new URLSearchParams(body);
 
-export { handler as POST };
+  console.log(params);
+
+  // You can now get individual parameters using `params.get`
+  const socketId = params.get("socket_id");
+  console.log(socketId);
+  const username = params.get("username");
+  console.log(username);
+  const userId = params.get("userId");
+  console.log(userId);
+
+  if (!userId) {
+    return NextResponse.json("No userId found", { status: 401 });
+  }
+
+  if (!username) {
+    return NextResponse.json("No username found", { status: 401 });
+  }
+
+  if (!socketId) {
+    return NextResponse.json("No socketId found", { status: 401 });
+  }
+
+  const authResponse = pusher.authenticateUser(socketId, {
+    id: userId,
+    username: username,
+  });
+
+  return NextResponse.json(authResponse);
+}
