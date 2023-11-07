@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function FriendsList() {
   const { activeFriends } = useFriendsProvider();
@@ -26,35 +27,35 @@ function FriendsList() {
         </CardHeader>
         <Separator />
         <CardContent>
-          <ul role="list" className="divide-y divide-gray-100">
-            {activeFriends.map(({ username, firstName, imageUrl, id }) => (
-              <Fragment key={username ?? id}>
-                <li className="flex items-center justify-between gap-x-6 py-5">
-                  <div className="flex min-w-0 gap-x-4">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={imageUrl} alt="Profile Picture" />
-                      <AvatarFallback>SC</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-auto">
-                      <p className="text-sm font-semibold leading-6 text-gray-900">
-                        {firstName}
-                      </p>
-                      <p className="mt-1 truncate text-xs leading-5 text-gray-500">
-                        {username}
-                      </p>
+          <ScrollArea className="max-h-full">
+            <ul role="list" className="divide-y divide-gray-100">
+              {activeFriends.map(({ username, firstName, imageUrl, id }) => (
+                <Fragment key={username ?? id}>
+                  <li className="flex items-center justify-between gap-x-6 py-5">
+                    <div className="flex min-w-0 gap-x-4">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={imageUrl} alt="Profile Picture" />
+                        <AvatarFallback>SC</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-auto">
+                        <p className="font-semibold leading-6">{username}</p>
+                        <p className="mt-1 truncate text-sm leading-5 text-gray-500">
+                          {firstName}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <a
-                    href={"#"}
-                    className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                  >
-                    Invite
-                  </a>
-                </li>
-                <Separator />
-              </Fragment>
-            ))}
-          </ul>
+                    <a
+                      href={"#"}
+                      className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    >
+                      Invite
+                    </a>
+                  </li>
+                  <Separator />
+                </Fragment>
+              ))}
+            </ul>
+          </ScrollArea>
         </CardContent>
         <CardFooter>
           <a
