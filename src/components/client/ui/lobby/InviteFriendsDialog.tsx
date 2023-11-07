@@ -1,42 +1,48 @@
 "use client";
 
-import { Copy } from "lucide-react";
 import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogOverlay,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-import type { MouseEvent } from "react";
-
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { api } from "@/trpc/react";
+import { usePathname } from "next/navigation";
+import { toast } from "@/components/ui/use-toast";
 
-function DialogCloseButton({
-  // className,
-  setOpen,
-}: {
-  // className?: string;
-  setOpen: (open: boolean) => void;
-}) {
+function DialogCloseButton() {
   const friends = api.friendships.getUsersFriends.useQuery();
+  const path = usePathname();
 
-  const handleSendInvite = (id: string) => {
-    console.log("invited");
-    console.log(id);
+  const invite = api.games.sendGameInvite.useMutation();
+
+  const handleSendInvite = (id: string, username: string) => {
+    const splitPath = path.split("/");
+
+    const lobbyId = splitPath[splitPath.length - 1];
+
+    if (!lobbyId) throw new Error("No lobbyId found");
+
+    invite.mutate({
+      receiverId: id,
+      lobbyId,
+    });
+
+    toast({
+      title: "Invite Sent!",
+      description: `${username} has been invited to play!`,
+      variant: "default",
+      duration: 5000,
+    });
   };
 
   return (
@@ -46,7 +52,24 @@ function DialogCloseButton({
         <DialogDescription>May the best player win!</DialogDescription>
       </DialogHeader>
 
-      {friends.isLoading && <p>Loading...</p>}
+      {friends.isLoading && (
+        <>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+        </>
+      )}
 
       {friends.isSuccess && (
         <ScrollArea className="max-h-full">
@@ -73,7 +96,7 @@ function DialogCloseButton({
                   </div>
                   <Button
                     type="button"
-                    onClick={() => handleSendInvite(id)}
+                    onClick={() => handleSendInvite(id, username)}
                     variant="secondary"
                     key={id}
                     className="rounded-full shadow-sm "

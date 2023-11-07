@@ -4,19 +4,10 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 const InviteFriendsButton = dynamic(
-  () => import("@/components/client/ui/InviteFriendsDialog"),
+  () => import("@/components/client/ui/lobby/InviteFriendsDialog"),
 );
 
 function LobbyDialogWrapper() {
@@ -28,21 +19,10 @@ function LobbyDialogWrapper() {
         <DialogTrigger asChild>
           <Button variant="outline">Invite</Button>
         </DialogTrigger>
-        {isOpen && <InviteFriendsButton setOpen={setIsOpen} />}
+        {isOpen && <InviteFriendsButton />}
       </Dialog>
     </div>
   );
-
-  // return (
-  //   <Button asChild>
-  //     {isOpen  && (
-  //       <InviteFriendsButton
-  //         setOpen={setIsOpen}
-  //         className="relative flex w-1/2 flex-col items-center"
-  //       />
-  //     ) }
-  //   </Button>
-  // );
 }
 
 export default LobbyDialogWrapper;
