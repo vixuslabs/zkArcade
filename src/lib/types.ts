@@ -4,10 +4,6 @@ import type { Quaternion, Vector3 } from "three";
 interface GamepadBase {
   axes: readonly number[];
   buttons: Record<string, ButtonState>;
-
-  //   {
-  //     [key: string]: "pressed" | "touched" | "default";
-  //   };
 }
 
 interface LeftGamepad extends GamepadBase {
