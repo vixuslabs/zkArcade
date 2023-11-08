@@ -10,6 +10,7 @@ import {
   useNativeFramebufferScaling,
   useInputSources,
   useSessionChange,
+  useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
 import { clippingEvents } from "@coconut-xr/koestlich";
 
@@ -27,6 +28,7 @@ import { ControllerStateProvider } from "@/components/client/providers";
 import TestSphere from "./objects/TestSphere";
 
 import { Physics } from "@react-three/rapier";
+import { useLobbyContext } from "../providers/LobbyProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -64,7 +66,10 @@ interface RoomCaptureProps {
   user: AppUser;
 }
 
-function RoomCapture({ user }: RoomCaptureProps) {
+function Sandbox({ user }: RoomCaptureProps) {
+  const { players, channel } = useLobbyContext();
+  console.log("players", players);
+  console.log("channel", channel);
   // function RoomCapture() {
   //   const router = useRouter();
   const [startSync, setStartSync] = useState(false);
@@ -73,40 +78,42 @@ function RoomCapture({ user }: RoomCaptureProps) {
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
   // const enterVR = useEnterXR("immersive-vr", sessionOptions);
 
-  // useSessionChange((curSession, prevSession) => {
-  //   console.log("inside useSessionChange");
-  //   console.log("curSession", curSession);
-  //   console.log("prevSession", prevSession);
-  //   if (prevSession && !curSession) {
-  //     console.log("session ended");
-  //     setStartSync(false);
-  //   }
-  // }, []);
+  const isSupported = useSessionSupported("immersive-ar");
+  console.log("isSupported", isSupported);
+
+  useSessionChange((curSession, prevSession) => {
+    if (prevSession && !curSession) {
+      console.log("session ended");
+      setStartSync(false);
+    }
+  }, []);
 
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
   return (
     <>
-      <div className="absolute flex flex-col items-center justify-center gap-y-2">
-        <h2 className="text-center text-2xl font-bold text-gray-900">
-          {/* Hey {user?.username}! - Capture your room */}
-          Hey - Capture your room
+      <div className="absolute z-10 flex flex-col items-center justify-center gap-y-2">
+        <h2 className="relative text-center text-2xl font-bold">
+          Hey {user?.username}! Press below to launch WebXR
+          {/* Hey - Capture your room */}
         </h2>
         <Button
+          disabled={!isSupported}
+          className="relative"
           variant="default"
           onClick={() => {
+            console.log("clicked!");
             void enterAR().then(() => {
               console.log("entered");
               setStartSync(true);
             });
           }}
         >
-          Sync
+          {isSupported ? "Begin" : "Device not Compatible :("}
         </Button>
       </div>
 
-      {/* {startSync && ( */}
       <XRCanvas
         frameBufferScaling={frameBufferScaling}
         frameRate={frameRate}
@@ -175,4 +182,4 @@ function RoomCapture({ user }: RoomCaptureProps) {
   );
 }
 
-export default RoomCapture;
+export default Sandbox;
