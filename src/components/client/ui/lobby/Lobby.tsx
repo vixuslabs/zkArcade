@@ -7,6 +7,7 @@ import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 import dynamic from "next/dynamic";
 
@@ -19,13 +20,6 @@ const MinaProvider = dynamic(
 
 const InitiateMina = dynamic(
   () => import("@/components/client/mina/InitiateMina"),
-  {
-    ssr: false,
-  },
-);
-
-const HotnColdGame = dynamic(
-  () => import("@/components/client/xr/HotnColdGame"),
   {
     ssr: false,
   },
@@ -126,13 +120,13 @@ function Lobby() {
             />
           </>
         ) : isMinaOn ? (
-          <MinaProvider player={me!}>
+          <MinaProvider>
             <InitiateMina player={me!} />
           </MinaProvider>
         ) : (
-          <>
-            <HotnColdGame player={me!} />
-          </>
+          <Button variant={"default"} asChild>
+            <Link href={"/game"}>Start Game</Link>
+          </Button>
         )}
       </div>
     </>

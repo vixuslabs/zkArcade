@@ -41,6 +41,23 @@ const config = {
         ],
       },
       {
+        source: "/game",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+      {
         source: "/_next/static/:path*", // next.js bundle chunks
         headers: [
           {
