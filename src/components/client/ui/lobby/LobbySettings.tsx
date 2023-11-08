@@ -11,13 +11,18 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
+import type { PresenceChannel } from "pusher-js";
 
 function LobbySettings({
   isMinaOn,
   setIsMinaOn,
+  isHost,
+  channel,
 }: {
   isMinaOn: boolean;
   setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
+  isHost: boolean | undefined;
+  channel: PresenceChannel | null;
 }) {
   console.log(isMinaOn, "isMinaOn");
 
@@ -31,8 +36,17 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
+            disabled={!isHost}
             checked={isMinaOn}
-            onCheckedChange={() => setIsMinaOn((prev) => !prev)}
+            onCheckedChange={() => {
+              setIsMinaOn((prev) => !prev);
+
+              if (isHost) {
+                channel?.trigger(`client-mina-${isMinaOn ? "off" : "on"}`, {
+                  isMinaOn: !isMinaOn,
+                });
+              }
+            }}
             id="mina"
           />
           <Image
