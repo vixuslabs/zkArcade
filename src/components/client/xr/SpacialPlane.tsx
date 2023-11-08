@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { ExtendedXRPlane, TrackedPlane } from "@coconut-xr/natuerlich/react";
-import type { Mesh, Vector3 } from "three";
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import React, { useRef } from "react";
+import { TrackedPlane } from "@coconut-xr/natuerlich/react";
+import { RigidBody } from "@react-three/rapier";
+
+import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
+import type { Mesh } from "three";
+import type { RapierRigidBody } from "@react-three/rapier";
 
 // import { SpacialPlaneProps } from "@/utils/types";
 
@@ -21,16 +24,17 @@ function SpacialPlane({
   color = "black",
 }: SpacialPlane) {
   const ref = useRef<Mesh>(null);
-  const [test, setTest] = React.useState<Vector3>();
+  const rigidRef = useRef<RapierRigidBody>(null);
+  // const [test, setTest] = React.useState<Vector3>();
 
-  useEffect(() => {
-    // console.log(`plane ref for ${name}`, ref.current);
-    if (ref.current) {
-      const world = ref.current.getWorldPosition(ref.current.position);
-      setTest(world);
-      // console.log(`world position for plane named ${name}`, world);
-    }
-  });
+  // useEffect(() => {
+  //   console.log(`plane ref for ${name}`, ref.current);
+  //   if (ref.current) {
+  //     const world = ref.current.getWorldPosition(ref.current.position);
+  //     setTest(world);
+  //     console.log(`world position for plane named ${name}`, world);
+  //   }
+  // });
 
   /**
    * ONLY NEEDS TO BE WALLS, FLOOR, AND CEILING
@@ -38,28 +42,30 @@ function SpacialPlane({
 
   return (
     <>
-      {/* {test && (
-        <mesh position={test}>
-          <sphereGeometry args={[0.1, 50, 50]} />
-          <meshBasicMaterial color="red" />
-        </mesh>
-      )} */}
-      <TrackedPlane ref={ref} plane={plane}>
-        {/* {color ? (
-          <meshPhongMaterial transparent opacity={0.1} color={color} />
-        ) : (
-          <meshPhongMaterial transparent opacity={0.2} color="black" />
-        )} */}
+      <RigidBody
+        name={name}
+        ref={rigidRef}
+        colliders={"trimesh"}
+        canSleep={false}
+        type="fixed"
+        // onCollisionEnter={(e) => console.log(e)}
+      >
+        <TrackedPlane ref={ref} plane={plane}>
+          {color ? (
+            <meshPhongMaterial wireframe color={color} />
+          ) : (
+            <meshPhongMaterial wireframe color="black" />
+          )}
 
-        <meshPhysicalMaterial
+          {/* <meshPhysicalMaterial
           color={"#000000"}
           clearcoatRoughness={0.5}
           metalness={0}
           clearcoat={0.5}
-          // transparent
-          // opacity={0.5}
-        />
-      </TrackedPlane>
+
+        /> */}
+        </TrackedPlane>
+      </RigidBody>
     </>
   );
 }
