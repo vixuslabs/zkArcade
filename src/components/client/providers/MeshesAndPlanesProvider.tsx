@@ -15,7 +15,21 @@ import type {
 } from "@coconut-xr/natuerlich/react";
 import { useLobbyContext } from "./LobbyProvider";
 
-const MeshesAndPlanesContext = createContext();
+interface MeshesAndPlanesContextValue {
+  setMyMeshes: React.Dispatch<React.SetStateAction<Mesh[]>>;
+  setMyPlanes: React.Dispatch<React.SetStateAction<Mesh[]>>;
+  enemyMeshes: Mesh[];
+  enemyPlanes: Mesh[];
+}
+
+const MeshesAndPlanesContext = createContext<MeshesAndPlanesContextValue>({
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setMyMeshes: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setMyPlanes: () => {},
+  enemyMeshes: [],
+  enemyPlanes: [],
+});
 
 export const useMeshesAndPlanesContext = () => {
   const context = useContext(MeshesAndPlanesContext);
