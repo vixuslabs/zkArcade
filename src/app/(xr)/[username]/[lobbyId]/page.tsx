@@ -2,7 +2,7 @@ import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import { LobbyProvider } from "@/components/client/providers";
 
-import { currentUser } from "@clerk/nextjs";
+// import { currentUser } from "@clerk/nextjs";
 import { Lobby } from "@/components/client/ui/lobby";
 
 async function LobbyPage({
@@ -10,9 +10,9 @@ async function LobbyPage({
 }: {
   params: { username: string; lobbyId: string };
 }) {
-  const clerkUser = await currentUser();
+  // const clerkUser = await currentUser();
 
-  if (!clerkUser) redirect("/");
+  // if (!clerkUser) redirect("/");
 
   const user = await api.users.getCurrentUser.query();
 
