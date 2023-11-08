@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useMemo } from "react";
 
 import { PlayerCard, LobbyDialogWrapper, LobbySettings } from ".";
 import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
@@ -8,12 +8,45 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+import dynamic from "next/dynamic";
+
+const MinaProvider = dynamic(
+  () => import("@/components/client/providers/MinaProvider"),
+  {
+    ssr: false,
+  },
+);
+
+const InitiateMina = dynamic(
+  () => import("@/components/client/mina/InitiateMina"),
+  {
+    ssr: false,
+  },
+);
+
+const HotnColdGame = dynamic(
+  () => import("@/components/client/xr/HotnColdGame"),
+  {
+    ssr: false,
+  },
+);
+
 import { useUser } from "@clerk/nextjs";
 
 function Lobby() {
-  const { players, setPlayers, starting, channel, isMinaOn, setIsMinaOn } =
-    useLobbyContext();
+  const {
+    players,
+    setPlayers,
+    starting,
+    setStarting,
+    channel,
+    isMinaOn,
+    setIsMinaOn,
+  } = useLobbyContext();
   const user = useUser();
+  const me = useMemo(() => {
+    return players.find((p) => p.username === user.user?.username);
+  }, [players, user.user?.username]);
 
   const handleReady = () => {
     setPlayers((prev) =>
@@ -59,29 +92,48 @@ function Lobby() {
         {players.length === 1 && <LobbyDialogWrapper />}
       </div>
       <div className="absolute bottom-16 flex items-center gap-x-12">
-        <Button
-          variant="default"
-          className="relative"
-          disabled={
-            players.some((p) => !p.ready) ||
-            players.find((p) => p.username === user?.user!.username)?.host ===
-              false
-          }
-          onClick={() => {
-            if (
-              user.user?.username &&
-              players.find((p) => p.username === user?.user.username)?.host
-            ) {
-              console.log("starting");
-              channel?.trigger("client-starting", {
-                starting: true,
-              });
-            }
-          }}
-        >
-          Start Game
-        </Button>
-        <LobbySettings isMinaOn={isMinaOn} setIsMinaOn={setIsMinaOn} />
+        {!starting ? (
+          <>
+            <Button
+              variant="default"
+              className="relative"
+              disabled={
+                players.some((p) => !p.ready) ||
+                players.find((p) => p.username === user?.user!.username)
+                  ?.host === false ||
+                starting
+              }
+              onClick={() => {
+                if (
+                  user.user?.username &&
+                  players.find((p) => p.username === user?.user.username)?.host
+                ) {
+                  console.log("starting");
+                  channel?.trigger("client-start-game", {
+                    starting: true,
+                  });
+                  setStarting(true);
+                }
+              }}
+            >
+              Start Game
+            </Button>
+            <LobbySettings
+              isMinaOn={isMinaOn}
+              setIsMinaOn={setIsMinaOn}
+              isHost={me?.host}
+              channel={channel}
+            />
+          </>
+        ) : isMinaOn ? (
+          <MinaProvider player={me!}>
+            <InitiateMina player={me!} />
+          </MinaProvider>
+        ) : (
+          <>
+            <HotnColdGame player={me!} />
+          </>
+        )}
       </div>
     </>
   );

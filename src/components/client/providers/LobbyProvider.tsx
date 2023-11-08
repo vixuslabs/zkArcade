@@ -5,34 +5,23 @@ import React, { useState, useContext, createContext, useMemo } from "react";
 import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
 import type { PresenceChannel } from "pusher-js";
 
-interface Player {
-  username: string;
-  firstName: string | null;
-  imageUrl: string | null;
-  ready: boolean;
-  host: boolean;
-  id?: string;
-}
+import { Player } from "@/lib/types";
 
 interface LobbyContextValues {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   starting: boolean;
+  setStarting: React.Dispatch<React.SetStateAction<boolean>>;
   channel: PresenceChannel | null;
   isMinaOn: boolean;
   setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-type LobbyEvents =
-  | `client-joined`
-  | `client-left`
-  | `client-ready`
-  | `client-not-ready`
-  | `client-start-game`;
-
 const LobbyContext = createContext<LobbyContextValues>({
   players: [],
   starting: false,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setStarting: () => {},
   channel: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setPlayers: () => {},
@@ -104,6 +93,12 @@ function LobbyProvider({
       "client-start-game": () => {
         setStarting(true);
       },
+      "client-mina-on": () => {
+        setIsMinaOn(true);
+      },
+      "client-mina-off": () => {
+        setIsMinaOn(false);
+      },
     },
   );
 
@@ -112,6 +107,7 @@ function LobbyProvider({
       players,
       setPlayers,
       starting,
+      setStarting,
       channel,
       isMinaOn,
       setIsMinaOn,

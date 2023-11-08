@@ -46,6 +46,10 @@ export const env = createEnv({
         "You forgot to change the default key",
       ),
     NEXT_PUBLIC_PUSHER_KEY: z.string(),
+    NEXT_PUBLIC_PRIV_KEY1: z.string(),
+    NEXT_PUBLIC_PRIV_KEY2: z.string(),
+    NEXT_PUBLIC_PUB_KEY1: z.string(),
+    NEXT_PUBLIC_PUB_KEY2: z.string(),
   },
 
   /**
@@ -62,6 +66,10 @@ export const env = createEnv({
     PUSHER_APP_ID: process.env.PUSHER_APP_ID,
     PUSHER_SECRET: process.env.PUSHER_SECRET,
     NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
+    NEXT_PUBLIC_PRIV_KEY1: process.env.NEXT_PUBLIC_PRIV_KEY1,
+    NEXT_PUBLIC_PRIV_KEY2: process.env.NEXT_PUBLIC_PRIV_KEY2,
+    NEXT_PUBLIC_PUB_KEY1: process.env.NEXT_PUBLIC_PUB_KEY1,
+    NEXT_PUBLIC_PUB_KEY2: process.env.NEXT_PUBLIC_PUB_KEY2,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
