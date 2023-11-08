@@ -1,20 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePusherClient } from "@/pusher/client";
-import { useUser } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import { env } from "@/env.mjs";
 
+import type { Player } from "@/lib/types";
 import type { Dispatch, SetStateAction } from "react";
 import type { PresenceChannel } from "pusher-js";
-
-interface Player {
-  username: string;
-  firstName: string | null;
-  imageUrl: string | null;
-  ready: boolean;
-  host: boolean;
-  id?: string;
-}
 
 type PushMembers = Record<string, { username: string; imageUrl: string }>;
 
@@ -38,7 +31,9 @@ type LobbyEvents =
   | `client-left`
   | `client-ready`
   | `client-not-ready`
-  | `client-start-game`;
+  | `client-start-game`
+  | "client-mina-on"
+  | "client-mina-off";
 
 type EventCallback = (data: Player) => void;
 
@@ -54,7 +49,9 @@ export const useLobbyChannel = (
   const [channel, setChannel] = useState<PresenceChannel | null>(null);
   const { pusher, isLoading } = usePusherClient();
 
-  const user = useUser();
+  const pathname = usePathname();
+
+  const hostName = useMemo(() => pathname.split("/")[1]!, [pathname]);
 
   const newMemberHandler = (member: OnePlayerPush) => {
     console.log(member);
@@ -64,17 +61,30 @@ export const useLobbyChannel = (
     const info = member.info;
 
     setPlayers((prev) => {
-      const newPlayers = [
-        ...prev,
-        {
-          username: info.username,
-          firstName: null,
-          imageUrl: info.imageUrl,
-          ready: false,
-          host: user.user?.id === member.id,
-          id: id,
-        },
-      ];
+      const newPlayers: Player[] = [];
+      for (const player of prev) {
+        newPlayers.push({
+          ...player,
+          publicKey: env.NEXT_PUBLIC_PUB_KEY1,
+          privateKey: env.NEXT_PUBLIC_PRIV_KEY1,
+        });
+      }
+
+      newPlayers.push({
+        username: info.username,
+        firstName: null,
+        imageUrl: info.imageUrl,
+        ready: false,
+        // host: isCurrentHost,
+        host: false,
+        id: id,
+        // publicKey: isCurrentHost ? pubKey1 : pubKey2,
+        publicKey: env.NEXT_PUBLIC_PUB_KEY2,
+        // privateKey: isCurrentHost ? privKey1 : privKey2,
+        privateKey: env.NEXT_PUBLIC_PRIV_KEY2,
+      });
+
+      // const newPlayers = [{}];
 
       // channel?.trigger("client-joined", {
       //   players,
@@ -83,6 +93,7 @@ export const useLobbyChannel = (
       console.log("checking if channel exists", channel);
 
       return newPlayers;
+      // return newPlayers;
     });
   };
 
@@ -92,14 +103,22 @@ export const useLobbyChannel = (
 
     const _players = Object.entries(members.members).map(
       ([memberId, member]) => {
+        const isCurrentHost = member.username === hostName;
+
         console.log("member: ", member);
         return {
           username: member.username,
           firstName: null,
           imageUrl: member.imageUrl,
           ready: false,
-          host: user.user?.id === memberId,
+          host: isCurrentHost,
           id: memberId,
+          privateKey: isCurrentHost
+            ? env.NEXT_PUBLIC_PRIV_KEY1
+            : env.NEXT_PUBLIC_PRIV_KEY2,
+          publicKey: isCurrentHost
+            ? env.NEXT_PUBLIC_PUB_KEY1
+            : env.NEXT_PUBLIC_PUB_KEY2,
         };
       },
     );
