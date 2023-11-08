@@ -61,3 +61,17 @@ export type ControllerStateContextValue = {
 };
 
 export type ButtonsType = "a-button" | "b-button" | "x-button" | "y-button";
+
+/**
+ * Online Components
+ */
+export interface Player {
+  username: string;
+  firstName: string | null;
+  imageUrl: string | null;
+  ready: boolean;
+  host: boolean;
+  id?: string;
+  publicKey?: string;
+  privateKey?: string;
+}

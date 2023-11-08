@@ -10,7 +10,7 @@ import type { NextRequest } from "next/server";
 //   });
 
 export default authMiddleware({
-  debug: true,
+  // debug: true,
   // beforeAuth: (req) => {
   //   // Execute next-intl middleware before Clerk's auth middleware
   //   return intlMiddleware(req);
