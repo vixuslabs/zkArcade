@@ -30,6 +30,7 @@ const config = {
         checksVoidReturn: { attributes: false },
       },
     ],
+    "react/display-name": "off",
   },
 };
 
