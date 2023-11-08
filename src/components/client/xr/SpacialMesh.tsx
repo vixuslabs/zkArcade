@@ -61,16 +61,24 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
           <meshBasicMaterial color="blue" />
         </mesh>
       )} */}
-      <TrackedMesh ref={ref} mesh={mesh}>
-        {color ? (
-          <meshBasicMaterial
-            wireframe
-            color={name === "global mesh" ? "purple" : color}
-          />
-        ) : (
-          <meshBasicMaterial wireframe color="white" /> // will eventually just make it transparent
-        )}
-      </TrackedMesh>
+      <RigidBody
+        name={name}
+        ref={rigidRef}
+        colliders={"trimesh"}
+        canSleep={false}
+        type={"fixed"}
+      >
+        <TrackedMesh ref={ref} mesh={mesh}>
+          {color ? (
+            <meshBasicMaterial
+              wireframe
+              color={name === "global mesh" ? "purple" : color}
+            />
+          ) : (
+            <meshBasicMaterial wireframe color="white" /> // will eventually just make it transparent
+          )}
+        </TrackedMesh>
+      </RigidBody>
     </>
   );
 }

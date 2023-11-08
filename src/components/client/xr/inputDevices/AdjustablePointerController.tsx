@@ -2,21 +2,15 @@
 
 import {
   useRef,
-  useContext,
   useState,
   useEffect,
   Suspense,
   useMemo,
   useCallback,
 } from "react";
-import { Group, Vector2, Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { useFrame } from "@react-three/fiber";
-import { XLinesIntersection } from "@coconut-xr/xinteraction";
-
-import {
-  XCurvedPointer,
-  InputDeviceFunctions,
-} from "@coconut-xr/xinteraction/react";
+import { XCurvedPointer } from "@coconut-xr/xinteraction/react";
 import { RayBasicMaterial } from "@coconut-xr/natuerlich/defaults";
 import {
   useInputSourceEvent,
@@ -28,9 +22,10 @@ import {
 } from "@coconut-xr/natuerlich/react";
 
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
-// import { useMeshesAndPlanesContext } from "@/components/client/providers/MeshesAndPlanesProvider";
-// import { useInputReader } from "@/hooks";
-import { ButtonsType, TriggerState } from "@/lib/types";
+import type { XLinesIntersection } from "@coconut-xr/xinteraction";
+import type { TriggerState } from "@/lib/types";
+import type { InputDeviceFunctions } from "@coconut-xr/xinteraction/react";
+import type { Group } from "three";
 
 const rayMaterial = new RayBasicMaterial({
   transparent: true,
