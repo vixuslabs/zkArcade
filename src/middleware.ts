@@ -45,6 +45,7 @@ export default authMiddleware({
   authorizedParties: [
     "http://localhost:3000",
     `https://${process.env.VERCEL_URL!}`,
+    `https://${process.env.VERCEL_BRANCH_URL!}`,
     `https://hot-n-cold.vercel.app`,
     `https://funny-unlikely-dolphin.ngrok-free.app`,
     "https://hot-n-cold-git-webxr-multi-vixus-labs.vercel.app",
