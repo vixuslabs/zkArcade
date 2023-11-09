@@ -7,9 +7,6 @@ import {
 import SpacialMesh from "./SpacialMesh";
 import SpacialPlane from "./SpacialPlane";
 import { useId, useState, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Color } from "three";
-import _ from "lodash";
 
 function BuildRoom() {
   const meshes = useTrackedMeshes();
@@ -17,7 +14,6 @@ function BuildRoom() {
   const key = useId();
 
   console.log("rerender build room");
-  const [init, setInit] = useState(false);
 
   if (!meshes || !planes) return null;
 

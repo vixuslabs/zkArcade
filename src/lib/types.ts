@@ -119,4 +119,11 @@ export interface Player {
   id?: string;
   publicKey?: string;
   privateKey?: string;
+  playerPosition?: Vector3;
+  playerProximity?: number;
+  objectPosition?: Vector3;
+  roomLayout?: {
+    meshes: Mesh[];
+    planes: Mesh[];
+  };
 }

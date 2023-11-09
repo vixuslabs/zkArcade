@@ -7,6 +7,7 @@ import { vec3 } from "@react-three/rapier";
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
 import { ButtonState } from "@coconut-xr/natuerlich/react";
+import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
 
 import type { MutableRefObject } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -19,6 +20,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
+    const { setGameState, channel } = useLobbyContext();
     const [isAnchored, setIsAnchored] = React.useState(false);
     const downState = useRef<{
       pointerId: number;
@@ -109,7 +111,27 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
       rigidRef.current.resetTorques(true);
       rigidRef.current.resetForces(true);
       setIsAnchored(true);
-    }, [rigidRef]);
+
+      setGameState((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        const myObjectPosition = meshRef.current.getWorldPosition(
+          meshRef.current.position,
+        );
+
+        return {
+          ...prev,
+          me: {
+            ...prev.me,
+            myObjectPosition,
+          },
+        };
+      });
+
+      channel?.trigger("client-game-hiding-done", {});
+    }, [rigidRef, meshRef]);
 
     const handleUnanchor = useCallback(() => {
       if (!rigidRef?.current) return;
@@ -199,12 +221,14 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
           if (!handness || !objectHeldByPointer) return;
 
           if (
-            rightController &&
-            rightController.gamepad.buttons["a-button"] ===
+            leftController &&
+            leftController.gamepad.buttons["x-button"] ===
+              ButtonState.PRESSED &&
+            leftController.gamepad.buttons["y-button"] ===
               ButtonState.PRESSED &&
             isAnchorable
           ) {
-            console.log("a button pressed");
+            console.log("setting object pressed");
             downState.current = undefined;
             handleAnchor();
             return;

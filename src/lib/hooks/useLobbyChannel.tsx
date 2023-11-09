@@ -33,19 +33,40 @@ type LobbyEvents =
   | `client-not-ready`
   | `client-start-game`
   | "client-mina-on"
-  | "client-mina-off";
+  | "client-mina-off"
+  | "client-game-joined"
+  | "client-game-left"
+  | "client-game-started"
+  | "client-game-ended"
+  | "client-game-roomLayout"
+  | "client-game-hiding"
+  | "client-game-hiding-done"
+  | "client-game-seeking-start"
+  | "client-game-requestProximity"
+  | "client-game-setProximity"
+  | "client-game-setObjectPosition"
+  | "client-game-seeking-done";
+
+type PartialeEventMap = Partial<Record<LobbyEvents, EventCallback>>;
 
 type EventCallback = (data: Player) => void;
 
-type EventMap = Record<Partial<LobbyEvents>, EventCallback>;
+type EventMap = Record<LobbyEvents, EventCallback>;
 
 export const useLobbyChannel = (
   initialPlayer: Player,
   lobbyId: string,
   isHost: boolean,
-  events: EventMap,
-): [Player[], Dispatch<SetStateAction<Player[]>>, PresenceChannel | null] => {
+  // events: Partial<EventMap>,
+  events: PartialeEventMap,
+): [
+  Player[],
+  Dispatch<SetStateAction<Player[]>>,
+  PresenceChannel | null,
+  Player | null,
+] => {
   const [players, setPlayers] = useState<Player[]>([initialPlayer]);
+  const [me, setMe] = useState<Player | null>(null);
   const [channel, setChannel] = useState<PresenceChannel | null>(null);
   const { pusher, isLoading } = usePusherClient();
 
@@ -53,6 +74,7 @@ export const useLobbyChannel = (
 
   const hostName = useMemo(() => pathname.split("/")[1]!, [pathname]);
 
+  // only the host will have this functino called
   const newMemberHandler = (member: OnePlayerPush) => {
     console.log(member);
     console.log("member added");
@@ -63,11 +85,13 @@ export const useLobbyChannel = (
     setPlayers((prev) => {
       const newPlayers: Player[] = [];
       for (const player of prev) {
-        newPlayers.push({
+        const me = {
           ...player,
           publicKey: env.NEXT_PUBLIC_PUB_KEY1,
           privateKey: env.NEXT_PUBLIC_PRIV_KEY1,
-        });
+        };
+        setMe(me);
+        newPlayers.push(me);
       }
 
       newPlayers.push({
@@ -97,6 +121,7 @@ export const useLobbyChannel = (
     });
   };
 
+  // only the invited user will run this function
   const successHandler = (members: Members) => {
     console.log("members: ", members);
     if (isHost) return;
@@ -123,7 +148,13 @@ export const useLobbyChannel = (
       },
     );
 
-    setPlayers(_players.sort((a, b) => (a.host ? -1 : b.host ? 1 : 0)));
+    const sortedPlayers = _players.sort((a, b) =>
+      a.host ? -1 : b.host ? 1 : 0,
+    );
+
+    setMe(sortedPlayers[1]!);
+
+    setPlayers(sortedPlayers);
   };
 
   useEffect(() => {
@@ -162,5 +193,5 @@ export const useLobbyChannel = (
     };
   }, [isLoading]);
 
-  return [players, setPlayers, channel];
+  return [players, setPlayers, channel, me];
 };

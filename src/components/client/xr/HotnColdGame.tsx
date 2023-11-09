@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { XRCanvas, Hands } from "@coconut-xr/natuerlich/defaults";
+import {
+  XRCanvas,
+  Hands,
+  TeleportController,
+} from "@coconut-xr/natuerlich/defaults";
 import {
   useEnterXR,
   NonImmersiveCamera,
@@ -29,6 +33,7 @@ import TestSphere from "./objects/TestSphere";
 
 import { Physics } from "@react-three/rapier";
 import { useLobbyContext } from "../providers/LobbyProvider";
+import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -67,9 +72,8 @@ interface RoomCaptureProps {
 }
 
 function HotnColdGame({ user }: RoomCaptureProps) {
-  const { players, channel } = useLobbyContext();
-  console.log("players", players);
-  console.log("channel", channel);
+  const { players, channel, setXrStarted, me, gameState, setGameState } =
+    useLobbyContext();
 
   const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
@@ -81,12 +85,11 @@ function HotnColdGame({ user }: RoomCaptureProps) {
     if (prevSession && !curSession) {
       console.log("session ended");
       setStartSync(false);
+      setXrStarted(false);
     }
   }, []);
 
   const isSupported = useSessionSupported("immersive-ar");
-  console.log("isSupported", isSupported);
-
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
@@ -94,8 +97,7 @@ function HotnColdGame({ user }: RoomCaptureProps) {
     <>
       <div className="absolute z-10 flex flex-col items-center justify-center gap-y-2">
         <h2 className="relative text-center text-2xl font-bold">
-          Hey {user?.username}! Press below to launch WebXR
-          {/* Hey - Capture your room */}
+          Hey {user?.username} - Press below to launch WebXR!
         </h2>
         <Button
           disabled={!isSupported}
@@ -106,6 +108,25 @@ function HotnColdGame({ user }: RoomCaptureProps) {
             void enterAR().then(() => {
               console.log("entered");
               setStartSync(true);
+              setXrStarted(true);
+              setGameState((prev) => {
+                if (!prev) {
+                  return prev;
+                }
+
+                return {
+                  ...prev,
+                  me: {
+                    isHiding: false,
+                    isSeeking: false,
+                    isIdle: true,
+                  },
+                };
+              });
+              console.log("me", me);
+              channel?.trigger("client-game-started", {
+                data: me,
+              });
             });
           }}
         >
@@ -116,14 +137,10 @@ function HotnColdGame({ user }: RoomCaptureProps) {
       <XRCanvas
         frameBufferScaling={frameBufferScaling}
         frameRate={frameRate}
-        // dpr={1}
         dpr={[1, 2]}
         // @ts-expect-error - import error
         events={clippingEvents}
         gl={{ localClippingEnabled: true }}
-        // onCreated={({ gl }: { gl: WebGLRenderer }) =>
-        //   gl.setClearColor("#cccccc")
-        // }
       >
         <ControllerStateProvider>
           {/* {startSync && ( */}
@@ -141,10 +158,13 @@ function HotnColdGame({ user }: RoomCaptureProps) {
             {startSync && (
               <>
                 <TestBox position={[0, 0, -0.5]} />
-                <TestSphere position={[0, 2, -0.3]} />
+                {/* <TestSphere position={[0, 2, -0.3]} /> */}
               </>
             )}
-            {/* <FogSphere /> */}
+
+            {gameState && gameState.isGameStarted && gameState.me.isHiding && (
+              <TestSphere position={[0, 2, -0.3]} />
+            )}
 
             {/* <ImmersiveSessionOrigin position={[0, 0, 0]}> */}
             <ImmersiveSessionOrigin>
@@ -152,31 +172,46 @@ function HotnColdGame({ user }: RoomCaptureProps) {
               {/* <FogSphere /> */}
               {startSync && (
                 <>
-                  <BuildRoom />
+                  <MeshesAndPlanesProvider>
+                    <BuildRoom />
+                  </MeshesAndPlanesProvider>
                   <TestBox color="black" />
                 </>
               )}
-
-              {/* <ControllerStateProvider> */}
-              {inputSources.map((inputSource: XRInputSource) => (
-                <AdjustablePointerController
-                  key={getInputSourceId(inputSource)}
-                  id={getInputSourceId(inputSource)}
-                  inputSource={inputSource}
-                />
-              ))}
-              {/* <Flashlight /> */}
-              {/* </ControllerStateProvider> */}
-
-              {/* <Controllers /> */}
+              {gameState &&
+              !!gameState.opponent.room &&
+              gameState.oppObject?.objectSet &&
+              !gameState.oppObject.objectFound
+                ? inputSources.map((inputSource: XRInputSource) => {
+                    if (inputSource.handedness === "left") {
+                      return (
+                        <TeleportController
+                          key={getInputSourceId(inputSource)}
+                          id={getInputSourceId(inputSource)}
+                          inputSource={inputSource}
+                        />
+                      );
+                    } else
+                      return (
+                        <AdjustablePointerController
+                          key={getInputSourceId(inputSource)}
+                          id={getInputSourceId(inputSource)}
+                          inputSource={inputSource}
+                        />
+                      );
+                  })
+                : inputSources.map((inputSource: XRInputSource) => (
+                    <AdjustablePointerController
+                      key={getInputSourceId(inputSource)}
+                      id={getInputSourceId(inputSource)}
+                      inputSource={inputSource}
+                    />
+                  ))}
               <Hands />
-              {/* <Hands /> */}
             </ImmersiveSessionOrigin>
           </Physics>
-          {/* )} */}
         </ControllerStateProvider>
       </XRCanvas>
-      {/* )} */}
     </>
   );
 }
