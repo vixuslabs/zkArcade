@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useId, useRef } from "react";
-import { ExtendedXRMesh, TrackedMesh } from "@coconut-xr/natuerlich/react";
-import { RapierRigidBody, RigidBody } from "@react-three/rapier";
+import React, { useRef } from "react";
+import { TrackedMesh } from "@coconut-xr/natuerlich/react";
+import { RigidBody } from "@react-three/rapier";
 
-// import { SpacialBoxProps } from "@/utils/types";
-import type { Mesh, Vector3 } from "three";
+import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
+import type { RapierRigidBody } from "@react-three/rapier";
+import type { Mesh } from "three";
+import RoomShadow from "./RoomShadow";
 
 interface SpacialBox {
   mesh: ExtendedXRMesh;
@@ -17,69 +19,39 @@ interface SpacialBox {
 function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
-  const [test, setTest] = React.useState<Vector3>();
-  const id = useId();
-
-  useEffect(() => {
-    // console.log(`box ref for ${name}`, ref.current);
-    if (ref.current) {
-      const world = ref.current.getWorldPosition(ref.current.position);
-      // console.log(`world position for mesh named ${name}`, world);
-      setTest(world);
-
-      // const mesh = ref.current;
-    }
-  });
+  // const [test, setTest] = React.useState<Vector3>();
+  // const id = useId();
 
   // useEffect(() => {
   //   if (ref.current) {
-  //     const body = JSON.stringify(
-  //       { name: `${name}-${id}`, mesh: ref.current },
-  //       null,
-  //       2,
-  //     );
-
-  //     console.log(body);
-
-  //     if (name === "global mesh") return;
-
-  //     void fetch("/api/room", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: body,
-  //     });
+  //     const world = ref.current.getWorldPosition(ref.current.position);
+  //     setTest(world);
   //   }
-  // }, []);
+  // });
+
+  if (name === "global mesh") {
+    return <RoomShadow mesh={mesh} />;
+  }
 
   return (
-    <>
-      {/* {test && (
-        <mesh position={test}>
-          <sphereGeometry args={[0.1, 50, 50]} />
-          <meshBasicMaterial color="blue" />
-        </mesh>
-      )} */}
-      <RigidBody
-        name={name}
-        ref={rigidRef}
-        colliders={"trimesh"}
-        canSleep={false}
-        type={"fixed"}
-      >
-        <TrackedMesh ref={ref} mesh={mesh}>
-          {color ? (
-            <meshBasicMaterial
-              wireframe
-              color={name === "global mesh" ? "purple" : color}
-            />
-          ) : (
-            <meshBasicMaterial wireframe color="white" /> // will eventually just make it transparent
-          )}
-        </TrackedMesh>
-      </RigidBody>
-    </>
+    <RigidBody
+      name={name}
+      ref={rigidRef}
+      colliders={"trimesh"}
+      canSleep={false}
+      type={"fixed"}
+    >
+      <TrackedMesh ref={ref} mesh={mesh}>
+        {color ? (
+          <meshBasicMaterial
+            wireframe
+            color={name === "global mesh" ? "purple" : color}
+          />
+        ) : (
+          <meshBasicMaterial wireframe color="white" /> // will eventually just make it transparent
+        )}
+      </TrackedMesh>
+    </RigidBody>
   );
 }
 
