@@ -47,7 +47,7 @@ export default authMiddleware({
     `https://${process.env.VERCEL_URL!}`,
     `https://hot-n-cold.vercel.app`,
     `https://funny-unlikely-dolphin.ngrok-free.app`,
-    "https://hot-n-cold-git-webxr-multi-vixus-labs.vercel.app/",
+    "https://hot-n-cold-git-webxr-multi-vixus-labs.vercel.app",
   ],
 });
 
