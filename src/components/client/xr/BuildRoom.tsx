@@ -13,8 +13,6 @@ function BuildRoom() {
   const planes = useTrackedPlanes();
   const key = useId();
 
-  console.log("rerender build room");
-
   if (!meshes || !planes) return null;
 
   return (

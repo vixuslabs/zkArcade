@@ -34,6 +34,8 @@ import TestSphere from "./objects/TestSphere";
 import { Physics } from "@react-three/rapier";
 import { useLobbyContext } from "../providers/LobbyProvider";
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
+import { useUser } from "@clerk/nextjs";
+import FriendRoom from "./FriendRoom";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -72,11 +74,12 @@ interface RoomCaptureProps {
 }
 
 function HotnColdGame({ user }: RoomCaptureProps) {
-  const { players, channel, setXrStarted, me, gameState, setGameState } =
+  const { players, channel, setXrStarted, gameState, setGameState, started } =
     useLobbyContext();
 
   const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
+  const clerkUser = useUser();
 
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
   // const enterVR = useEnterXR("immersive-vr", sessionOptions);
@@ -123,9 +126,13 @@ function HotnColdGame({ user }: RoomCaptureProps) {
                   },
                 };
               });
-              console.log("me", me);
-              channel?.trigger("client-game-started", {
-                data: me,
+
+              const mePlayer = players.find(
+                (p) => p.username === clerkUser.user?.username,
+              );
+
+              channel?.trigger("client-game-joined", {
+                data: mePlayer,
               });
             });
           }}
@@ -153,6 +160,8 @@ function HotnColdGame({ user }: RoomCaptureProps) {
           >
             <NonImmersiveCamera />
 
+            <ambientLight intensity={0.5} />
+
             {/* <Lamp position={[0, 7, 0]} /> */}
             {/* <ambientLight color={"#ffffff"} intensity={1} /> */}
             {startSync && (
@@ -173,7 +182,13 @@ function HotnColdGame({ user }: RoomCaptureProps) {
               {startSync && (
                 <>
                   <MeshesAndPlanesProvider>
-                    <BuildRoom />
+                    {gameState &&
+                      (gameState.me.isSeeking || gameState.me.isIdle) && (
+                        <BuildRoom />
+                      )}
+                    {gameState &&
+                      gameState.isGameStarted &&
+                      gameState.me.isHiding && <FriendRoom />}
                   </MeshesAndPlanesProvider>
                   <TestBox color="black" />
                 </>

@@ -48,29 +48,37 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
           return prev;
         }
 
-        const isUnique = prev.every((mesh) => mesh.uuid !== ref.current!.uuid);
+        const isUnique = prev.every(
+          ({ mesh, name }) => mesh.uuid !== ref.current!.uuid,
+        );
 
         if (!isUnique) {
           return prev;
         }
 
-        return [...prev, ref.current!];
+        return [
+          ...prev,
+          {
+            mesh: ref.current!,
+            name,
+          },
+        ];
       });
     })();
   }, [ref, init, mesh, setMyMeshes, name]);
 
-  if (gameState && gameState.me.isHiding && gameState.opponent.room) {
-    console.log("opponent room", gameState.opponent.room);
-    const oppMeshes = gameState.opponent.room.meshes;
+  // if (gameState && gameState.me.isHiding && gameState.opponent.room) {
+  //   console.log("opponent room", gameState.opponent.room);
+  //   const oppMeshes = gameState.opponent.room.meshes;
 
-    return (
-      <>
-        {oppMeshes.map((oppMesh) => {
-          <primitive key={oppMesh.uuid} object={oppMesh} />;
-        })}
-      </>
-    );
-  }
+  //   return (
+  //     <>
+  //       {oppMeshes.map(({ mesh, name }) => {
+  //         <primitive name={name} key={mesh.uuid} object={mesh} />;
+  //       })}
+  //     </>
+  //   );
+  // }
 
   if (name === "global mesh") {
     return <RoomShadow mesh={mesh} />;

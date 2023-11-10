@@ -63,30 +63,36 @@ function SpacialPlane({
         }
 
         const isUnique = prev.every(
-          (plane) => plane.uuid !== ref.current!.uuid,
+          ({ plane, name }) => plane.uuid !== ref.current!.uuid,
         );
 
         if (!isUnique) {
           return prev;
         }
 
-        return [...prev, ref.current!];
+        return [
+          ...prev,
+          {
+            plane: ref.current!,
+            name,
+          },
+        ];
       });
     })();
   }, [ref, init, plane, setMyPlanes, name]);
 
-  if (gameState && gameState.me.isHiding && gameState.opponent.room) {
-    console.log("opponent room", gameState.opponent.room);
-    const oppPlanes = gameState.opponent.room.planes;
+  // if (gameState && gameState.me.isHiding && gameState.opponent.room) {
+  //   console.log("opponent room", gameState.opponent.room);
+  //   const oppPlanes = gameState.opponent.room.planes;
 
-    return (
-      <>
-        {oppPlanes.map((oppPlane) => {
-          <primitive key={oppPlane.uuid} object={oppPlane} />;
-        })}
-      </>
-    );
-  }
+  //   return (
+  //     <>
+  //       {oppPlanes.map(({ plane, name }) => {
+  //         <primitive key={plane.uuid} object={plane} />;
+  //       })}
+  //     </>
+  //   );
+  // }
 
   /**
    * ONLY NEEDS TO BE WALLS, FLOOR, AND CEILING

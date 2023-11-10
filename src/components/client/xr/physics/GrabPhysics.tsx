@@ -20,7 +20,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
-    const { setGameState, channel } = useLobbyContext();
+    const { setGameState, channel, gameState } = useLobbyContext();
     const [isAnchored, setIsAnchored] = React.useState(false);
     const downState = useRef<{
       pointerId: number;
@@ -112,25 +112,33 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
       rigidRef.current.resetForces(true);
       setIsAnchored(true);
 
-      setGameState((prev) => {
-        if (!prev) {
-          return prev;
-        }
+      console.log("anchoring");
 
-        const myObjectPosition = meshRef.current.getWorldPosition(
-          meshRef.current.position,
-        );
+      if (gameState && gameState.isGameStarted && gameState.me.isHiding) {
+        setGameState((prev) => {
+          if (!prev) {
+            return prev;
+          }
 
-        return {
-          ...prev,
-          me: {
-            ...prev.me,
-            myObjectPosition,
-          },
-        };
-      });
+          const myObjectPosition = meshRef.current.getWorldPosition(
+            meshRef.current.position,
+          );
 
-      channel?.trigger("client-game-hiding-done", {});
+          console.log("myObjectPosition", myObjectPosition);
+
+          return {
+            ...prev,
+            me: {
+              ...prev.me,
+              myObjectPosition,
+              isHiding: false,
+              isIdle: true,
+            },
+          };
+        });
+
+        channel?.trigger("client-game-hiding-done", {});
+      }
     }, [rigidRef, meshRef]);
 
     const handleUnanchor = useCallback(() => {
