@@ -59,8 +59,7 @@ const config = {
       },
       // _app-pages-browser_src_mina_zkappWorker_ts.js
       {
-        source:
-          "/_next/static/chunks/_app-pages-browser_src_components_client_mina_InitiateMina_tsx.js", // next.js bundle chunks
+        source: "/_next/static/:path*", // next.js bundle chunks
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",

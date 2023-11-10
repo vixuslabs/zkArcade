@@ -11,21 +11,24 @@ import React, {
 
 import type { Player } from "@/lib/types";
 import type ZkappWorkerClient from "@/mina/zkappWorkerClient";
+import type { PrivateKey, PublicKey } from "o1js";
 
 interface MinaState {
-  ZkappWorkerClient: ZkappWorkerClient | null;
+  zkappWorkerClient: ZkappWorkerClient | null;
   initialized: boolean;
   player: Player;
   pubKey: string;
   privKey: string;
-  zkAppPublicKey?: string;
-  zkAppPrivateKey?: string;
+  zkAppPublicKey?: PublicKey;
+  zkAppPrivateKey?: PrivateKey;
 }
 
 interface MinaContextValues {
   mina: MinaState | null;
   setMina: React.Dispatch<React.SetStateAction<MinaState | null>> | null;
   initiateMina: (player: Player) => Promise<void>;
+  zkappWorkerClient: ZkappWorkerClient | null;
+  zkAppPublicKey?: PublicKey;
   // setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
 }
 
@@ -34,6 +37,7 @@ const MinaContext = createContext<MinaContextValues>({
   setMina: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   initiateMina: async () => {},
+  zkappWorkerClient: null,
 });
 
 export const useMinaContext = () => {
@@ -53,7 +57,6 @@ function MinaProvider({
   // player?: Player;
 }) {
   const [mina, setMina] = useState<MinaState | null>(null);
-  // const [player, setPlayer] = useState<Player | null>(null);
 
   const timeout = useCallback(async function timeout(
     seconds: number,
@@ -74,18 +77,27 @@ function MinaProvider({
         throw new Error("No player set in MinaProvider");
       }
       const { PrivateKey, PublicKey } = await import("o1js");
+      console.log("pre zkappWorkerClient");
       const ZkappWorkerClient = (await import("@/mina/zkappWorkerClient"))
         .default;
 
-      console.log(PrivateKey, PublicKey, ZkappWorkerClient);
+      console.log("post zkappWorkerClient");
 
+      console.log("pre new zkappWorkerClient");
       const zkappWorkerClient = new ZkappWorkerClient();
-      await timeout(5);
+      await timeout(10);
+      console.log("post new zkappWorkerClient");
 
       /* eslint-disable */
-      const globalMina = (window as any).mina; // we actually wont have this in the meta browser
+      // const globalMina = (window as any).mina; // we actually wont have this in the meta browser
       /* eslint-enable */
+      console.log("pre setActiveInstanceToBerkeley");
       await zkappWorkerClient.setActiveInstanceToBerkeley();
+      console.log("post setActiveInstanceToBerkeley");
+
+      const zkappPublicKey = PublicKey.fromBase58(
+        "B62qkYHTNVjroM1PyPkASFvd8e8ByCfQJAxExhvYtYY8DYSyWGpJzFD", // deploy005
+      );
 
       const pubKey = player.publicKey;
       const privKey = player.privateKey;
@@ -94,8 +106,11 @@ function MinaProvider({
         throw new Error("No keys");
       }
 
+      console.log("pre setMina");
+
       setMina({
-        ZkappWorkerClient: zkappWorkerClient,
+        zkappWorkerClient: zkappWorkerClient,
+        zkAppPublicKey: zkappPublicKey,
         initialized: true,
         player: player,
         pubKey: pubKey,
@@ -153,6 +168,8 @@ function MinaProvider({
         mina: mina,
         setMina: setMina,
         initiateMina: handleInitiateMina,
+        zkappWorkerClient: mina.zkappWorkerClient,
+        zkAppPublicKey: mina.zkAppPublicKey,
         // setPlayer: setPlayer,
       };
     else
@@ -160,6 +177,7 @@ function MinaProvider({
         mina: null,
         setMina: null,
         initiateMina: handleInitiateMina,
+        zkappWorkerClient: null,
         // setPlayer: setPlayer,
       };
   }, [mina, handleInitiateMina]);

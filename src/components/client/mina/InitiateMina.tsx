@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import type { Player } from "@/lib/types";
 import { useMinaContext } from "@/components/client/providers/MinaProvider";
 import { Button } from "@/components/ui/button";
@@ -11,19 +11,42 @@ function InitiateMina({
   player, // setGameReady,
 }: {
   player: Player;
-  // setGameReady: React.Dispatch<React.SetStateAction<boolean>>;
-  // gameReady: boolean;
 }) {
-  const { initiateMina } = useMinaContext();
+  const { initiateMina, zkappWorkerClient, zkAppPublicKey } = useMinaContext();
   const [gameReady, setGameReady] = React.useState<boolean>(false);
+
+  const handleLoadContract = useCallback(async () => {
+    if (zkappWorkerClient) {
+      await zkappWorkerClient.loadContract();
+
+      console.log("Compiling zkApp...");
+      await zkappWorkerClient.compileContract();
+      console.log("zkApp compiled");
+
+      console.log("init");
+      await zkappWorkerClient.initZkappInstance(zkAppPublicKey!);
+      console.log("inited");
+    }
+  }, [zkappWorkerClient, zkAppPublicKey]);
 
   useEffect(() => {
     // setPlayer(player);
     void (async () => {
       await initiateMina(player);
-      setGameReady(true);
+
+      console.log("starting to load contract");
+      await handleLoadContract();
+      console.log("handleLoadContract done");
     })();
   }, []);
+
+  // useEffect(() => {
+  //   void (async () => {
+  //     console.log("starting to load contract");
+  //     await handleLoadContract();
+  //     console.log("handleLoadContract done");
+  //   })();
+  // }, [zkappWorkerClient, handleLoadContract]);
 
   return (
     <Button variant={"default"} asChild disabled={!gameReady}>
