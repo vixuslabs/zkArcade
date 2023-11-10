@@ -1,13 +1,10 @@
-import {
-  Field,
-  Struct,
-  SmartContract,
-  state,
-  State,
-  method,
-  Poseidon,
-} from "o1js";
-import type { Object3D, Room } from "./structs";
+/* eslint @typescript-eslint/no-unsafe-call: 0 */
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
+/* eslint @typescript-eslint/no-unsafe-return: 0 */
+/* eslint @typescript-eslint/no-unsafe-member-access: 0 */
+
+import { Field, SmartContract, state, State, method } from "o1js";
+import type { Box, Plane } from "./structs.js";
 
 // The HotnCold contract allows users to commit an object hash and then validate that:
 // 1. A given object matches the previously commited hash.
@@ -18,36 +15,19 @@ export class HotnCold extends SmartContract {
   @state(Field) objectHash = State<Field>();
 
   // Commit the object hash on-chain.
-  @method commitObject(object: Object3D) {
-    this.objectHash.set(
-      Poseidon.hash([
-        object.center.x,
-        object.center.y,
-        object.center.z,
-        object.radius,
-      ]),
-    );
+  @method commitObject(objectHash: Field) {
+    this.objectHash.set(objectHash);
   }
 
-  // Validate the object against the previously commited object hash and the room.
-  @method validateObject(object: Object3D, room: Room) {
-    // Get the object hash from on-chain storage.
-    const objectHash = this.objectHash.getAndAssertEquals();
+  // Check that an object does not collide with a given box
+  // (i.e. the object is outside the box)
+  @method validateObjectIsOutsideBox(box: Box) {
+    box.assertObjectIsOutside();
+  }
 
-    // Check that the object hash matches the previously commited object hash.
-    objectHash.assertEquals(
-      Poseidon.hash([
-        object.center.x,
-        object.center.y,
-        object.center.z,
-        object.radius,
-      ]),
-    );
-
-    // Check that the object is inside the room.
-    // room.assertIsInside(object);
-
-    // Check that the object does not collide with any of the room's boxes.
-    room.assertNoCollisions(object);
+  // Check that an object is on the right side of a given plane
+  // (i.e. the plane's normal vector points towards the object).
+  @method validateObjectIsInsideRoom(plane: Plane) {
+    // TODO: Implement.
   }
 }

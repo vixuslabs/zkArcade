@@ -1,4 +1,6 @@
+"use client";
 /* eslint-disable */
+
 import { fetchAccount, PublicKey, Field } from "o1js";
 
 import type {
@@ -45,14 +47,20 @@ export default class ZkappWorkerClient {
     return Field.fromJSON(JSON.parse(result as string));
   }
 
-  commitObject(object: Object3D) {
-    return this._call("commitObject", {
-      object: object,
+  createCommitObjectTransaction(objectHash: string) {
+    return this._call("createCommitObjectTransaction", {
+      objectHash: objectHash,
     });
   }
 
-  proveUpdateTransaction() {
-    return this._call("proveUpdateTransaction", {});
+  createValidateObjectIsOutsideBoxTransaction(boxesAndObjects: string) {
+    return this._call("createValidateObjectIsOutsideBoxTransaction", {
+      boxesAndObjects: boxesAndObjects,
+    });
+  }
+
+  createProveTransaction() {
+    return this._call("createProveTransaction", {});
   }
 
   async getTransactionJSON() {
@@ -64,25 +72,19 @@ export default class ZkappWorkerClient {
 
   worker: Worker;
 
-  // promises: {
-  //   [id: number]: { resolve: (res: any) => void; reject: (err: any) => void };
-  // };
-
-  promises: Record<
-    number,
-    { resolve: (res: any) => void; reject: (err: any) => void }
-  >;
+  promises: {
+    [id: number]: { resolve: (res: any) => void; reject: (err: any) => void };
+  };
 
   nextId: number;
 
   constructor() {
     this.worker = new Worker(new URL("./zkappWorker.ts", import.meta.url));
-    console.log(this.worker);
     this.promises = {};
     this.nextId = 0;
 
     this.worker.onmessage = (event: MessageEvent<ZkappWorkerReponse>) => {
-      this.promises[event.data.id]?.resolve(event.data.data);
+      this.promises[event.data.id]!.resolve(event.data.data);
       delete this.promises[event.data.id];
     };
   }
