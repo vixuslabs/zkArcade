@@ -15,7 +15,7 @@ import { calculateProximity } from "@/lib/utils";
 
 import type { PresenceChannel } from "pusher-js";
 import type { Player, MeshInfo, PlaneInfo } from "@/lib/types";
-import type { Vector3, Mesh } from "three";
+import type { Vector3, Matrix4 } from "three";
 
 interface GameState {
   isGameStarted: boolean;
@@ -39,6 +39,7 @@ interface GameState {
   };
   oppObject?: {
     objectPosition: Vector3 | null;
+    objectMatrix: Matrix4 | null;
     objectProximity: number | null;
     objectFound: boolean;
     objectSet: boolean;
@@ -116,6 +117,7 @@ function LobbyProvider({
     },
     oppObject: {
       objectPosition: null,
+      objectMatrix: null,
       objectProximity: null,
       objectFound: false,
       objectSet: false,
@@ -334,20 +336,33 @@ function LobbyProvider({
       "client-game-hiding": () => {
         console.log("in client-game-hiding");
       },
-      "client-game-hiding-done": () => {
+      "client-game-hiding-done": (data: Player) => {
         console.log("in client-game-hiding-done");
 
+        console.log(data.objectPosition);
+
+        if (!data.objectPosition) {
+          throw new Error("objectPosition not set");
+        }
+
+        // @ts-expect-error - will fix type error later (sike)
         setGameState((prev) => {
           if (prev) {
             return {
               ...prev,
+              me: {
+                ...prev.me,
+                isIdle: false,
+                isSeeking: true,
+              },
               opponent: {
                 ...prev.opponent,
-                isSeeking: true,
                 isIdle: false,
+                isSeeking: true,
               },
               oppObject: {
-                objectPosition: null,
+                objectPosition: data.objectPosition!,
+                // objectMatrix: data.objectMatrix,
                 objectProximity: null,
                 objectFound: false,
                 objectSet: true,
@@ -386,6 +401,9 @@ function LobbyProvider({
       },
       "client-game-requestProximity": (data: Player) => {
         console.log("in client-game-requestProximity");
+        console.log("data", data);
+        console.log("data.playerPosition", data.playerPosition);
+        console.log("gameState.me", gameState?.me);
         if (!data.playerPosition) {
           throw new Error("playerPosition not sent");
         }
@@ -404,6 +422,11 @@ function LobbyProvider({
           myObjectPosition,
           3,
         );
+
+        console.log("calculate proximity");
+        console.log("playerPosition", playerPosition);
+        console.log("myObjectPosition", myObjectPosition);
+        console.log("proximity", proximity);
 
         if (proximity >= 0.8) {
           channel?.trigger("client-game-setObjectPosition", {

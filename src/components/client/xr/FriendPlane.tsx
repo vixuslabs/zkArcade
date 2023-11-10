@@ -47,7 +47,12 @@ function FriendPlane({
 
   // Create a standard mesh material (you can customize this)
   // const material = new MeshBasicMaterial({ color: "purple" });
-  const material = new MeshPhongMaterial({ color: "purple", side: 2 });
+  const material = new MeshPhongMaterial({
+    color: "green",
+    side: 2,
+    // transparent: true,
+    // opacity: 0.75,
+  });
 
   const mesh = new Mesh(geometry, material);
 

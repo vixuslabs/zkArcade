@@ -163,6 +163,7 @@ export interface Player {
   playerPosition?: Vector3;
   playerProximity?: number;
   objectPosition?: Vector3;
+  objectMatrix?: Matrix4;
   roomLayout?: {
     meshes: MeshInfo[];
     planes: PlaneInfo[];

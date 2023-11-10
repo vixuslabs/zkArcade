@@ -36,6 +36,7 @@ import { useLobbyContext } from "../providers/LobbyProvider";
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 import { useUser } from "@clerk/nextjs";
 import FriendRoom from "./FriendRoom";
+import { Vector3 } from "three";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -77,6 +78,10 @@ function HotnColdGame({ user }: RoomCaptureProps) {
   const { players, channel, setXrStarted, gameState, setGameState, started } =
     useLobbyContext();
 
+  const [teleportLocation, setTeleportLocation] = useState<Vector3>(
+    new Vector3(0, 0, 0),
+  );
+
   const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
   const clerkUser = useUser();
@@ -95,6 +100,8 @@ function HotnColdGame({ user }: RoomCaptureProps) {
   const isSupported = useSessionSupported("immersive-ar");
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
+
+  console.log("objectPosition", gameState?.oppObject?.objectPosition);
 
   return (
     <>
@@ -175,8 +182,28 @@ function HotnColdGame({ user }: RoomCaptureProps) {
               <TestSphere position={[0, 2, -0.3]} />
             )}
 
+            {gameState &&
+              gameState.isGameStarted &&
+              gameState.oppObject?.objectPosition &&
+              gameState.me.isSeeking && (
+                <TestSphere
+                  name={"hiddenObject"}
+                  color="yellow"
+                  // @ts-expect-error - this works i swear
+                  position={gameState.oppObject?.objectPosition}
+                  // matrix={gameState.oppObject?.objectMatrix}
+                />
+              )}
+
             {/* <ImmersiveSessionOrigin position={[0, 0, 0]}> */}
-            <ImmersiveSessionOrigin>
+            <ImmersiveSessionOrigin
+            // position={
+            // gameState && gameState?.me.isHiding
+            // ? teleportLocation
+            // : new Vector3(0, 0, 0)
+            // teleportLocation
+            // }
+            >
               {/* {startSync && <BuildRoom />} */}
               {/* <FogSphere /> */}
               {startSync && (
@@ -193,14 +220,12 @@ function HotnColdGame({ user }: RoomCaptureProps) {
                   <TestBox color="black" />
                 </>
               )}
-              {gameState &&
-              !!gameState.opponent.room &&
-              gameState.oppObject?.objectSet &&
-              !gameState.oppObject.objectFound
+              {gameState && gameState.me.isHiding
                 ? inputSources.map((inputSource: XRInputSource) => {
                     if (inputSource.handedness === "left") {
                       return (
                         <TeleportController
+                          onTeleport={setTeleportLocation}
                           key={getInputSourceId(inputSource)}
                           id={getInputSourceId(inputSource)}
                           inputSource={inputSource}

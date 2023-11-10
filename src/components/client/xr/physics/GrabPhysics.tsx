@@ -21,6 +21,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     rigidAndMeshRef,
   ) => {
     const { setGameState, channel, gameState } = useLobbyContext();
+    const [isObjectSet, setIsObjectSet] = React.useState(false);
     const [isAnchored, setIsAnchored] = React.useState(false);
     const downState = useRef<{
       pointerId: number;
@@ -114,32 +115,54 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
 
       console.log("anchoring");
 
-      if (gameState && gameState.isGameStarted && gameState.me.isHiding) {
+      if (
+        gameState &&
+        gameState.isGameStarted &&
+        gameState.me.isHiding &&
+        !isObjectSet
+      ) {
+        setIsObjectSet(true);
         setGameState((prev) => {
           if (!prev) {
             return prev;
           }
 
-          const myObjectPosition = meshRef.current.getWorldPosition(
+          const _myObjectPosition = meshRef.current.getWorldPosition(
             meshRef.current.position,
           );
 
-          console.log("myObjectPosition", myObjectPosition);
+          const objMatrix = meshRef.current.matrix;
+
+          // const myObjectPosition = _myObjectPosition.divideScalar(2);
+
+          // console.log("myObjectPosition before", myObjectPosition);
+
+          // const t = myObjectPosition.applyMatrix4(objMatrix);
+
+          // console.log("myObjectPosition after", t);
+
+          channel?.trigger("client-game-hiding-done", {
+            objectPosition: _myObjectPosition,
+            // objectMatrix: objMatrix,
+          });
 
           return {
             ...prev,
             me: {
               ...prev.me,
-              myObjectPosition,
+              myObjectPosition: _myObjectPosition,
               isHiding: false,
               isIdle: true,
             },
+            opponent: {
+              ...prev.opponent,
+              isSeeking: true,
+              isIdle: false,
+            },
           };
         });
-
-        channel?.trigger("client-game-hiding-done", {});
       }
-    }, [rigidRef, meshRef]);
+    }, [rigidRef, meshRef, gameState, setGameState]);
 
     const handleUnanchor = useCallback(() => {
       if (!rigidRef?.current) return;
@@ -202,9 +225,9 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
           }
         }}
         onPointerMove={(e) => {
-          const isXPressed =
-            leftController?.gamepad.buttons["x-button"] === ButtonState.PRESSED;
-          if (isXPressed) return;
+          // const isXPressed =
+          //   leftController?.gamepad.buttons["x-button"] === ButtonState.PRESSED;
+          // if (isXPressed) return;
           if (
             isAnchored &&
             rightController &&
