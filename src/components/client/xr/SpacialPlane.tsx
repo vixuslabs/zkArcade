@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { TrackedPlane } from "@coconut-xr/natuerlich/react";
 import { RigidBody } from "@react-three/rapier";
+import { useMeshesAndPlanesContext } from "../providers/MeshesAndPlanesProvider";
+import { useLobbyContext } from "../providers/LobbyProvider";
 
 import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
 import type { Mesh } from "three";
@@ -23,6 +25,8 @@ function SpacialPlane({
   mass = 1,
   color = "black",
 }: SpacialPlane) {
+  const { gameState } = useLobbyContext();
+  const { setMyPlanes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
   // const [test, setTest] = React.useState<Vector3>();
@@ -35,6 +39,60 @@ function SpacialPlane({
   //     console.log(`world position for plane named ${name}`, world);
   //   }
   // });
+
+  const [init, setInit] = useState(false);
+
+  useEffect(() => {
+    if (init) {
+      return;
+    } else if (!plane) {
+      console.log("no plane");
+      return;
+    } else if (!ref.current) {
+      console.log("no ref");
+      return;
+    }
+
+    void (() => {
+      console.log("inside IIFE");
+      setInit(true);
+
+      setMyPlanes((prev) => {
+        if (name === "global mesh") {
+          return prev;
+        }
+
+        const isUnique = prev.every(
+          ({ plane, name }) => plane.uuid !== ref.current!.uuid,
+        );
+
+        if (!isUnique) {
+          return prev;
+        }
+
+        return [
+          ...prev,
+          {
+            plane: ref.current!,
+            name,
+          },
+        ];
+      });
+    })();
+  }, [ref, init, plane, setMyPlanes, name]);
+
+  // if (gameState && gameState.me.isHiding && gameState.opponent.room) {
+  //   console.log("opponent room", gameState.opponent.room);
+  //   const oppPlanes = gameState.opponent.room.planes;
+
+  //   return (
+  //     <>
+  //       {oppPlanes.map(({ plane, name }) => {
+  //         <primitive key={plane.uuid} object={plane} />;
+  //       })}
+  //     </>
+  //   );
+  // }
 
   /**
    * ONLY NEEDS TO BE WALLS, FLOOR, AND CEILING

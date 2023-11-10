@@ -1,4 +1,8 @@
-import { Field, Struct } from "o1js";
+/* eslint @typescript-eslint/no-unsafe-call: 0 */
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
+/* eslint @typescript-eslint/no-unsafe-return: 0 */
+/* eslint @typescript-eslint/no-unsafe-member-access: 0 */
+
 import * as THREE from "three";
 
 export const computeInverseMatrix = (matrixArray: number[]) => {
@@ -24,11 +28,16 @@ export const computeTranslationToOriginMatrix = (
   );
 };
 
-export const computeTranslationToPositiveCoordsMatrix = (rwHiddenObject: {
-  coords: number[];
-  radius: number;
-}): THREE.Matrix4 => {
+export const computeTranslationToPositiveCoordsMatrix = (
+  rwHiddenObject: { coords: number[]; radius: number },
+  matrices: {
+    inverseMatrix: THREE.Matrix4;
+    translationToOriginMatrix: THREE.Matrix4;
+  },
+): THREE.Matrix4 => {
   const hiddenObject = new THREE.Vector3(...rwHiddenObject.coords);
+  hiddenObject.applyMatrix4(matrices.inverseMatrix);
+  hiddenObject.applyMatrix4(matrices.translationToOriginMatrix);
   const translationToPositiveCoords = new THREE.Vector3();
   const objRadius = rwHiddenObject.radius;
   translationToPositiveCoords.x =

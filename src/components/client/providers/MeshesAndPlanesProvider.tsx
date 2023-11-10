@@ -6,6 +6,7 @@ import React, {
   createContext,
   useContext,
   useRef,
+  useEffect,
 } from "react";
 
 import type { Mesh } from "three";
@@ -15,9 +16,19 @@ import type {
 } from "@coconut-xr/natuerlich/react";
 import { useLobbyContext } from "./LobbyProvider";
 
+interface MeshInfo {
+  mesh: Mesh;
+  name: string;
+}
+
+interface PlaneInfo {
+  plane: Mesh;
+  name: string;
+}
+
 interface MeshesAndPlanesContextValue {
-  setMyMeshes: React.Dispatch<React.SetStateAction<Mesh[]>>;
-  setMyPlanes: React.Dispatch<React.SetStateAction<Mesh[]>>;
+  setMyMeshes: React.Dispatch<React.SetStateAction<MeshInfo[]>>;
+  setMyPlanes: React.Dispatch<React.SetStateAction<PlaneInfo[]>>;
   enemyMeshes: Mesh[];
   enemyPlanes: Mesh[];
 }
@@ -43,10 +54,52 @@ export const useMeshesAndPlanesContext = () => {
 
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
   const { channel } = useLobbyContext();
-  const [myMeshes, setMyMeshes] = useState<Mesh[]>([]);
-  const [myPlanes, setMyPlanes] = useState<Mesh[]>([]);
+  const [myMeshes, setMyMeshes] = useState<MeshInfo[]>([]);
+  const [myPlanes, setMyPlanes] = useState<PlaneInfo[]>([]);
   const [enemyMeshes, setEnemyMeshes] = useState<Mesh[]>([]);
   const [enemyPlanes, setEnemyPlanes] = useState<Mesh[]>([]);
+
+  useEffect(() => {
+    if (myMeshes.length > 0 && myPlanes.length > 0) {
+      console.log("sending room layout");
+      console.log("myMeshes: ", myMeshes);
+      console.log("myPlanes: ", myPlanes);
+      console.log("channel: ", channel);
+
+      const formatedMeshes = myMeshes.map(({ mesh, name }) => {
+        // const { mesh, name } = _mesh;
+
+        return {
+          geometry: {
+            position: mesh.geometry.attributes.position,
+            index: mesh.geometry.index,
+          },
+          matrix: mesh.matrix,
+          name: name,
+        };
+      });
+
+      const formatedPlanes = myPlanes.map(({ plane, name }) => {
+        // const { plane, name } = _plane;
+
+        return {
+          geometry: {
+            position: plane.geometry.attributes.position,
+            index: plane.geometry.index,
+          },
+          matrix: plane.matrix,
+          name: name,
+        };
+      });
+
+      channel?.trigger("client-game-roomLayout", {
+        roomLayout: {
+          meshes: formatedMeshes,
+          planes: formatedPlanes,
+        },
+      });
+    }
+  }, [myMeshes, myPlanes]);
 
   const values = useMemo(() => {
     return {
@@ -56,6 +109,8 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       enemyPlanes,
     };
   }, [setMyMeshes, setMyPlanes, enemyPlanes, enemyMeshes]);
+
+  // console.log("meshes and planes values: ", values);
 
   // will be sending these meshes and planes to
   // the other client, who you are playing with

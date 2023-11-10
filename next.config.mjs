@@ -41,6 +41,24 @@ const config = {
         ],
       },
       {
+        source: "/game",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+      // _app-pages-browser_src_mina_zkappWorker_ts.js
+      {
         source: "/_next/static/:path*", // next.js bundle chunks
         headers: [
           {
@@ -57,6 +75,59 @@ const config = {
           },
         ],
       },
+      {
+        source:
+          "/_next/static/chunks/_app-pages-browser_node_modules_o1js_dist_web_index_js.js", // next.js bundle chunks
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+      {
+        source:
+          "/_next/static/chunks/_app-pages-browser_src_mina_zkappWorkerClient_ts.js", // next.js bundle chunks
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+        ],
+      },
+      // {
+      //   source: "/_next/static/:path*", // next.js bundle chunks
+      //   headers: [
+      //     {
+      //       key: "Cross-Origin-Opener-Policy",
+      //       value: "same-origin",
+      //     },
+      //     {
+      //       key: "Cross-Origin-Resource-Policy",
+      //       value: "cross-origin",
+      //     },
+      //     {
+      //       key: "Cross-Origin-Embedder-Policy",
+      //       value: "require-corp",
+      //     },
+      //   ],
+      // },
     ];
   },
 };

@@ -1,12 +1,14 @@
+"use client";
 /* eslint-disable */
-import { Mina, PublicKey, fetchAccount } from "o1js";
+
+import { Mina, PublicKey, fetchAccount, Field } from "o1js";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
 import type { HotnCold } from "./HotnCold";
-import type { Object3D } from "./structs";
+import { Object3D, Box } from "./structs";
 
 const state = {
   HotnCold: null as null | typeof HotnCold,
@@ -17,19 +19,18 @@ const state = {
 // ---------------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async () => {
+  setActiveInstanceToBerkeley: async (args: {}) => {
     const Berkeley = Mina.Network(
       "https://proxy.berkeley.minaexplorer.com/graphql",
     );
     console.log("Berkeley Instance Created");
     Mina.setActiveInstance(Berkeley);
   },
-  loadContract: async () => {
-    // const { HotnCold } = await import("./build/HotnCold.js");
+  loadContract: async (args: {}) => {
     const { HotnCold } = await import("./HotnCold");
     state.HotnCold = HotnCold;
   },
-  compileContract: async () => {
+  compileContract: async (args: {}) => {
     await state.HotnCold!.compile();
   },
   fetchAccount: async (args: { publicKey58: string }) => {
@@ -40,20 +41,35 @@ const functions = {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     state.zkapp = new state.HotnCold!(publicKey);
   },
-  getObjectHash: async () => {
+  getObjectHash: async (args: {}) => {
     const currentObjectHash = await state.zkapp!.objectHash.get();
     return JSON.stringify(currentObjectHash.toJSON());
   },
-  commitObject: async (args: { object: Object3D }) => {
+  createCommitObjectTransaction: async (args: { objectHash: string }) => {
     const transaction = await Mina.transaction(() => {
-      state.zkapp!.commitObject(args.object);
+      state.zkapp!.commitObject(Field(args.objectHash));
     });
     state.transaction = transaction;
   },
-  proveUpdateTransaction: async () => {
+  createValidateObjectIsOutsideBoxTransaction: async (args: {
+    boxesAndObjects: string;
+  }) => {
+    const boxesAndObjectsArray = JSON.parse(args.boxesAndObjects);
+    const boxesAndObjects: Box[] = [];
+    for (const boxAndObject of boxesAndObjectsArray) {
+      boxesAndObjects.push(Box.createFromJSON(boxAndObject));
+    }
+    const transaction = await Mina.transaction(() => {
+      for (const boxAndObject of boxesAndObjects) {
+        state.zkapp!.validateObjectIsOutsideBox(boxAndObject);
+      }
+    });
+    state.transaction = transaction;
+  },
+  createProveTransaction: async () => {
     await state.transaction!.prove();
   },
-  getTransactionJSON: () => {
+  getTransactionJSON: async (args: {}) => {
     return state.transaction!.toJSON();
   },
 };
@@ -76,7 +92,6 @@ export type ZkappWorkerReponse = {
 if (typeof window !== "undefined") {
   addEventListener(
     "message",
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async (event: MessageEvent<ZkappWorkerRequest>) => {
       const returnData = await functions[event.data.fn](event.data.args);
 

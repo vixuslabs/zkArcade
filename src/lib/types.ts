@@ -10,6 +10,11 @@ import type {
 } from "three";
 import type { RapierRigidBody } from "@react-three/rapier";
 import type { ThreeEvent } from "@react-three/fiber";
+import type {
+  InterleavedBufferAttribute,
+  BufferAttribute,
+  Matrix4,
+} from "three";
 
 /**
  * XR-related types and interfaces
@@ -110,6 +115,42 @@ export interface GrabProps {
 /**
  * Online Components
  */
+
+export interface GeometryData {
+  position: {
+    itemSize: number;
+    array: number[];
+    normalized?: boolean;
+  };
+  index: {
+    itemSize: number;
+    array: number[];
+    normalized?: boolean;
+  } | null; // Use null if there is no index
+}
+
+export interface MeshInfo {
+  geometry: GeometryData;
+  matrix: {
+    elements: number[];
+  };
+  worldMatrix: {
+    elements: number[];
+  };
+  name: string;
+}
+
+export interface PlaneInfo {
+  geometry: GeometryData;
+  matrix: {
+    elements: number[];
+  };
+  worldMatrix: {
+    elements: number[];
+  };
+  name: string;
+}
+
 export interface Player {
   username: string;
   firstName: string | null;
@@ -119,4 +160,12 @@ export interface Player {
   id?: string;
   publicKey?: string;
   privateKey?: string;
+  playerPosition?: Vector3;
+  playerProximity?: number;
+  objectPosition?: Vector3;
+  objectMatrix?: Matrix4;
+  roomLayout?: {
+    meshes: MeshInfo[];
+    planes: PlaneInfo[];
+  };
 }

@@ -26,6 +26,7 @@ import type { XLinesIntersection } from "@coconut-xr/xinteraction";
 import type { TriggerState } from "@/lib/types";
 import type { InputDeviceFunctions } from "@coconut-xr/xinteraction/react";
 import type { Group } from "three";
+import { useLobbyContext } from "../../providers/LobbyProvider";
 
 const rayMaterial = new RayBasicMaterial({
   transparent: true,
@@ -50,7 +51,7 @@ function AdjustablePointerController({
     name?: string;
   } | null>(null);
   const controllerRef = useRef<Group>(null);
-
+  const { gameState, channel } = useLobbyContext();
   const { pointers, setLeftPointer, setRightPointer } =
     useControllerStateContext();
 
@@ -59,6 +60,7 @@ function AdjustablePointerController({
     [rayLength],
   );
   const rayOffset = useMemo(() => rayLength * 0.5, [rayLength]);
+  const [sendingPosition, setSendingPosition] = useState(false);
 
   // const [controllerState, handedness] = useInputReader(inputSource);
 
@@ -68,6 +70,38 @@ function AdjustablePointerController({
 
   const aButton = controllerReader.readButton("a-button");
   const thumbstick = useRef<Vector2>(new Vector2());
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (gameState && gameState.me.isSeeking && !sendingPosition) {
+      interval = setInterval(() => {
+        const pos = controllerRef.current?.getWorldPosition(
+          controllerRef.current.position,
+        );
+
+        inputSource.gamepad?.hapticActuators.forEach((haptic) => {
+          // console.log("haptic", haptic);
+          void haptic.playEffect("dual-rumble", {
+            duration: 100,
+            strongMagnitude: 0.5,
+            weakMagnitude: 0.5,
+          });
+        });
+
+        // if (pos) {
+        //   channel?.trigger("client-game-requestProximity", {
+        //     playerPosition: pos,
+        //   });
+        // }
+      }, 500);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [gameState]);
 
   const updatePointerState = useCallback(
     (

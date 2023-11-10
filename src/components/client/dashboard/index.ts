@@ -8,4 +8,4 @@ export { default as FriendsList } from "./FriendsList";
 export { default as AddFriend } from "./AddFriend";
 export { default as NotificationButton } from "./NotificationButton";
 export { default as CreateMatchButton } from "./CreateMatchButton";
-export { default as StartGameButton } from "./StartGameButton";
+export { default as StartSandbox } from "./StartSandbox";

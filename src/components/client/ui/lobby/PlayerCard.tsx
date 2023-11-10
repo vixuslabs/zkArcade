@@ -39,10 +39,7 @@ function PlayerCard({
   className,
 }: PlayerCardProps) {
   const { starting } = useLobbyContext();
-  // const [isReadyState, setIsReadyState] = useState(isReady);
   const user = useUser();
-
-  console.log(username, " is ready? ", isReady);
 
   return (
     <Card className={cn("dark w-[380px]", className)}>
