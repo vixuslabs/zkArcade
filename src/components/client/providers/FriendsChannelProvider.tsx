@@ -89,13 +89,6 @@ function FriendsChannelProvider({
 
   const router = useRouter();
 
-  // const [gameInvites, setGameInvites] = useState<Invite[]>([]);
-
-  // const handleJoinGame = (gameId: string) => {
-  //   console.log("join game", gameId);
-  //   router.push(`/lobby/${gameId}`);
-  // };
-
   useFriendsChannel({
     "friend-added": (data) => {
       console.log("friend added", data);

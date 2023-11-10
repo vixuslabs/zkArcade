@@ -1,14 +1,20 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import React, { useState, useContext, createContext, useMemo } from "react";
+import React, {
+  useState,
+  useContext,
+  createContext,
+  useMemo,
+  useRef,
+} from "react";
 
 import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
 import { usePathname } from "next/navigation";
 import { calculateProximity } from "@/lib/utils";
 
 import type { PresenceChannel } from "pusher-js";
-import type { Player } from "@/lib/types";
+import type { Player, MeshInfo, PlaneInfo } from "@/lib/types";
 import type { Vector3, Mesh } from "three";
 
 interface GameState {
@@ -21,14 +27,14 @@ interface GameState {
     myObjectPosition?: Vector3 | null;
   };
   opponent: {
-    info: Player;
+    info: Player | null;
     isConnected: boolean;
     isIdle: boolean;
     isHiding: boolean;
     isSeeking: boolean;
     room?: {
-      meshes: Mesh[];
-      planes: Mesh[];
+      meshes: MeshInfo[];
+      planes: PlaneInfo[];
     };
   };
   oppObject?: {
@@ -51,6 +57,7 @@ interface LobbyContextValues {
   me: Player | null;
   gameState: GameState | undefined;
   setGameState: React.Dispatch<React.SetStateAction<GameState | undefined>>;
+  started: React.MutableRefObject<boolean>;
 }
 
 const LobbyContext = createContext<LobbyContextValues>({
@@ -65,6 +72,7 @@ const LobbyContext = createContext<LobbyContextValues>({
   setXrStarted: () => {},
   gameState: undefined,
   setGameState: () => {},
+  started: { current: false },
 });
 
 export const useLobbyContext = () => {
@@ -88,6 +96,7 @@ function LobbyProvider({
 }) {
   const [starting, setStarting] = useState<boolean>(false);
   const [isMinaOn, setIsMinaOn] = useState<boolean>(false);
+  const started = useRef<boolean>(false);
   // const [gameState, setGameState] = useState<GameState | undefined>(undefined);
   const [gameState, setGameState] = useState<GameState | undefined>({
     isGameStarted: false,
@@ -99,7 +108,7 @@ function LobbyProvider({
       myObjectPosition: null,
     },
     opponent: {
-      info: user,
+      info: null,
       isConnected: false,
       isIdle: false,
       isHiding: false,
@@ -115,6 +124,8 @@ function LobbyProvider({
   const [xrStarted, setXrStarted] = useState<boolean>(false);
   const pathname = usePathname();
 
+  // console.log(gameState);
+
   const [players, setPlayers, channel, me] = useLobbyChannel(
     user,
     lobbyId,
@@ -125,13 +136,13 @@ function LobbyProvider({
 
         // @ts-expect-error - will fix type error later
         setPlayers((prev) => data);
-
-        console.log("hi");
       },
       "client-left": (data: Player) => {
+        console.log("in client-left");
         setPlayers((prev) => prev.filter((player) => player.id !== data.id));
       },
       "client-ready": (data: Player) => {
+        console.log("in client-ready");
         setPlayers((prev) =>
           prev.map((player) =>
             player.username === data.username
@@ -141,6 +152,7 @@ function LobbyProvider({
         );
       },
       "client-not-ready": (data: Player) => {
+        console.log("in client-not-ready");
         setPlayers((prev) =>
           prev.map((player) => {
             if (player.id === data.id) {
@@ -154,6 +166,7 @@ function LobbyProvider({
         );
       },
       "client-start-game": () => {
+        console.log("in client-start-game");
         setStarting(true);
       },
       "client-mina-on": () => {
@@ -163,6 +176,7 @@ function LobbyProvider({
         setIsMinaOn(false);
       },
       "client-game-joined": (data: Player) => {
+        console.log("in client-game-joined");
         setGameState({
           isGameStarted: false,
           isGameEnded: false,
@@ -179,13 +193,19 @@ function LobbyProvider({
             isIdle: false,
           },
         });
+
+        // if (gameState?.me.isIdle) {
+        channel?.trigger("client-game-getRoomLayout", {});
+        // }
       },
       "client-game-left": () => {
+        console.log("in client-game-left");
         setGameState(undefined);
       },
       "client-game-started": () => {
+        console.log("in client-game-started");
         // if I am the host, I am hiding the object first
-        if (me?.host) {
+        if (user.host) {
           setGameState((prev) => {
             if (prev) {
               return {
@@ -212,6 +232,7 @@ function LobbyProvider({
                 opponent: {
                   ...prev.opponent,
                   isIdle: false,
+                  isHiding: true,
                 },
               };
             }
@@ -220,52 +241,110 @@ function LobbyProvider({
         }
       },
       "client-game-roomLayout": (data: Player) => {
+        console.log("in client-game-roomLayout");
         if (!data.roomLayout) {
           throw new Error("roomLayout not set");
         }
 
-        setGameState((prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              opponent: {
-                ...prev.opponent,
-                room: data.roomLayout,
-              },
-            };
-          }
-          return prev;
-        });
+        console.log("data.roomLayout", data.roomLayout);
+
+        const { meshes, planes } = data.roomLayout;
+
+        if (user.host) {
+          setGameState((prev) => {
+            if (prev) {
+              console.log("prev", prev);
+              return {
+                ...prev,
+                isGameStarted: true,
+                opponent: {
+                  ...prev.opponent,
+                  isIdle: false,
+                  isHiding: true,
+                  info: {
+                    ...prev.opponent.info!,
+                    roomLayout: {
+                      meshes,
+                      planes,
+                    },
+                  },
+                },
+                me: {
+                  ...prev.me,
+                  isIdle: true,
+                  isHiding: false,
+                },
+              };
+            }
+            return prev;
+          });
+        } else {
+          setGameState((prev) => {
+            if (prev) {
+              return {
+                ...prev,
+                isGameStarted: true,
+                opponent: {
+                  ...prev.opponent,
+                  isIdle: true,
+                  isHiding: false,
+                  info: {
+                    ...prev.opponent.info!,
+                    roomLayout: {
+                      meshes,
+                      planes,
+                    },
+                  },
+                },
+                me: {
+                  ...prev.me,
+                  isIdle: false,
+                  isHiding: true,
+                },
+              };
+            }
+            return prev;
+          });
+        }
+
+        // setGameState((prev) => {
+        //   if (prev) {
+        //     return {
+        //       ...prev,
+        //       opponent: {
+        //         ...prev.opponent,
+        //         info: {
+        //           ...prev.opponent.info!,
+        //           roomLayout: {
+        //             meshes,
+        //             planes,
+        //           },
+        //         },
+        //       },
+        //     };
+        //   }
+        //   return prev;
+        // });
+
+        console.log("channel");
+
+        const triggered = channel?.trigger("client-game-hiding", {});
+        console.log('triggered "client-game-hiding"', triggered);
       },
       "client-game-hiding": () => {
-        setGameState((prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              opponent: {
-                ...prev.opponent,
-                isHiding: true,
-              },
-            };
-          }
-          return prev;
-        });
+        console.log("in client-game-hiding");
       },
       "client-game-hiding-done": () => {
+        console.log("in client-game-hiding-done");
+
         setGameState((prev) => {
           if (prev) {
             return {
               ...prev,
-              me: {
-                isHiding: false,
-                isIdle: false,
-                isSeeking: true,
-              },
-
               opponent: {
                 ...prev.opponent,
-                isHiding: false,
-                isIdle: true,
+                isSeeking: true,
+                isIdle: false,
               },
               oppObject: {
                 objectPosition: null,
@@ -279,6 +358,7 @@ function LobbyProvider({
         });
       },
       "client-game-seeking-start": () => {
+        console.log("in client-game-seeking-start");
         const myObject = gameState?.me.myObjectPosition;
 
         if (!myObject) {
@@ -305,6 +385,7 @@ function LobbyProvider({
         });
       },
       "client-game-requestProximity": (data: Player) => {
+        console.log("in client-game-requestProximity");
         if (!data.playerPosition) {
           throw new Error("playerPosition not sent");
         }
@@ -337,6 +418,7 @@ function LobbyProvider({
         });
       },
       "client-game-setProximity": (data: Player) => {
+        console.log("in client-game-setProximity");
         const proximity = data.playerProximity;
 
         if (!proximity) {
@@ -366,6 +448,7 @@ function LobbyProvider({
         });
       },
       "client-game-setObjectPosition": (data: Player) => {
+        console.log("in client-game-setObjectPosition");
         if (!data.objectPosition) {
           throw new Error("objectPosition not set yet, wait for it to be set");
         }
@@ -395,6 +478,7 @@ function LobbyProvider({
         });
       },
       "client-game-seeking-done": () => {
+        console.log("in client-game-seeking-done");
         setGameState((prev) => {
           if (prev) {
             return {
@@ -425,6 +509,7 @@ function LobbyProvider({
       gameState,
       setGameState,
       me,
+      started,
     };
   }, [
     players,
@@ -437,6 +522,7 @@ function LobbyProvider({
     gameState,
     setGameState,
     me,
+    started,
   ]);
 
   return (

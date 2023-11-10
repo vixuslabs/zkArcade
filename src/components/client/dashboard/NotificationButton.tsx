@@ -18,9 +18,12 @@ import { toast } from "@/components/ui/use-toast";
 
 import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 function NotificationButton() {
   const { allNotifications } = useFriendsProvider();
+  const user = useUser();
+
   const router = useRouter();
 
   const acceptRequestMutation =
@@ -34,7 +37,7 @@ function NotificationButton() {
     username: string | null,
   ) => {
     await acceptRequestMutation.mutateAsync({
-      requestId,
+      requestId: requestId,
     });
 
     const description = username ? `You are now friends with ${username}!` : "";
@@ -48,7 +51,7 @@ function NotificationButton() {
 
   const handleDeclineFriendRequest = (requestId: number) => {
     declineRequestMutation.mutate({
-      requestId,
+      requestId: requestId,
     });
 
     toast({
@@ -99,6 +102,7 @@ function NotificationButton() {
             {allNotifications.length ? (
               allNotifications.map((noti) => {
                 if (noti.type === "GameInvite") {
+                  if (noti.sender.username === user.user?.username) return;
                   return (
                     <Fragment key={noti.gameId}>
                       <div className="my-2 flex flex-1 justify-between">

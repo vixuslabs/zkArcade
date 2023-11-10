@@ -76,15 +76,13 @@ export const useLobbyChannel = (
 
   // only the host will have this functino called
   const newMemberHandler = (member: OnePlayerPush) => {
-    console.log(member);
-    console.log("member added");
-
     const id = member.id;
     const info = member.info;
 
     setPlayers((prev) => {
       const newPlayers: Player[] = [];
       for (const player of prev) {
+        console.log(`inside new player handler: ${player.username}`);
         const me = {
           ...player,
           publicKey: env.NEXT_PUBLIC_PUB_KEY1,
@@ -108,16 +106,7 @@ export const useLobbyChannel = (
         privateKey: env.NEXT_PUBLIC_PRIV_KEY2,
       });
 
-      // const newPlayers = [{}];
-
-      // channel?.trigger("client-joined", {
-      //   players,
-      // });
-
-      console.log("checking if channel exists", channel);
-
       return newPlayers;
-      // return newPlayers;
     });
   };
 
@@ -180,7 +169,7 @@ export const useLobbyChannel = (
     localChannel.bind("pusher:subscription_succeeded", successHandler);
 
     return () => {
-      console.log("unsubscribing from lobby channel");
+      // console.log("unsubscribing from lobby channel");
       Object.keys(events).forEach((eventName) => {
         localChannel.unbind(eventName);
       });

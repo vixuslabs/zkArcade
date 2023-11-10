@@ -24,7 +24,7 @@ function LobbySettings({
   isHost: boolean | undefined;
   channel: PresenceChannel | null;
 }) {
-  console.log(isMinaOn, "isMinaOn");
+  // console.log(isMinaOn, "isMinaOn");
 
   return (
     <Popover>
