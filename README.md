@@ -1,4 +1,12 @@
+<img width="50" height="50" alt="logo" src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/logo.png"/>
+
 # Hot 'n Cold
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/one.png" alt="chart 1" width="75">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/two.png" alt="chart 2" width="75">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/third.png" alt="chart 3" width="75">
+</p>
 
 ## Welcome!
 
@@ -16,7 +24,7 @@ Hot 'n Cold is a mixed reality project where we mix up WebXR with Mina's Zero Kn
 
 ## Sandbox Mode
 
-Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that dont have anyone to play with 
+Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that don't have anyone to play with.
 
 ## What's Next?
 
@@ -27,8 +35,7 @@ Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, ch
 
 ## Wanna Try?
 
-Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so plz forgive us (done in about 3ish weeks). It will get better :)
-
+Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so please forgive us (done in about 3ish weeks). It will get better :)
 
 ## Projects That Made this Possible
 
@@ -40,10 +47,8 @@ Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so
 - [Nextjs](https://nextjs.org/)
 - and of course - [React](https://react.dev/)
 
-
 ## License
 
-[Apache License]()
+[Apache License]("https://raw.githubusercontent.com/0xtito/hot-n-cold/main/LICENSE.MD")
 
 ---
-
