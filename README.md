@@ -1,28 +1,49 @@
-# Create T3 App
+# Hot 'n Cold
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Welcome!
 
-## What's next? How do I make an app with this?
+Hey there! Thanks for checking out our Navigator's Hackathon final submission.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Hot 'n Cold is a mixed reality project where we mix up WebXR with Mina's Zero Knowledge Blockchain. It has been awesome building this out, and only a hint at what is to come. You can find more about Mina and WebXR in the links below.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+[Link to Mina](https://minaprotocol.com/) | [Link to WebXR](https://immersive-web.github.io/webxr-samples/)
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Features
 
-## Learn More
+- **Hide and Seek, but Cooler**: Ever wanted to hide stuff in your friend's room without messing it up? Well, now you can. Hide an object in their virtual room and watch them find it.
+- **User Management System (kinda)**: We've got this neat system where you can sign up, make friends, and invite them over for a virtual game, all thanks to [Clerk](https://clerk.com/). Not fully fleshed out (adding friends on a live link seems to bug out but that will get fixed).
+- **Blockchain Magic with Mina**: We use Mina's blockchain to make sure the game is fair. No cheating by hiding objects in furniture!
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Sandbox Mode
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that dont have anyone to play with 
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## What's Next?
 
-## How do I deploy this?
+- **Making Things Smoother**: We're working on making everything look and feel nicer. A slick user interface is on the way!
+- **More Sandbox Fun**: We're beefing up our sandbox so you can do even more cool stuff.
+- **Mina and Threejs Integration**: Getting Mina and threesjs to work together seamlessly is our next big thing.
+- **Sneaky Features Coming Up**: Soon, you won't know where your friend is until you're right next to them. Stay tuned!
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## Wanna Try?
+
+Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so plz forgive us (done in about 3ish weeks). It will get better :)
+
+
+## Projects That Made this Possible
+
+- [Mina](https://minaprotocol.com/)
+- [@react-three/fiber](https://github.com/pmndrs/react-three-fiber)
+- [@coconut-xr](https://www.coconut-xr.com/)
+- [Clerk](https://clerk.com/)
+- [Planetscale](https://planetscale.com/)
+- [Nextjs](https://nextjs.org/)
+- and of course - [React](https://react.dev/)
+
+
+## The Boring Stuff
+
+[Apache License]()
+
+---
+
