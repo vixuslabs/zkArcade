@@ -24,8 +24,6 @@ function LobbySettings({
   isHost: boolean | undefined;
   channel: PresenceChannel | null;
 }) {
-  // console.log(isMinaOn, "isMinaOn");
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -36,7 +34,10 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            disabled={!isHost}
+            className="hover:cursor-not-allowed"
+            // disabled={!isHost}
+            // Disable due to bug
+            disabled={true}
             checked={isMinaOn}
             onCheckedChange={() => {
               setIsMinaOn((prev) => !prev);

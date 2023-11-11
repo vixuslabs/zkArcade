@@ -13,53 +13,7 @@ import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
 import { usePathname } from "next/navigation";
 import { calculateProximity } from "@/lib/utils";
 
-import type { PresenceChannel } from "pusher-js";
-import type { Player, MeshInfo, PlaneInfo } from "@/lib/types";
-import type { Vector3, Matrix4 } from "three";
-
-interface GameState {
-  isGameStarted: boolean;
-  isGameEnded: boolean;
-  me: {
-    isHiding: boolean;
-    isSeeking: boolean;
-    isIdle: boolean;
-    myObjectPosition?: Vector3 | null;
-  };
-  opponent: {
-    info: Player | null;
-    isConnected: boolean;
-    isIdle: boolean;
-    isHiding: boolean;
-    isSeeking: boolean;
-    room?: {
-      meshes: MeshInfo[];
-      planes: PlaneInfo[];
-    };
-  };
-  oppObject?: {
-    objectPosition: Vector3 | null;
-    objectMatrix: Matrix4 | null;
-    objectProximity: number | null;
-    objectFound: boolean;
-    objectSet: boolean;
-  };
-}
-
-interface LobbyContextValues {
-  players: Player[];
-  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  starting: boolean;
-  setStarting: React.Dispatch<React.SetStateAction<boolean>>;
-  channel: PresenceChannel | null;
-  isMinaOn: boolean;
-  setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
-  setXrStarted: React.Dispatch<React.SetStateAction<boolean>>;
-  me: Player | null;
-  gameState: GameState | undefined;
-  setGameState: React.Dispatch<React.SetStateAction<GameState | undefined>>;
-  started: React.MutableRefObject<boolean>;
-}
+import type { Player, GameState, LobbyContextValues } from "@/lib/types";
 
 const LobbyContext = createContext<LobbyContextValues>({
   players: [],
@@ -79,6 +33,7 @@ const LobbyContext = createContext<LobbyContextValues>({
 export const useLobbyContext = () => {
   const context = useContext(LobbyContext);
 
+  // not going to check this since components are shared between sandbox and game modes.
   // if (!context) {
   //   throw new Error("useLobbyContext must be used within a LobbyProvider");
   // }
@@ -124,9 +79,6 @@ function LobbyProvider({
     },
   });
   const [xrStarted, setXrStarted] = useState<boolean>(false);
-  const pathname = usePathname();
-
-  // console.log(gameState);
 
   const [players, setPlayers, channel, me] = useLobbyChannel(
     user,
@@ -185,14 +137,14 @@ function LobbyProvider({
           opponent: {
             info: data,
             isConnected: false,
-            isIdle: false,
+            isIdle: true,
             isHiding: false,
             isSeeking: false,
           },
           me: {
             isHiding: false,
             isSeeking: false,
-            isIdle: false,
+            isIdle: true,
           },
         });
 

@@ -2,9 +2,6 @@ import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import { LobbyProvider, MinaProvider } from "@/components/client/providers";
 
-import { currentUser } from "@clerk/nextjs";
-import { Lobby } from "@/components/client/ui/lobby";
-
 export default async function XRLayout({
   children,
   params,
@@ -12,15 +9,9 @@ export default async function XRLayout({
   children: React.ReactNode;
   params: { username?: string; lobbyId?: string };
 }) {
-  // const clerkUser = await currentUser();
-
-  // if (!clerkUser) redirect("/");
-
   const user = await api.users.getCurrentUser.query();
 
   if (!user) redirect("/");
-
-  console.log("lobbyId", params.lobbyId);
 
   return (
     <LobbyProvider

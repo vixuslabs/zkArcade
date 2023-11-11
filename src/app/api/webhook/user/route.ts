@@ -96,15 +96,9 @@ export async function POST(req: Request) {
         }
 
       case "user.updated":
-        console.log("User updated");
-
-        // const { id, username, image_url } = evt.data;
-
         ({ id, username, image_url } = evt.data);
 
       case "user.deleted":
-        console.log("User deleted");
-
         try {
           ({ id } = evt.data);
 

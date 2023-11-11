@@ -2,7 +2,6 @@ import { api } from "@/trpc/server";
 
 import { Sandbox } from "@/components/client/xr";
 
-// async function SyncPage() {
 async function SyncPage() {
   const currentUser = await api.users.getCurrentUser.query();
 

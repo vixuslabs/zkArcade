@@ -26,6 +26,8 @@ function NotificationButton() {
 
   const router = useRouter();
 
+  console.log(allNotifications);
+
   const acceptRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();
   const declineRequestMutation =
@@ -65,10 +67,6 @@ function NotificationButton() {
     await acceptGameInviteMutation.mutateAsync({
       lobbyId: gameId,
     });
-
-    console.log(url);
-
-    console.log("joining game");
     router.push(url);
   };
 
@@ -183,7 +181,7 @@ function NotificationButton() {
               <DropdownMenuItem>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    No new Notifications
+                    No new notifications
                   </p>
                 </div>
               </DropdownMenuItem>

@@ -5,70 +5,55 @@ import React, {
   useMemo,
   createContext,
   useContext,
-  useRef,
   useEffect,
 } from "react";
 
 import type { Mesh } from "three";
-import type {
-  ExtendedXRPlane,
-  ExtendedXRMesh,
-} from "@coconut-xr/natuerlich/react";
+
 import { useLobbyContext } from "./LobbyProvider";
 
-interface MeshInfo {
-  mesh: Mesh;
-  name: string;
-}
-
-interface PlaneInfo {
-  plane: Mesh;
-  name: string;
-}
-
-interface MeshesAndPlanesContextValue {
-  setMyMeshes: React.Dispatch<React.SetStateAction<MeshInfo[]>>;
-  setMyPlanes: React.Dispatch<React.SetStateAction<PlaneInfo[]>>;
-  enemyMeshes: Mesh[];
-  enemyPlanes: Mesh[];
-}
+import type {
+  MeshesAndPlanesContextValue,
+  MyMeshInfo,
+  MyPlaneInfo,
+  MeshInfo,
+  PlaneInfo,
+} from "@/lib/types";
+import {
+  useTrackedMeshes,
+  useTrackedPlanes,
+} from "@coconut-xr/natuerlich/react";
 
 const MeshesAndPlanesContext = createContext<MeshesAndPlanesContextValue>({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setMyMeshes: () => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setMyPlanes: () => {},
-  enemyMeshes: [],
-  enemyPlanes: [],
 });
 
 export const useMeshesAndPlanesContext = () => {
   const context = useContext(MeshesAndPlanesContext);
-  if (!context) {
-    throw new Error(
-      "useMeshesAndPlanesContext must be used within a MeshesAndPlanesProvider",
-    );
-  }
+
+  // disabling because this is used outside of game
+  // if (!context) {
+  //   throw new Error(
+  //     "useMeshesAndPlanesContext must be used within a MeshesAndPlanesProvider",
+  //   );
+  // }
   return context;
 };
 
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
   const { channel } = useLobbyContext();
-  const [myMeshes, setMyMeshes] = useState<MeshInfo[]>([]);
-  const [myPlanes, setMyPlanes] = useState<PlaneInfo[]>([]);
-  const [enemyMeshes, setEnemyMeshes] = useState<Mesh[]>([]);
-  const [enemyPlanes, setEnemyPlanes] = useState<Mesh[]>([]);
+  const meshes = useTrackedMeshes();
+  const planes = useTrackedPlanes();
+  const [myMeshes, setMyMeshes] = useState<MyMeshInfo[]>([]);
+  const [myPlanes, setMyPlanes] = useState<MyPlaneInfo[]>([]);
 
   useEffect(() => {
-    if (myMeshes.length > 0 && myPlanes.length > 0) {
-      console.log("sending room layout");
-      console.log("myMeshes: ", myMeshes);
-      console.log("myPlanes: ", myPlanes);
-      console.log("channel: ", channel);
-
+    if (!meshes || !planes) return;
+    if (meshes.length > 0 && planes.length > 0) {
       const formatedMeshes = myMeshes.map(({ mesh, name }) => {
-        // const { mesh, name } = _mesh;
-
         return {
           geometry: {
             position: mesh.geometry.attributes.position,
@@ -105,15 +90,8 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
     return {
       setMyMeshes,
       setMyPlanes,
-      enemyMeshes,
-      enemyPlanes,
     };
-  }, [setMyMeshes, setMyPlanes, enemyPlanes, enemyMeshes]);
-
-  // console.log("meshes and planes values: ", values);
-
-  // will be sending these meshes and planes to
-  // the other client, who you are playing with
+  }, [setMyMeshes, setMyPlanes]);
 
   return (
     <MeshesAndPlanesContext.Provider value={values}>

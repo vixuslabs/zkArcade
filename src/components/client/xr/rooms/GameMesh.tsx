@@ -7,24 +7,21 @@ import { RigidBody } from "@react-three/rapier";
 import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
 import type { RapierRigidBody } from "@react-three/rapier";
 import type { Mesh } from "three";
-import RoomShadow from "./RoomShadow";
-import { useMeshesAndPlanesContext } from "../providers/MeshesAndPlanesProvider";
-import { useLobbyContext } from "../providers/LobbyProvider";
+import RoomShadow from "../RoomShadow";
+import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
+import { useLobbyContext } from "../../providers/LobbyProvider";
 
-interface SpacialBox {
+interface GameMeshProps {
   mesh: ExtendedXRMesh;
   color?: string;
   name?: string;
   mass?: number;
 }
 
-function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
-  const { gameState } = useLobbyContext();
+function GameMesh({ mesh, color = "red", name = "", mass = 1 }: GameMeshProps) {
   const { setMyMeshes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
-  // const [test, setTest] = React.useState<Vector3>();
-  // const id = useId();
 
   const [init, setInit] = useState(false);
 
@@ -67,19 +64,6 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
     })();
   }, [ref, init, mesh, setMyMeshes, name]);
 
-  // if (gameState && gameState.me.isHiding && gameState.opponent.room) {
-  //   console.log("opponent room", gameState.opponent.room);
-  //   const oppMeshes = gameState.opponent.room.meshes;
-
-  //   return (
-  //     <>
-  //       {oppMeshes.map(({ mesh, name }) => {
-  //         <primitive name={name} key={mesh.uuid} object={mesh} />;
-  //       })}
-  //     </>
-  //   );
-  // }
-
   if (name === "global mesh") {
     return <RoomShadow mesh={mesh} />;
   }
@@ -93,17 +77,18 @@ function SpacialBox({ mesh, color = "red", name = "", mass = 1 }: SpacialBox) {
       type={"fixed"}
     >
       <TrackedMesh ref={ref} mesh={mesh}>
-        {color ? (
+        {/* {color ? (
           <meshBasicMaterial
             wireframe
             color={name === "global mesh" ? "purple" : color}
           />
         ) : (
-          <meshBasicMaterial wireframe color="white" /> // will eventually just make it transparent
-        )}
+          <meshBasicMaterial wireframe color="white" />
+        )} */}
+        <meshBasicMaterial transparent opacity={0} wireframe color={"black"} />
       </TrackedMesh>
     </RigidBody>
   );
 }
 
-export default React.memo(SpacialBox);
+export default React.memo(GameMesh);

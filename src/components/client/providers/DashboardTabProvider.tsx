@@ -2,12 +2,10 @@
 
 import React, { useState, createContext, useContext, useMemo } from "react";
 
-type ActiveDashboardTab = "home" | "friends" | "leaderboard" | "settings";
-
-interface ActiveDashboardTabContext {
-  activeTab: ActiveDashboardTab;
-  setActiveTab: React.Dispatch<React.SetStateAction<ActiveDashboardTab>>;
-}
+import type {
+  ActiveDashboardTabContext,
+  ActiveDashboardTab,
+} from "@/lib/types";
 
 const ActiveDashboardTabContext = createContext<ActiveDashboardTabContext>({
   activeTab: "home",
