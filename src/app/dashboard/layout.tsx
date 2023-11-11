@@ -71,7 +71,7 @@ export default async function DashboardLayout({
    */
   for (const invite of rawGameInvites) {
     const requestClerkInfo = await clerkClient.users.getUser(invite.senderId);
-
+    if (invite.status !== "sent" || invite.senderId === user.id) continue;
     filteredInvites.push({
       gameId: invite.lobbyId,
       sender: {
