@@ -17,7 +17,6 @@ import {
   SpaceGroup,
   DynamicControllerModel,
   ButtonState,
-  useInputSourceProfile,
   useXRGamepadReader,
 } from "@coconut-xr/natuerlich/react";
 
@@ -26,7 +25,6 @@ import type { XLinesIntersection } from "@coconut-xr/xinteraction";
 import type { TriggerState } from "@/lib/types";
 import type { InputDeviceFunctions } from "@coconut-xr/xinteraction/react";
 import type { Group } from "three";
-import { useLobbyContext } from "../../providers/LobbyProvider";
 
 const rayMaterial = new RayBasicMaterial({
   transparent: true,
@@ -37,7 +35,7 @@ const INITIAL_POINT = new Vector3(0, 0, 0);
 const INITIAL_RAY_LENGTH = 0.01;
 const RAY_ADJUSTMENT_SPEED = 0.6;
 
-function AdjustablePointerController({
+function SandboxControllers({
   inputSource,
   id,
 }: {
@@ -51,7 +49,6 @@ function AdjustablePointerController({
     name?: string;
   } | null>(null);
   const controllerRef = useRef<Group>(null);
-  const { gameState, channel } = useLobbyContext();
   const { pointers, setLeftPointer, setRightPointer } =
     useControllerStateContext();
 
@@ -60,48 +57,10 @@ function AdjustablePointerController({
     [rayLength],
   );
   const rayOffset = useMemo(() => rayLength * 0.5, [rayLength]);
-  const [sendingPosition, setSendingPosition] = useState(false);
-
-  // const [controllerState, handedness] = useInputReader(inputSource);
-
-  const profile = useInputSourceProfile(inputSource.profiles);
 
   const controllerReader = useXRGamepadReader(inputSource);
 
-  const aButton = controllerReader.readButton("a-button");
   const thumbstick = useRef<Vector2>(new Vector2());
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (gameState && gameState.me.isSeeking && !sendingPosition) {
-      interval = setInterval(() => {
-        const pos = controllerRef.current?.getWorldPosition(
-          controllerRef.current.position,
-        );
-
-        inputSource.gamepad?.hapticActuators.forEach((haptic) => {
-          // console.log("haptic", haptic);
-          void haptic.playEffect("dual-rumble", {
-            duration: 100,
-            strongMagnitude: 0.5,
-            weakMagnitude: 0.5,
-          });
-        });
-
-        // if (pos) {
-        //   channel?.trigger("client-game-requestProximity", {
-        //     playerPosition: pos,
-        //   });
-        // }
-      }, 500);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [gameState]);
 
   const updatePointerState = useCallback(
     (
@@ -135,16 +94,13 @@ function AdjustablePointerController({
     }
 
     if (newRayLength !== rayLength) {
-      // console.log("new ray length so setting ray length");
       setRayLength(newRayLength);
     }
   });
 
   const handleSelectStart = useCallback(
     (e: XRInputSourceEvent) => {
-      // controller shake
       e.inputSource.gamepad?.hapticActuators.forEach((haptic) => {
-        // console.log("haptic", haptic);
         void haptic.playEffect("dual-rumble", {
           duration: 100,
           strongMagnitude: 0.5,
@@ -204,7 +160,6 @@ function AdjustablePointerController({
     const activePointer = isRight ? pointers.right : pointers.left;
     const capturedObject = intersection[0]?.capturedObject;
 
-    // to avoid unnecessary re-renders
     if (
       !activePointer.heldObject ||
       capturedObject.uuid !== activePointer.heldObject.uuid
@@ -277,4 +232,4 @@ function AdjustablePointerController({
   );
 }
 
-export default AdjustablePointerController;
+export default SandboxControllers;

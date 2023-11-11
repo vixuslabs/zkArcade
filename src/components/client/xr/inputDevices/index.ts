@@ -1,2 +1,2 @@
-export { default as AdjustablePointerController } from "./AdjustablePointerController";
-export { default as Flashlight } from "./Flashlight";
+export { default as SandboxControllers } from "./SandboxControllers";
+export { default as GameControllers } from "./GameControllers";

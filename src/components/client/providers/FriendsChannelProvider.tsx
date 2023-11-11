@@ -7,49 +7,15 @@ import { useFriendsChannel } from "@/lib/hooks/useFriendsChannel";
 import { ToastAction } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 
-interface FriendInfo {
-  username: string;
-  firstName: string | null;
-  imageUrl: string;
-  id: string;
-}
-
-interface Invite {
-  sender: FriendInfo;
-  gameId: string;
-}
-
-type PendingFriendRequests = {
-  requestId: number;
-  imageUrl: string;
-  username: string;
-  firstName: string | null;
-};
-
-type NotificationType = "PendingFriendRequest" | "GameInvite";
-
-interface BaseNotification {
-  type: NotificationType;
-}
-
-interface TaggedPendingFriendRequest
-  extends PendingFriendRequests,
-    BaseNotification {
-  type: "PendingFriendRequest";
-}
-
-interface TaggedGameInvite extends Invite, BaseNotification {
-  type: "GameInvite";
-}
-
-type Notification = TaggedPendingFriendRequest | TaggedGameInvite;
-
-interface PusherClientContextValues {
-  activeFriends: FriendInfo[];
-  pendingFriendRequests: PendingFriendRequests[];
-  gameInvites: Invite[];
-  allNotifications: Notification[];
-}
+import type {
+  FriendInfo,
+  PusherClientContextValues,
+  PendingFriendRequests,
+  Invite,
+  TaggedPendingFriendRequest,
+  TaggedGameInvite,
+  Notification,
+} from "@/lib/types";
 
 const PusherClientContext = createContext<PusherClientContextValues>({
   activeFriends: [],

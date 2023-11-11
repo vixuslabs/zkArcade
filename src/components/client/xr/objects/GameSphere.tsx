@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 
 import { RigidBody, vec3 } from "@react-three/rapier";
 
@@ -11,13 +11,16 @@ import type { Mesh, Vector3 } from "three";
 import { GrabPhysics } from "@/components/client/xr/physics";
 import { useControllerStateContext } from "../../providers/ControllerStateProvider";
 
-function TestSphere({
-  ...props
+function GameSphere({
+  name,
+  position,
+  color,
+  inGame,
 }: {
   name?: string;
   position?: [number, number, number];
   color?: string;
-  // matrix?: number[];
+  inGame: boolean;
 }) {
   const { pointers } = useControllerStateContext();
   const rigidRef = useRef<RapierRigidBody>(null);
@@ -41,58 +44,53 @@ function TestSphere({
 
   const handleRelease = (e: ThreeEvent<PointerEvent>, velocity?: Vector3) => {
     if (rigidRef.current) {
-      // rigidRef.current?.setGravityScale(1, true);
-      // rigidRef.current.setLinvel(vec3(velocity), true);
+      if (!inGame) {
+        rigidRef.current?.setGravityScale(1, true);
+        rigidRef.current.setLinvel(vec3(velocity), true);
+      }
     } else {
       console.log("rigidRef.current is not set");
     }
   };
-
-  console.log("TestSphere rendered");
-  console.log("position", props.position);
-
-  // @ts-expect-error - hehehehehehhe
-  const { x, y, z } = props.position;
-
-  console.log("x", x);
-  console.log("y", y);
-  console.log("z", z);
 
   return (
     <RigidBody
       name={"testBox-physics"}
       ref={rigidRef}
       colliders={"cuboid"}
-      type={props.name === "hiddenObject" ? "fixed" : "dynamic"}
+      type={name === "hiddenObject" ? "fixed" : "dynamic"}
       position={
-        props.name === "hiddenObject" ? [x, y, z] : props.position ?? [0, 0, 0]
+        name === "hiddenObject"
+          ? // @ts-expect-error - positions from websocket are passed as an object
+            [position.x, position.y, position.z]
+          : position ?? [0, 0, 0]
       }
-      // position={[0, 0, -0.2]}
-      gravityScale={0}
+      gravityScale={inGame ? 0 : 0.5}
       canSleep={false}
       linearDamping={0.5}
       angularDamping={0.7}
       ccd={true}
     >
       <GrabPhysics
-        id={props.name ?? "testBox"}
+        id={name ?? "sphere"}
         isAnchorable={true}
         ref={rigidAndMeshRef}
         handleGrab={handleGrab}
         handleRelease={handleRelease}
       >
-        {/* <boxGeometry args={[0.1, 0.1, 0.1]} /> */}
         <sphereGeometry args={[0.05, 50, 50]} />
-        {props.name !== "hiddenObject" ? (
-          <meshBasicMaterial color={props.color ?? "red"} />
-        ) : pointers.right.heldObject?.name === "hiddenObject" ? (
-          <meshBasicMaterial color={props.color ?? "red"} />
-        ) : (
-          <meshStandardMaterial transparent opacity={0.5} color={"black"} />
-        )}
+        {!inGame && <meshBasicMaterial color={color ?? "red"} />}
+        {inGame &&
+          (name !== "hiddenObject" ? (
+            <meshBasicMaterial color={color ?? "red"} />
+          ) : pointers.right.heldObject?.name === "hiddenObject" ? (
+            <meshBasicMaterial color={color ?? "red"} />
+          ) : (
+            <meshStandardMaterial transparent opacity={0.5} color={"black"} />
+          ))}
       </GrabPhysics>
     </RigidBody>
   );
 }
 
-export default React.memo(TestSphere);
+export default React.memo(GameSphere);

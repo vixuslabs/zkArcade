@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   XRCanvas,
   Hands,
@@ -17,67 +17,32 @@ import {
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
 import { clippingEvents } from "@coconut-xr/koestlich";
-
-import { AdjustablePointerController } from "@/components/client/xr/inputDevices";
+import { GameControllers } from "@/components/client/xr/inputDevices";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
-
-// import Router from "next/router";
 import { Button } from "@/components/ui/button";
-import { BuildRoom, TestBox } from "@/components/client/xr";
-
-// import Lamp from "./Lamp";
+import { BuildRoom } from "@/components/client/xr";
 import { ControllerStateProvider } from "@/components/client/providers";
-// import { Flashlight } from "@/components/client/xr/inputDevices";
-
-import TestSphere from "./objects/TestSphere";
-
 import { Physics } from "@react-three/rapier";
 import { useLobbyContext } from "../providers/LobbyProvider";
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 import { useUser } from "@clerk/nextjs";
-import FriendRoom from "./FriendRoom";
+import { FriendRoom } from "@/components/client/xr/rooms";
+import GameSphere from "@/components/client/xr/objects/GameSphere";
+
 import { Vector3 } from "three";
 
+import type { RoomCaptureProps } from "@/lib/types";
+
 const sessionOptions: XRSessionInit = {
-  requiredFeatures: [
-    "local-floor",
-    "mesh-detection",
-    "plane-detection",
-    // "layers",
-    // "depth-sorted-layers",
-  ],
-  // optionalFeatures: ["light-estimation"],
+  requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
 };
 
-// One day :((
-// const sessionOptions: XRSessionInit = {
-//   requiredFeatures: [
-//     "local-floor",
-//     "mesh-detection",
-//     "plane-detection",
-//     "depth-sensing",
-//   ],
-//   depthSensing: {
-//     usagePreference: ["cpu-optimized", "gpu-optimized"],
-//     dataFormatPreference: ["luminance-alpha", "float32"],
-//   },
-// };
-
-type AppUser = {
-  id: string;
-  username: string;
-  firstName: string | null;
-  image_url: string | null;
-} | null;
-
-interface RoomCaptureProps {
-  user: AppUser;
-}
-
 function HotnColdGame({ user }: RoomCaptureProps) {
-  const { players, channel, setXrStarted, gameState, setGameState, started } =
+  const { players, channel, setXrStarted, gameState, setGameState } =
     useLobbyContext();
 
+  // teleport not working right now
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [teleportLocation, setTeleportLocation] = useState<Vector3>(
     new Vector3(0, 0, 0),
   );
@@ -87,8 +52,8 @@ function HotnColdGame({ user }: RoomCaptureProps) {
   const clerkUser = useUser();
 
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
-  // const enterVR = useEnterXR("immersive-vr", sessionOptions);
 
+  const isSupported = useSessionSupported("immersive-ar");
   useSessionChange((curSession, prevSession) => {
     if (prevSession && !curSession) {
       console.log("session ended");
@@ -97,11 +62,8 @@ function HotnColdGame({ user }: RoomCaptureProps) {
     }
   }, []);
 
-  const isSupported = useSessionSupported("immersive-ar");
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
-
-  console.log("objectPosition", gameState?.oppObject?.objectPosition);
 
   return (
     <>
@@ -167,57 +129,46 @@ function HotnColdGame({ user }: RoomCaptureProps) {
           >
             <NonImmersiveCamera />
 
-            <ambientLight intensity={0.5} />
-
-            {/* <Lamp position={[0, 7, 0]} /> */}
-            {/* <ambientLight color={"#ffffff"} intensity={1} /> */}
-            {startSync && (
-              <>
-                <TestBox position={[0, 0, -0.5]} />
-                {/* <TestSphere position={[0, 2, -0.3]} /> */}
-              </>
+            {gameState && gameState.me.isSeeking ? (
+              <ambientLight intensity={0} />
+            ) : (
+              <ambientLight intensity={0.5} />
             )}
 
             {gameState && gameState.isGameStarted && gameState.me.isHiding && (
-              <TestSphere position={[0, 2, -0.3]} />
+              <GameSphere inGame position={[0, 2, -0.3]} />
             )}
 
             {gameState &&
               gameState.isGameStarted &&
               gameState.oppObject?.objectPosition &&
               gameState.me.isSeeking && (
-                <TestSphere
+                <GameSphere
+                  inGame
                   name={"hiddenObject"}
                   color="yellow"
                   // @ts-expect-error - this works i swear
                   position={gameState.oppObject?.objectPosition}
-                  // matrix={gameState.oppObject?.objectMatrix}
                 />
               )}
 
-            {/* <ImmersiveSessionOrigin position={[0, 0, 0]}> */}
-            <ImmersiveSessionOrigin
-            // position={
-            // gameState && gameState?.me.isHiding
-            // ? teleportLocation
-            // : new Vector3(0, 0, 0)
-            // teleportLocation
-            // }
-            >
-              {/* {startSync && <BuildRoom />} */}
-              {/* <FogSphere /> */}
+            <ImmersiveSessionOrigin>
               {startSync && (
                 <>
                   <MeshesAndPlanesProvider>
-                    {gameState &&
-                      (gameState.me.isSeeking || gameState.me.isIdle) && (
-                        <BuildRoom />
-                      )}
-                    {gameState &&
+                    {/* {gameState && !gameState.me.isHiding && (
+                      <BuildRoom inGame={true} />
+                    )} */}
+
+                    {gameState && gameState.me.isHiding ? (
+                      <FriendRoom />
+                    ) : (
+                      <BuildRoom inGame={true} />
+                    )}
+                    {/* {gameState &&
                       gameState.isGameStarted &&
-                      gameState.me.isHiding && <FriendRoom />}
+                      gameState.me.isHiding && <FriendRoom />} */}
                   </MeshesAndPlanesProvider>
-                  <TestBox color="black" />
                 </>
               )}
               {gameState && gameState.me.isHiding
@@ -233,7 +184,7 @@ function HotnColdGame({ user }: RoomCaptureProps) {
                       );
                     } else
                       return (
-                        <AdjustablePointerController
+                        <GameControllers
                           key={getInputSourceId(inputSource)}
                           id={getInputSourceId(inputSource)}
                           inputSource={inputSource}
@@ -241,7 +192,7 @@ function HotnColdGame({ user }: RoomCaptureProps) {
                       );
                   })
                 : inputSources.map((inputSource: XRInputSource) => (
-                    <AdjustablePointerController
+                    <GameControllers
                       key={getInputSourceId(inputSource)}
                       id={getInputSourceId(inputSource)}
                       inputSource={inputSource}

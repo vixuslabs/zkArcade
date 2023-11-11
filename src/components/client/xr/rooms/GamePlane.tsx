@@ -3,8 +3,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { TrackedPlane } from "@coconut-xr/natuerlich/react";
 import { RigidBody } from "@react-three/rapier";
-import { useMeshesAndPlanesContext } from "../providers/MeshesAndPlanesProvider";
-import { useLobbyContext } from "../providers/LobbyProvider";
+import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
+import { useLobbyContext } from "../../providers/LobbyProvider";
 
 import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
 import type { Mesh } from "three";
@@ -19,7 +19,7 @@ interface SpacialPlane {
   mass?: number;
 }
 
-function SpacialPlane({
+function GamePlane({
   plane,
   name = "",
   mass = 1,
@@ -81,23 +81,6 @@ function SpacialPlane({
     })();
   }, [ref, init, plane, setMyPlanes, name]);
 
-  // if (gameState && gameState.me.isHiding && gameState.opponent.room) {
-  //   console.log("opponent room", gameState.opponent.room);
-  //   const oppPlanes = gameState.opponent.room.planes;
-
-  //   return (
-  //     <>
-  //       {oppPlanes.map(({ plane, name }) => {
-  //         <primitive key={plane.uuid} object={plane} />;
-  //       })}
-  //     </>
-  //   );
-  // }
-
-  /**
-   * ONLY NEEDS TO BE WALLS, FLOOR, AND CEILING
-   */
-
   return (
     <>
       <RigidBody
@@ -109,22 +92,15 @@ function SpacialPlane({
         // onCollisionEnter={(e) => console.log(e)}
       >
         <TrackedPlane ref={ref} plane={plane}>
-          {color ? (
+          {/* {color ? (
             <meshPhongMaterial wireframe color={color} />
           ) : (
             <meshPhongMaterial wireframe color="black" />
-          )}
-
-          {/* <meshPhysicalMaterial
-          color={"#000000"}
-          clearcoatRoughness={0.5}
-          metalness={0}
-          clearcoat={0.5}
-
-        /> */}
+          )} */}
+          <meshPhongMaterial transparent opacity={0} wireframe color="black" />
         </TrackedPlane>
       </RigidBody>
     </>
   );
 }
-export default React.memo(SpacialPlane);
+export default React.memo(GamePlane);
