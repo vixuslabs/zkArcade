@@ -41,7 +41,7 @@ Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so
 - and of course - [React](https://react.dev/)
 
 
-## The Boring Stuff
+## License
 
 [Apache License]()
 
