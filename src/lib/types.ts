@@ -10,11 +10,8 @@ import type {
 } from "three";
 import type { RapierRigidBody } from "@react-three/rapier";
 import type { ThreeEvent } from "@react-three/fiber";
-import type {
-  InterleavedBufferAttribute,
-  BufferAttribute,
-  Matrix4,
-} from "three";
+import type { Matrix4 } from "three";
+import type { PresenceChannel } from "pusher-js";
 
 /**
  * XR-related types and interfaces
@@ -103,6 +100,76 @@ export interface RigidAndMeshRefs {
   >;
 }
 
+export type AppUser = {
+  id: string;
+  username: string;
+  firstName: string | null;
+  image_url: string | null;
+} | null;
+
+export interface RoomCaptureProps {
+  user: AppUser;
+}
+
+export interface MyMeshInfo {
+  mesh: Mesh;
+  name: string;
+}
+
+export interface MyPlaneInfo {
+  plane: Mesh;
+  name: string;
+}
+
+export interface MeshesAndPlanesContextValue {
+  setMyMeshes: React.Dispatch<React.SetStateAction<MyMeshInfo[]>>;
+  setMyPlanes: React.Dispatch<React.SetStateAction<MyPlaneInfo[]>>;
+}
+
+export interface GameState {
+  isGameStarted: boolean;
+  isGameEnded: boolean;
+  me: {
+    isHiding: boolean;
+    isSeeking: boolean;
+    isIdle: boolean;
+    myObjectPosition?: Vector3 | null;
+  };
+  opponent: {
+    info: Player | null;
+    isConnected: boolean;
+    isIdle: boolean;
+    isHiding: boolean;
+    isSeeking: boolean;
+    room?: {
+      meshes: MeshInfo[];
+      planes: PlaneInfo[];
+    };
+  };
+  oppObject?: {
+    objectPosition: Vector3 | null;
+    objectMatrix: Matrix4 | null;
+    objectProximity: number | null;
+    objectFound: boolean;
+    objectSet: boolean;
+  };
+}
+
+export interface LobbyContextValues {
+  players: Player[];
+  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
+  starting: boolean;
+  setStarting: React.Dispatch<React.SetStateAction<boolean>>;
+  channel: PresenceChannel | null;
+  isMinaOn: boolean;
+  setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
+  setXrStarted: React.Dispatch<React.SetStateAction<boolean>>;
+  me: Player | null;
+  gameState: GameState | undefined;
+  setGameState: React.Dispatch<React.SetStateAction<GameState | undefined>>;
+  started: React.MutableRefObject<boolean>;
+}
+
 export interface GrabProps {
   id: string;
   children: React.ReactNode;
@@ -168,4 +235,63 @@ export interface Player {
     meshes: MeshInfo[];
     planes: PlaneInfo[];
   };
+}
+
+/**
+ * Friends
+ */
+
+export interface FriendInfo {
+  username: string;
+  firstName: string | null;
+  imageUrl: string;
+  id: string;
+}
+
+export interface Invite {
+  sender: FriendInfo;
+  gameId: string;
+}
+
+export type PendingFriendRequests = {
+  requestId: number;
+  imageUrl: string;
+  username: string;
+  firstName: string | null;
+};
+
+export type NotificationType = "PendingFriendRequest" | "GameInvite";
+
+export interface BaseNotification {
+  type: NotificationType;
+}
+
+export interface TaggedPendingFriendRequest
+  extends PendingFriendRequests,
+    BaseNotification {
+  type: "PendingFriendRequest";
+}
+
+export interface TaggedGameInvite extends Invite, BaseNotification {
+  type: "GameInvite";
+}
+
+export type Notification = TaggedPendingFriendRequest | TaggedGameInvite;
+
+export interface PusherClientContextValues {
+  activeFriends: FriendInfo[];
+  pendingFriendRequests: PendingFriendRequests[];
+  gameInvites: Invite[];
+  allNotifications: Notification[];
+}
+
+export type ActiveDashboardTab =
+  | "home"
+  | "friends"
+  | "leaderboard"
+  | "settings";
+
+export interface ActiveDashboardTabContext {
+  activeTab: ActiveDashboardTab;
+  setActiveTab: React.Dispatch<React.SetStateAction<ActiveDashboardTab>>;
 }
