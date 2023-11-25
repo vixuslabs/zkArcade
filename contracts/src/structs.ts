@@ -106,16 +106,53 @@ export class Object3D extends Struct({ center: Point, radius: Field }) {
   }
 }
 
-// A plane is defined by 4 points.
+// A plane is defined by 3 points.
 export class Plane extends Struct({
   a: Point,
   b: Point,
   c: Point,
-  d: Point,
   object: Object3D,
 }) {
-  static fromPoints(a: Point, b: Point, c: Point, d: Point, object: Object3D) {
-    return new Plane({ a, b, c, d, object });
+  static fromPoints(a: Point, b: Point, c: Point, object: Object3D) {
+    return new Plane({ a, b, c, object });
+  }
+
+  static fromVerticesTranslationMatricesAndObject(
+    vertices: Float32Array,
+    matrices: {
+      translationToOriginMatrix: Matrix4;
+      translationToPositiveCoordsMatrix: Matrix4;
+    },
+    object: Object3D,
+  ) {
+    const v = [];
+    // Iterate through all vertices and apply the translation matrices to each one.
+    for (let i = 0; i < vertices.length; i += 3) {
+      const vertex = new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
+      vertex.applyMatrix4(matrices.translationToPositiveCoordsMatrix);
+      vertex.applyMatrix4(matrices.translationToOriginMatrix);
+      v.push(vertex);
+    }
+    
+    // Returns a plane with positive coordinates
+    return new Plane({
+      a: new Point({
+        x: Field(Math.round(v[0].x * SCALE)),
+        y: Field(Math.round(v[0].y * SCALE)),
+        z: Field(Math.round(v[0].z * SCALE)),
+      }),
+      b: new Point({
+        x: Field(Math.round(v[1].x * SCALE)),
+        y: Field(Math.round(v[1].y * SCALE)),
+        z: Field(Math.round(v[1].z * SCALE)),
+      }),
+      c: new Point({
+        x: Field(Math.round(v[2].x * SCALE)),
+        y: Field(Math.round(v[2].y * SCALE)),
+        z: Field(Math.round(v[3].z * SCALE)),
+      }),
+      object: object,
+    });
   }
 
   static createFromJSON(planeString: string) {
@@ -123,7 +160,6 @@ export class Plane extends Struct({
     const a = JSON.parse(plane.a);
     const b = JSON.parse(plane.b);
     const c = JSON.parse(plane.c);
-    const d = JSON.parse(plane.d);
     return new Plane({
       a: new Point({
         x: Field.fromJSON(a.x),
@@ -140,11 +176,6 @@ export class Plane extends Struct({
         y: Field.fromJSON(c.y),
         z: Field.fromJSON(c.z),
       }),
-      d: new Point({
-        x: Field.fromJSON(d.x),
-        y: Field.fromJSON(d.y),
-        z: Field.fromJSON(d.z),
-      }),
       object: Object3D.createFromJSON(plane.object),
     });
   }
@@ -154,9 +185,12 @@ export class Plane extends Struct({
       a: this.a.toJSON(),
       b: this.b.toJSON(),
       c: this.c.toJSON(),
-      d: this.d.toJSON(),
       object: this.object.toJSON(),
     });
+  }
+
+  assertObjectIsOnInnerSide() {
+    this.object.center.y.lessThanOrEqual(this.a.y).assertTrue();
   }
 }
 
@@ -301,7 +335,11 @@ export class Room extends Struct({ planes: [Plane], boxes: [Box] }) {
   }
 
   // Check that the object is inside the room.
-  assertObjectIsInside() {}
+  assertObjectIsInside() {
+    for (const plane of this.planes) {
+      plane.assertObjectIsOnInnerSide();
+    }
+  }
 
   // Check that the object does not collide with any of the room's boxes.
   assertNoCollisions() {

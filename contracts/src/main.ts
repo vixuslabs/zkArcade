@@ -39,10 +39,24 @@ boxes.forEach((b) => {
   boxesAndObjects.push(box);
 });
 
-const dummyObject = Object3D.fromPointAndRadius(new Point({x: Field(1000), y: Field(1000), z: Field(1000)}), Field(100));
-const dummyPlane = Plane.fromPoints(new Point({x: Field(0), y: Field(0), z: Field(0)}), new Point({x: Field(0), y: Field(0), z: Field(1)}), new Point({x: Field(0), y: Field(1), z: Field(0)}), new Point({x: Field(1), y: Field(0), z: Field(0)}), dummyObject);
-const room = Room.fromPlanesAndBoxes([dummyPlane], boxesAndObjects);
-room.assertNoCollisions();
+const planesAndObjects: Plane[] = [];
+planes.forEach((p) => {
+  const vertices = new Float32Array(Object.values(p.position));
+  const inverseMatrix = computeInverseMatrix(p.matrix); 
+  const translationToOriginMatrix = computeTranslationToOriginMatrix(vertices);
+  const translationToPositiveCoordsMatrix = computeTranslationToPositiveCoordsMatrix(realWorldHiddenObject, {inverseMatrix, translationToOriginMatrix});  
+  const object = Object3D.fromObjectAndTranslationMatrices(realWorldHiddenObject, {inverseMatrix, translationToOriginMatrix, translationToPositiveCoordsMatrix});
+  const plane = Plane.fromVerticesTranslationMatricesAndObject(vertices, {translationToOriginMatrix, translationToPositiveCoordsMatrix}, object);
+  planesAndObjects.push(plane);
+});
+
+
+// const dummyObject = Object3D.fromPointAndRadius(new Point({x: Field(1000), y: Field(1000), z: Field(1000)}), Field(100));
+// const dummyPlane = Plane.fromPoints(new Point({x: Field(0), y: Field(0), z: Field(0)}), new Point({x: Field(0), y: Field(0), z: Field(1)}), new Point({x: Field(0), y: Field(1), z: Field(0)}), dummyObject);
+// const room = Room.fromPlanesAndBoxes([dummyPlane], boxesAndObjects);
+// const room = Room.fromPlanesAndBoxes(planesAndObjects, boxesAndObjects);
+// room.assertNoCollisions();
+// room.assertObjectIsInside();
 
 
 const objectHash = Object3D.getHashFromRealWorldCoordinates(
@@ -81,6 +95,9 @@ await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
 const txn = await Mina.transaction(senderAccount, () => {
   for (const boxAndObject of boxesAndObjects) {
     zkAppInstance.validateObjectIsOutsideBox(boxAndObject);
+  }
+  for (const planeAndObject of planesAndObjects) {
+    zkAppInstance.validateObjectIsInsideRoom(planeAndObject);
   }
 });
 await txn.prove();
