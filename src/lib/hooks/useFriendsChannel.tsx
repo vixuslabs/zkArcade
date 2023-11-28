@@ -53,5 +53,6 @@ export const useFriendsChannel = (events: EventMap) => {
       });
       pusher.unsubscribe(`user-${user.user?.id}-friends`);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, user.user?.id, events]);
 };

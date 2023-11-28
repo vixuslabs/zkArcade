@@ -59,14 +59,14 @@ function useTrackControllers(): useTrackControllersReturn {
         bottomButtonState = getButtonState(gamepad.buttons[4]).pressed
           ? ButtonState.PRESSED
           : getButtonState(gamepad.buttons[4]).touched
-          ? ButtonState.TOUCHED
-          : ButtonState.DEFAULT;
+            ? ButtonState.TOUCHED
+            : ButtonState.DEFAULT;
 
         topButtonState = getButtonState(gamepad.buttons[5]).pressed
           ? ButtonState.PRESSED
           : getButtonState(gamepad.buttons[5]).touched
-          ? ButtonState.TOUCHED
-          : ButtonState.DEFAULT;
+            ? ButtonState.TOUCHED
+            : ButtonState.DEFAULT;
       }
 
       const { position, orientation } = pose.transform;

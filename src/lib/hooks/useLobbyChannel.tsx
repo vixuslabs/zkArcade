@@ -51,7 +51,7 @@ type PartialeEventMap = Partial<Record<LobbyEvents, EventCallback>>;
 
 type EventCallback = (data: Player) => void;
 
-type EventMap = Record<LobbyEvents, EventCallback>;
+// type EventMap = Record<LobbyEvents, EventCallback>;
 
 export const useLobbyChannel = (
   initialPlayer: Player,
@@ -180,7 +180,8 @@ export const useLobbyChannel = (
       localChannel.unsubscribe();
       setChannel(null);
     };
-  }, [isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, events, lobbyId, successHandler]);
 
   return [players, setPlayers, channel, me];
 };
