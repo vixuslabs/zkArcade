@@ -3,12 +3,17 @@ import { redirect } from "next/navigation";
 import { LobbyProvider } from "@/components/client/providers";
 
 import { Lobby } from "@/components/client/ui/lobby";
+import { currentUser } from "@clerk/nextjs";
 
 async function LobbyPage({
   params,
 }: {
   params: { username: string; lobbyId: string };
 }) {
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) redirect("/");
+
   const user = await api.users.getCurrentUser.query();
 
   if (!user) redirect("/");

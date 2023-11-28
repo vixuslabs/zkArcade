@@ -50,6 +50,7 @@ export default async function DashboardLayout({
   const friendsInfo: FriendInfo[] = [];
   const pendingFriendRequests: PendingFriendRequest[] = [];
   const filteredInvites: Invite[] = [];
+
   const user = await currentUser();
 
   if (!user) {
@@ -109,7 +110,6 @@ export default async function DashboardLayout({
         initFriendsInfo={friendsInfo}
         initFriendRequests={pendingFriendRequests}
         initGameInvites={filteredInvites}
-        userId={user.id}
       >
         <DashboardTabProvider>
           {/* Static sidebar for desktop */}

@@ -1,17 +1,13 @@
-import { sql, relations } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   bigint,
   index,
-  int,
   mysqlTableCreator,
-  text,
   timestamp,
   uniqueIndex,
   varchar,
-  primaryKey,
   mysqlEnum,
 } from "drizzle-orm/mysql-core";
-import { users } from "./users";
 
 export const mysqlTable = mysqlTableCreator((name) => `hot-n-cold_${name}`);
 
