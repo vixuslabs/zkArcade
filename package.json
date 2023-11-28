@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "next build",
     "db:push": "dotenv drizzle-kit push:mysql",
     "db:studio": "dotenv drizzle-kit studio",
     "dev": "next dev",
     "dev:https": "next dev --experimental-https",
-    "lint": "next lint",
-    "start": "next start"
+    "lint": "pnpm run lint:prettier && pnpm run lint:eslint",
+    "lint:eslint": "eslint --ext .ts,.tsx \"src/**/*.{ts,tsx}\"",
+    "lint:prettier": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "start": "next start",
+    "fix": "pnpm run fix:prettier && pnpm run fix:eslint",
+    "fix:prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "fix:eslint": "eslint --ext .ts,.tsx \"src/**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.25.7",
@@ -51,7 +57,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.289.0",
     "next": "^13.5.4",
-    "next-intl": "^2.21.0",
+    "next-intl": "^3.1.4",
     "next-themes": "^0.2.1",
     "o1js": "^0.14.0",
     "pusher": "^5.1.3",
