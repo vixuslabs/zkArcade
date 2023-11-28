@@ -30,13 +30,12 @@ function FriendRoom() {
       <group key={"planes"}>
         {/* <SpacialPlane /> */}
         {gameState?.opponent.info?.roomLayout?.planes.map(
-          ({ geometry, matrix, worldMatrix, name }, index) => (
+          ({ geometry, matrix, name }, index) => (
             <FriendPlane
               key={name + `${index}`}
               positionData={geometry.position}
               indexData={geometry.index!}
               matrixData={matrix}
-              // worldMatrixData={worldMatrix}
             />
           ),
         )}

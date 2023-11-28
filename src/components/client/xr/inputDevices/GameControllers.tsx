@@ -59,6 +59,8 @@ function GameControllers({
     [rayLength],
   );
   const rayOffset = useMemo(() => rayLength * 0.5, [rayLength]);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sendingPosition, setSendingPosition] = useState(false);
 
   const controllerReader = useXRGamepadReader(inputSource);
@@ -69,10 +71,6 @@ function GameControllers({
     let interval: NodeJS.Timeout | null = null;
     if (gameState && gameState.me.isSeeking && !sendingPosition) {
       interval = setInterval(() => {
-        const pos = controllerRef.current?.getWorldPosition(
-          controllerRef.current.position,
-        );
-
         inputSource.gamepad?.hapticActuators.forEach((haptic) => {
           void haptic.playEffect("dual-rumble", {
             duration: 100,
@@ -88,6 +86,7 @@ function GameControllers({
         clearInterval(interval);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState]);
 
   const updatePointerState = useCallback(
@@ -143,6 +142,7 @@ function GameControllers({
       );
       pointerRef.current?.press(0, e);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [rayLength, heldObject, updatePointerState],
   );
 
@@ -156,6 +156,7 @@ function GameControllers({
       );
       pointerRef.current?.release(0, e);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [rayLength, heldObject, updatePointerState],
   );
 

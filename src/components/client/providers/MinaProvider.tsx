@@ -5,7 +5,6 @@ import React, {
   useContext,
   createContext,
   useMemo,
-  useEffect,
   useCallback,
 } from "react";
 
@@ -76,7 +75,7 @@ function MinaProvider({
       if (!player) {
         throw new Error("No player set in MinaProvider");
       }
-      const { PrivateKey, PublicKey } = await import("o1js");
+      const { PublicKey } = await import("o1js");
       console.log("pre zkappWorkerClient");
       const ZkappWorkerClient = (await import("@/mina/zkappWorkerClient"))
         .default;

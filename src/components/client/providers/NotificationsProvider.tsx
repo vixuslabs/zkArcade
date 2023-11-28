@@ -1,15 +1,8 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  createContext,
-  useRef,
-  useMemo,
-} from "react";
+import React, { useContext, createContext, useMemo } from "react";
 
-import { useFriendsProvider } from "./FriendsChannelProvider";
+// import { useFriendsProvider } from "./FriendsChannelProvider";
 
 const NotificationsContext = createContext({});
 
@@ -25,8 +18,9 @@ export const useNotificationsContext = () => {
   return context;
 };
 
+// Not currently in use
 function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const { pendingFriendRequests } = useFriendsProvider();
+  // const { pendingFriendRequests } = useFriendsProvider();
 
   const values = useMemo(() => ({}), []);
 

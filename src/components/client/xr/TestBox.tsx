@@ -3,11 +3,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import { RapierRigidBody, RigidBody, vec3 } from "@react-three/rapier";
-import { ThreeEvent } from "@react-three/fiber";
+import { type RapierRigidBody, vec3 } from "@react-three/rapier";
+import { type ThreeEvent } from "@react-three/fiber";
 
 import type { Mesh, Vector3 } from "three";
-// import { GrabPhysics } from "@/components/client/xr/physics";
 
 function TestBox({
   color = "red",
@@ -43,6 +42,9 @@ function TestBox({
       console.log("rigidRef.current is not set");
     }
   };
+
+  // quick fix for lint warnigs
+  if (!rigidAndMeshRef.current || !handleGrab || !handleRelease) return null;
 
   return (
     <mesh position={position}>

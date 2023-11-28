@@ -10,7 +10,6 @@ import React, {
 } from "react";
 
 import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
-import { usePathname } from "next/navigation";
 import { calculateProximity } from "@/lib/utils";
 
 import type { Player, GameState, LobbyContextValues } from "@/lib/types";
@@ -78,6 +77,7 @@ function LobbyProvider({
       objectSet: false,
     },
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [xrStarted, setXrStarted] = useState<boolean>(false);
 
   const [players, setPlayers, channel, me] = useLobbyChannel(
@@ -88,8 +88,12 @@ function LobbyProvider({
       "client-joined": (data: Player) => {
         console.log("in client-joined");
 
-        // @ts-expect-error - will fix type error later
-        setPlayers((prev) => data);
+        setPlayers((prev) => {
+          if (prev.find((player) => player.id === data.id)) {
+            return prev;
+          }
+          return [...prev, data];
+        });
       },
       "client-left": (data: Player) => {
         console.log("in client-left");

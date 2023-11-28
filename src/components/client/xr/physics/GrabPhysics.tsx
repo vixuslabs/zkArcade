@@ -131,8 +131,6 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             meshRef.current.position,
           );
 
-          const objMatrix = meshRef.current.matrix;
-
           // const myObjectPosition = _myObjectPosition.divideScalar(2);
 
           // console.log("myObjectPosition before", myObjectPosition);
@@ -162,6 +160,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
           };
         });
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rigidRef, meshRef, gameState, setGameState]);
 
     const handleUnanchor = useCallback(() => {

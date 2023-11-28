@@ -9,16 +9,14 @@ import type { RapierRigidBody } from "@react-three/rapier";
 import type { Mesh } from "three";
 import RoomShadow from "../RoomShadow";
 import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
-import { useLobbyContext } from "../../providers/LobbyProvider";
 
 interface GameMeshProps {
   mesh: ExtendedXRMesh;
   color?: string;
   name?: string;
-  mass?: number;
 }
 
-function GameMesh({ mesh, color = "red", name = "", mass = 1 }: GameMeshProps) {
+function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
   const { setMyMeshes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
@@ -46,7 +44,7 @@ function GameMesh({ mesh, color = "red", name = "", mass = 1 }: GameMeshProps) {
         }
 
         const isUnique = prev.every(
-          ({ mesh, name }) => mesh.uuid !== ref.current!.uuid,
+          ({ mesh }) => mesh.uuid !== ref.current!.uuid,
         );
 
         if (!isUnique) {
@@ -77,15 +75,12 @@ function GameMesh({ mesh, color = "red", name = "", mass = 1 }: GameMeshProps) {
       type={"fixed"}
     >
       <TrackedMesh ref={ref} mesh={mesh}>
-        {/* {color ? (
-          <meshBasicMaterial
-            wireframe
-            color={name === "global mesh" ? "purple" : color}
-          />
-        ) : (
-          <meshBasicMaterial wireframe color="white" />
-        )} */}
-        <meshBasicMaterial transparent opacity={0} wireframe color={"black"} />
+        <meshBasicMaterial
+          transparent
+          opacity={0}
+          wireframe
+          color={color ?? "black"}
+        />
       </TrackedMesh>
     </RigidBody>
   );

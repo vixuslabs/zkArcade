@@ -4,7 +4,7 @@ import {
   useTrackedMeshes,
   useTrackedPlanes,
 } from "@coconut-xr/natuerlich/react";
-import { Fragment, useId } from "react";
+import { useId } from "react";
 
 import {
   GameMesh,
@@ -31,8 +31,6 @@ function BuildRoom({ inGame }: { inGame: boolean }) {
               return <RoomShadow key={mesh.semanticLabel} mesh={mesh} />;
             } else
               return (
-                // <RoomShadow key={name} mesh={mesh} />
-                // <Fragment key={mesh.semanticLabel} />
                 <GameMesh
                   key={key + `${index}`}
                   mesh={mesh}
@@ -49,7 +47,6 @@ function BuildRoom({ inGame }: { inGame: boolean }) {
               plane={plane}
               name={plane.semanticLabel}
             />
-            // <></>
           ))}
         </group>
       </>

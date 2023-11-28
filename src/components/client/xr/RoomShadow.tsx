@@ -5,9 +5,9 @@ import { TrackedMesh } from "@coconut-xr/natuerlich/react";
 import { Vector3, Object3D, Quaternion } from "three";
 
 // @ts-expect-error - will fix type error later
-import vertex from "@/lib/shaders/room/vertex.glsl";
+import vertex from "@/lib/shaders/roomShadow/vertex.glsl";
 // @ts-expect-error - will fix type error later
-import fragment from "@/lib/shaders/room/fragment.glsl";
+import fragment from "@/lib/shaders/roomShadow/fragment.glsl";
 
 import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
 import type { Mesh } from "three";
@@ -21,6 +21,7 @@ import { useFrame } from "@react-three/fiber";
  */
 function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
   const ref = useRef<Mesh>(null);
+  // eslint-disable-next-line
   const [leftController, rightController] = useTrackControllers();
   const flashlight = useRef(new Object3D()).current;
 
@@ -37,14 +38,11 @@ function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
     if (rightController && ref.current) {
       shaderUniforms.flashlightPosition.value.copy(rightController.position);
 
-      // Update the flashlight position and rotation
-      // with respect to the right controller
       flashlight.position.copy(rightController.position);
       flashlight.quaternion.copy(rightController.orientation);
 
       flashlight.updateWorldMatrix(true, false);
 
-      // Decompose the world matrix to get global position and rotation
       const worldPosition = new Vector3();
       const worldQuaternion = new Quaternion();
       flashlight.matrixWorld.decompose(

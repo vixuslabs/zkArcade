@@ -1,7 +1,7 @@
 import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
 import { currentUser, clerkClient } from "@clerk/nextjs";
 
-import UserAvatar from "@/components/client/Avatar";
+import UserAvatar from "@/components/client/ui/Avatar";
 import { redirect } from "next/navigation";
 import { api } from "@/trpc/server";
 import {
