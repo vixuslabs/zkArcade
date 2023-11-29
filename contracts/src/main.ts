@@ -1,4 +1,4 @@
-import { Point, Object3D, Plane, Box, Room } from './structs.js';
+import { Point, Object3D, Plane, Box, Room, Matrix } from './structs.js';
 import { HotnCold } from './HotnCold.js';
 import {
   Field,
@@ -32,6 +32,9 @@ const boxesAndObjects: Box[] = [];
 boxes.forEach((b) => {
   const vertices = new Float32Array(Object.values(b.vertices));
   const inverseMatrix = computeInverseMatrix(b.matrix);
+  const o1jsMatrix = Matrix.fromMatrix4(inverseMatrix).invert();
+  console.log('inverseMatrix', inverseMatrix);
+  console.log('o1jsMatrix', o1jsMatrix);
   const translationToOriginMatrix = computeTranslationToOriginMatrix(vertices);
   const translationToPositiveCoordsMatrix = computeTranslationToPositiveCoordsMatrix(realWorldHiddenObject, {inverseMatrix, translationToOriginMatrix});  
   const object = Object3D.fromObjectAndTranslationMatrices(realWorldHiddenObject, {inverseMatrix, translationToOriginMatrix, translationToPositiveCoordsMatrix});
