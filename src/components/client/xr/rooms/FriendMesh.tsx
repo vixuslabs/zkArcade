@@ -4,7 +4,6 @@ import {
   Matrix4,
   Uint16BufferAttribute,
   Mesh,
-  MeshBasicMaterial,
   MeshStandardMaterial,
 } from "three";
 

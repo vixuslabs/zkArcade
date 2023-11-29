@@ -8,16 +8,12 @@ import React, {
   useEffect,
 } from "react";
 
-import type { Mesh } from "three";
-
 import { useLobbyContext } from "./LobbyProvider";
 
 import type {
   MeshesAndPlanesContextValue,
   MyMeshInfo,
   MyPlaneInfo,
-  MeshInfo,
-  PlaneInfo,
 } from "@/lib/types";
 import {
   useTrackedMeshes,
@@ -84,6 +80,7 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
         },
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myMeshes, myPlanes]);
 
   const values = useMemo(() => {

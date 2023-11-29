@@ -2,10 +2,8 @@
 
 import React, { useState, createContext, useContext, useMemo } from "react";
 
-import type {
-  ActiveDashboardTabContext,
-  ActiveDashboardTab,
-} from "@/lib/types";
+import { ActiveDashboardTabContext } from "@/lib/types";
+import type { ActiveDashboardTab } from "@/lib/types";
 
 const ActiveDashboardTabContext = createContext<ActiveDashboardTabContext>({
   activeTab: "home",

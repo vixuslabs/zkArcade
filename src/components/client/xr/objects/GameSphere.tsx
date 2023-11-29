@@ -55,7 +55,7 @@ function GameSphere({
 
   return (
     <RigidBody
-      name={"testBox-physics"}
+      name={"GameSphere-physics"}
       ref={rigidRef}
       colliders={"cuboid"}
       type={name === "hiddenObject" ? "fixed" : "dynamic"}

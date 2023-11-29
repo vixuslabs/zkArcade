@@ -16,7 +16,6 @@ interface PlayerCardProps {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -34,7 +33,6 @@ function PlayerCard({
     console.log("ready");
   },
   isReady,
-  isHost = false,
   imageUrl,
   className,
 }: PlayerCardProps) {

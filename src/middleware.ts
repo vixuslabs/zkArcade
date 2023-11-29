@@ -1,13 +1,4 @@
 import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
-import createMiddleware from "next-intl/middleware";
-import type { NextRequest } from "next/server";
-
-// const intlMiddleware: (request: NextRequest) => NextResponse<Locales> =
-//   createMiddleware({
-//     locales: ["en", "el"],
-
-//     defaultLocale: "en",
-//   });
 
 export default authMiddleware({
   // debug: true,
@@ -16,6 +7,7 @@ export default authMiddleware({
   //   return intlMiddleware(req);
   // },
   publicRoutes: ["/", "/dashboard"],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
     // console.log(auth);
     if (!auth.userId && !auth.isPublicRoute) {

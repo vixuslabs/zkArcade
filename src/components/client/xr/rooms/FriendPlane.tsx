@@ -13,7 +13,6 @@ function FriendPlane({
   positionData,
   indexData,
   matrixData,
-  worldMatrixData,
 }: {
   positionData: { itemSize: number; array: number[] };
   indexData: { itemSize: number; array: number[] };

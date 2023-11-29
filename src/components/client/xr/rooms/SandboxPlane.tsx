@@ -12,13 +12,11 @@ interface SpacialPlaneProps {
   plane: ExtendedXRPlane;
   color?: string;
   name?: string;
-  mass?: number;
 }
 
 function SandboxPlane({
   plane,
   name = "",
-  mass = 1,
   color = "black",
 }: SpacialPlaneProps) {
   const ref = useRef<Mesh>(null);

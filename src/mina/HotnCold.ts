@@ -27,6 +27,7 @@ export class HotnCold extends SmartContract {
 
   // Check that an object is on the right side of a given plane
   // (i.e. the plane's normal vector points towards the object).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   @method validateObjectIsInsideRoom(plane: Plane) {
     // TODO: Implement.
   }

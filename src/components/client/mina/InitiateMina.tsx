@@ -13,6 +13,7 @@ function InitiateMina({
   player: Player;
 }) {
   const { initiateMina, zkappWorkerClient, zkAppPublicKey } = useMinaContext();
+
   const [gameReady, setGameReady] = React.useState<boolean>(false);
 
   const handleLoadContract = useCallback(async () => {
@@ -36,17 +37,12 @@ function InitiateMina({
 
       console.log("starting to load contract");
       await handleLoadContract();
+      // ideally have a check here to see if the contract is loaded
+      setGameReady(true);
       console.log("handleLoadContract done");
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // useEffect(() => {
-  //   void (async () => {
-  //     console.log("starting to load contract");
-  //     await handleLoadContract();
-  //     console.log("handleLoadContract done");
-  //   })();
-  // }, [zkappWorkerClient, handleLoadContract]);
 
   return (
     <Button variant={"default"} asChild disabled={!gameReady}>

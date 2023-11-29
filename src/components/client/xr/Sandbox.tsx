@@ -16,7 +16,7 @@ import { clippingEvents } from "@coconut-xr/koestlich";
 import { SandboxControllers } from "@/components/client/xr/inputDevices";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
 import { Button } from "@/components/ui/button";
-import { BuildRoom, TestBox } from "@/components/client/xr";
+import { BuildRoom } from "@/components/client/xr";
 import { ControllerStateProvider } from "@/components/client/providers";
 import GameSphere from "./objects/GameSphere";
 import { Physics } from "@react-three/rapier";
@@ -88,7 +88,6 @@ function Sandbox({ user }: RoomCaptureProps) {
 
             {startSync && (
               <>
-                <TestBox position={[0, 0, -0.5]} />
                 <GameSphere
                   inGame={false}
                   color="blue"

@@ -39,13 +39,11 @@ function FriendsChannelProvider({
   initFriendsInfo,
   initFriendRequests,
   initGameInvites,
-  userId,
 }: {
   children: React.ReactNode;
   initFriendsInfo: FriendInfo[];
   initFriendRequests: PendingFriendRequests[];
   initGameInvites: Invite[];
-  userId: string;
 }) {
   const [activeFriends, setActiveFriends] =
     useState<FriendInfo[]>(initFriendsInfo);
@@ -145,7 +143,7 @@ function FriendsChannelProvider({
     "invite-accepted": (data) => {
       console.log("invite accepted", data);
 
-      const { id, friendId, gameId } = data;
+      const { friendId, gameId } = data;
 
       if (!friendId || !gameId) {
         throw new Error("No friend id or game id found");

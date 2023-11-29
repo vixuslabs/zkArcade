@@ -12,15 +12,9 @@ interface SandboxMesh {
   mesh: ExtendedXRMesh;
   color?: string;
   name?: string;
-  mass?: number;
 }
 
-function SandboxMesh({
-  mesh,
-  color = "red",
-  name = "",
-  mass = 1,
-}: SandboxMesh) {
+function SandboxMesh({ mesh, color = "red", name = "" }: SandboxMesh) {
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
 
@@ -33,7 +27,7 @@ function SandboxMesh({
       type={"fixed"}
     >
       <TrackedMesh ref={ref} mesh={mesh}>
-        <meshBasicMaterial transparent opacity={0} color="white" />
+        <meshBasicMaterial transparent opacity={0} color={color ?? "white"} />
       </TrackedMesh>
     </RigidBody>
   );

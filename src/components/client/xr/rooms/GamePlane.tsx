@@ -4,7 +4,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { TrackedPlane } from "@coconut-xr/natuerlich/react";
 import { RigidBody } from "@react-three/rapier";
 import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
-import { useLobbyContext } from "../../providers/LobbyProvider";
 
 import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
 import type { Mesh } from "three";
@@ -16,16 +15,9 @@ interface SpacialPlane {
   plane: ExtendedXRPlane;
   color?: string;
   name?: string;
-  mass?: number;
 }
 
-function GamePlane({
-  plane,
-  name = "",
-  mass = 1,
-  color = "black",
-}: SpacialPlane) {
-  const { gameState } = useLobbyContext();
+function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
   const { setMyPlanes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
@@ -63,7 +55,7 @@ function GamePlane({
         }
 
         const isUnique = prev.every(
-          ({ plane, name }) => plane.uuid !== ref.current!.uuid,
+          ({ plane }) => plane.uuid !== ref.current!.uuid,
         );
 
         if (!isUnique) {
@@ -89,15 +81,14 @@ function GamePlane({
         colliders={"trimesh"}
         canSleep={false}
         type="fixed"
-        // onCollisionEnter={(e) => console.log(e)}
       >
         <TrackedPlane ref={ref} plane={plane}>
-          {/* {color ? (
-            <meshPhongMaterial wireframe color={color} />
-          ) : (
-            <meshPhongMaterial wireframe color="black" />
-          )} */}
-          <meshPhongMaterial transparent opacity={0} wireframe color="black" />
+          <meshPhongMaterial
+            transparent
+            opacity={0}
+            wireframe
+            color={color ?? "black"}
+          />
         </TrackedPlane>
       </RigidBody>
     </>

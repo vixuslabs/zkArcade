@@ -115,6 +115,7 @@ function SandboxControllers({
       );
       pointerRef.current?.press(0, e);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [rayLength, heldObject, updatePointerState],
   );
 
@@ -128,7 +129,7 @@ function SandboxControllers({
       );
       pointerRef.current?.release(0, e);
     },
-    [rayLength, heldObject, updatePointerState],
+    [rayLength, heldObject, updatePointerState, inputSource.handedness],
   );
 
   useInputSourceEvent("selectstart", inputSource, handleSelectStart, [

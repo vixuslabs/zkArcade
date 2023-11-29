@@ -2,9 +2,7 @@ import { sql, relations } from "drizzle-orm";
 import {
   bigint,
   index,
-  int,
   mysqlTableCreator,
-  text,
   timestamp,
   uniqueIndex,
   varchar,

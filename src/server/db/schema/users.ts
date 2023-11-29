@@ -1,14 +1,9 @@
-import { sql, relations } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
-  bigint,
-  index,
-  int,
   mysqlTableCreator,
-  text,
   timestamp,
   uniqueIndex,
   varchar,
-  primaryKey,
 } from "drizzle-orm/mysql-core";
 
 /**

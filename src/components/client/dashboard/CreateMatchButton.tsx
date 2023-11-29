@@ -24,7 +24,7 @@ function CreateMatchButton() {
         asChild
       >
         {user.user && (
-          <Link href={`/${user.user.username}/${id}`}>Create Match</Link>
+          <Link href={`/lobby/${user.user.username}/${id}`}>Create Match</Link>
         )}
       </Button>
     </>

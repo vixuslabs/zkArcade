@@ -8,6 +8,8 @@ import {
 } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs";
 
+// export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const user = await currentUser();
 
