@@ -1,20 +1,16 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.js
 
 # testing
 /coverage
 
-# database
-/prisma/db.sqlite
-/prisma/db.sqlite-journal
-
 # next.js
-/.next/
-/out/
+.next/
+out/
 next-env.d.ts
 
 # production
@@ -42,4 +38,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-certificates
+# monorepo configuration
+.turbo
+
+# keeping temporarily for reference
+old_package.json
