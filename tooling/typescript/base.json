@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "target": "ES6",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -10,27 +11,14 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
     "noUncheckedIndexedAccess": true,
-    "experimentalDecorators": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["apps/nextjs/src/*"]
-    },
-    "plugins": [{ "name": "next" }]
+    "experimentalDecorators": true
   },
-  "include": [
-    ".eslintrc.cjs",
-    "apps/nextjs/next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.cjs",
-    "**/*.mjs",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "build", "dist", ".next", ".expo"]
 }
