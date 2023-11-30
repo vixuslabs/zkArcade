@@ -1,0 +1,46 @@
+{
+  "name": "@hot-n-cold/mina",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "keywords": [
+    "mina-zkapp",
+    "mina-zk-app",
+    "mina-dapp",
+    "zkapp"
+  ],
+  "type": "module",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "buildw": "tsc --watch",
+    "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "format": "prettier --write --ignore-unknown **/*",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "lint": "npx eslint src/* --fix"
+  },
+  "devDependencies": {
+    "@hot-n-cold/eslint-config": "workspace:^0.2.0",
+    "@hot-n-cold/prettier-config": "workspace:^0.1.0",
+    "@hot-n-cold/tsconfig": "workspace:^0.1.0",
+    "@babel/preset-env": "^7.16.4",
+    "@babel/preset-typescript": "^7.16.0",
+    "@types/three": "^0.158.3",
+    "eslint": "^8.53.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "three": "^0.158.0",
+    "o1js": "^0.14.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@hot-n-cold/eslint-config/mina"
+    ]
+  },
+  "prettier": "@hot-n-cold/prettier-config"
+}
