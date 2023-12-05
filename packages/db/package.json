@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@planetscale/database": "^1.11.0",
-    "drizzle-orm": "^0.29.0"
+    "drizzle-orm": "^0.29.0",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@hot-n-cold/eslint-config": "workspace:^0.2.0",
