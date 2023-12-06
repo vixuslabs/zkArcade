@@ -1,5 +1,5 @@
 import { Field } from 'o1js';
-import { Vector3, AffineTransformationMatrix } from './matrix.js';
+import { Vector3, AffineTransformationMatrix } from './structs.js';
 import * as THREE from 'three';
 
 const SCALE = 1000000;
