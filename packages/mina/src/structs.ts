@@ -1,7 +1,27 @@
-import { Field, Poseidon, Struct, Provable } from "o1js";
-import type { Matrix4 } from "three";
+import { Field, Poseidon, Struct, Provable, Int64 } from "o1js";
 
 export const SCALE = 1000000;
+
+export class Int64Vector3 extends Struct({ x: Int64, y: Int64, z: Int64 }) {
+  constructor(value: { x: Int64; y: Int64; z: Int64 }) {
+    super(value);
+  }
+
+  applyATM(m: Int64AffineTransformationMatrix): Int64Vector3 {
+    let x = m.e0.mul(this.x).add(m.e4.mul(this.y)).add(m.e8.mul(this.z)).add(m.e12);
+    let y = m.e1.mul(this.x).add(m.e5.mul(this.y)).add(m.e9.mul(this.z)).add(m.e13);
+    let z = m.e2.mul(this.x).add(m.e6.mul(this.y)).add(m.e10.mul(this.z)).add(m.e14);
+    return new Int64Vector3({ x, y, z });
+  }
+
+  toJSON() {
+    return JSON.stringify({
+      x: this.x.toJSON(),
+      y: this.y.toJSON(),
+      z: this.z.toJSON(),
+    });
+  }
+}
 
 export class Vector3 extends Struct({ x: Field, y: Field, z: Field }) {
   constructor(value: { x: Field; y: Field; z: Field }) {
@@ -20,6 +40,49 @@ export class Vector3 extends Struct({ x: Field, y: Field, z: Field }) {
       x: this.x.toJSON(),
       y: this.y.toJSON(),
       z: this.z.toJSON(),
+    });
+  }
+}
+
+export class Int64AffineTransformationMatrix extends Struct({
+  e0: Int64,
+  e1: Int64,
+  e2: Int64,
+  e3: Int64,
+  e4: Int64,
+  e5: Int64,
+  e6: Int64,
+  e7: Int64,
+  e8: Int64,
+  e9: Int64,
+  e10: Int64,
+  e11: Int64,
+  e12: Int64,
+  e13: Int64,
+  e14: Int64,
+  e15: Int64,
+}) {
+  static fromElements(elements: number[]) {
+    if (elements[3] != 0 || elements[7] != 0 || elements[11] != 0 || elements[15] != 1) {
+      throw new Error("Not an affine transformation matrix");
+    }
+    return new Int64AffineTransformationMatrix({
+      e0: Int64.from(elements[0]),
+      e1: Int64.from(elements[1]),
+      e2: Int64.from(elements[2]),
+      e3: Int64.from(0),
+      e4: Int64.from(elements[4]),
+      e5: Int64.from(elements[5]),
+      e6: Int64.from(elements[6]),
+      e7: Int64.from(0),
+      e8: Int64.from(elements[8]),
+      e9: Int64.from(elements[9]),
+      e10: Int64.from(elements[10]),
+      e11: Int64.from(0),
+      e12: Int64.from(elements[12]),
+      e13: Int64.from(elements[13]),
+      e14: Int64.from(elements[14]),
+      e15: Int64.from(1),
     });
   }
 }
@@ -69,6 +132,57 @@ export class AffineTransformationMatrix extends Struct({
 
 
 // An object is a sphere.
+
+export class Int64Object3D extends Struct({ center: Int64Vector3, radius: Int64 }) {
+  static fromPointAndRadius(center: Int64Vector3, radius: Int64) {
+    return new Int64Object3D({ center, radius });
+  }
+
+  static createFromJSON(objectString: string) {
+    const object = JSON.parse(objectString);
+    const center = JSON.parse(object.center);
+    return new Int64Object3D({
+      center: new Int64Vector3({
+        x: Int64.fromJSON(center.x),
+        y: Int64.fromJSON(center.y),
+        z: Int64.fromJSON(center.z),
+      }),
+      radius: Int64.fromJSON(object.radius),
+    });
+  }
+
+  toJSON() {
+    return JSON.stringify({
+      center: this.center.toJSON(),
+      radius: this.radius.toJSON(),
+    });
+  }
+
+  getHash(): Field {
+    return Poseidon.hash([ this.center.x.toField(), this.center.y.toField(), this.center.z.toField() ]);
+  }
+
+  // The object's bounding box.
+  minX() {
+    return this.center.x.sub(this.radius);
+  }
+  minY() {
+    return this.center.y.sub(this.radius);
+  }
+  minZ() {
+    return this.center.z.sub(this.radius);
+  }
+  maxX() {
+    return this.center.x.add(this.radius);
+  }
+  maxY() {
+    return this.center.y.add(this.radius);
+  }
+  maxZ() {
+    return this.center.z.add(this.radius);
+  }
+}
+
 export class Object3D extends Struct({ center: Vector3, radius: Field }) {
   static fromPointAndRadius(center: Vector3, radius: Field) {
     return new Object3D({ center, radius });
@@ -316,6 +430,28 @@ export class Object3D extends Struct({ center: Vector3, radius: Field }) {
 //       .assertTrue();
 //   }
 // }
+
+export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64 }) {
+  static fromMinMax(minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64) {
+    return new Int64o1Box({
+      minX: minX,
+      maxX: maxX,
+      minY: minY,
+      maxY: maxY,
+      minZ: minZ,
+      maxZ: maxZ,
+    });
+  }
+  assertObjectIsOutside(object: Int64Object3D) {
+    object.maxX().sub(this.minX).isPositive().not()
+      .or(object.maxY().sub(this.minY).isPositive().not())
+      .or(object.maxZ().sub(this.minZ).isPositive().not())
+      .or(object.minX().sub(this.maxX).isPositive())
+      .or(object.minY().sub(this.maxY).isPositive())
+      .or(object.minZ().sub(this.maxZ).isPositive())
+      .assertTrue();
+  }
+}
 
 export class o1Box extends Struct({ minX: Field, maxX: Field, minY: Field, maxY: Field, minZ: Field, maxZ: Field }) {
   static fromMinMax(minX: Field, maxX: Field, minY: Field, maxY: Field, minZ: Field, maxZ: Field) {
