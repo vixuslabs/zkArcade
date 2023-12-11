@@ -442,6 +442,35 @@ export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, 
       maxZ: maxZ,
     });
   }
+
+  static fromVertexPointsAndATM(vertexPoints: Int64Vector3[], affineTransformationMatrix: Int64AffineTransformationMatrix) {
+    const translatedVertexPoints = vertexPoints.map((p) => {
+      return p.applyATM(affineTransformationMatrix);
+    });
+    let minX = Int64.zero;
+    let maxX = Int64.zero;
+    let minY = Int64.zero;
+    let maxY = Int64.zero;
+    let minZ = Int64.zero;
+    let maxZ = Int64.zero;
+    for (const p of translatedVertexPoints) {
+      minX = Provable.if(p.x.sub(minX).isPositive(), minX , p.x);
+      maxX = Provable.if(p.x.sub(maxX).isPositive(), p.x , maxX);
+      minY = Provable.if(p.y.sub(minY).isPositive(), minY , p.y);
+      maxY = Provable.if(p.y.sub(maxY).isPositive(), p.y , maxY);
+      minZ = Provable.if(p.z.sub(minZ).isPositive(), minZ , p.z);
+      maxZ = Provable.if(p.z.sub(maxZ).isPositive(), p.z , maxZ);
+    }
+    return new Int64o1Box({
+      minX: minX,
+      maxX: maxX,
+      minY: minY,
+      maxY: maxY,
+      minZ: minZ,
+      maxZ: maxZ,
+    })
+  }
+
   assertObjectIsOutside(object: Int64Object3D) {
     object.maxX().sub(this.minX).isPositive().not()
       .or(object.maxY().sub(this.minY).isPositive().not())

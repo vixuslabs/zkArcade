@@ -1,4 +1,4 @@
-import { AccountUpdate, Mina, PrivateKey, Field, Int64 } from "o1js";
+import { AccountUpdate, Mina, PrivateKey, Field, Int64, Provable } from "o1js";
 
 import { HotnCold } from "./HotnCold.js";
 import { boxes, planes, realWorldHiddenObject } from "./scene.js";
@@ -8,9 +8,9 @@ import { o1Box, Object3D, Int64Vector3, o1Plane, Int64AffineTransformationMatrix
 const SCALE = 1000000;
 
 const objectVector = new Int64Vector3({
-  x: Int64.from(Math.round(realWorldHiddenObject.coords[0] * SCALE)),
-  y: Int64.from(Math.round(realWorldHiddenObject.coords[1] * SCALE)),
-  z: Int64.from(Math.round(realWorldHiddenObject.coords[2] * SCALE)),
+  x: Int64.from(Math.round(realWorldHiddenObject.coords[0] * SCALE * SCALE)),
+  y: Int64.from(Math.round(realWorldHiddenObject.coords[1] * SCALE * SCALE)),
+  z: Int64.from(Math.round(realWorldHiddenObject.coords[2] * SCALE * SCALE)),
 })
 console.log('Int64-typed object vector: ', objectVector.x.toJSON(), objectVector.y.toJSON(), objectVector.z.toJSON());
 const objectRadius = Int64.from(Math.round(realWorldHiddenObject.radius * SCALE));
@@ -35,7 +35,7 @@ boxes.forEach((b) => {
   }
   console.log('Int64-typed vertex points:');
   for (const p of vertexPoints) {
-    console.log(p.x.toJSON(), p.y.toJSON(), p.z.toJSON());
+    console.log(p.x.toString(), p.y.toString(), p.z.toString());
   }
   // Scale the matrix elements and set the last element to 1 to keep it affine
   const matrixElements = b.matrix.map(x => (Math.round(x * SCALE)));
@@ -46,45 +46,13 @@ boxes.forEach((b) => {
   });
   console.log("\nTranslated Vertex Points:");
   for (const p of translatedVertexPoints) {
-    console.log(p.x.toJSON(), p.y.toJSON(), p.z.toJSON());
+    console.log(p.x.div(1000000000n).toString(), p.y.div(1000000000n).toString(), p.z.div(1000000000n).toString());
   }
-  let minX = translatedVertexPoints[0].x;
-  let maxX = translatedVertexPoints[0].x;
-  let minY = translatedVertexPoints[0].y;
-  let maxY = translatedVertexPoints[0].y;
-  let minZ = translatedVertexPoints[0].z;
-  let maxZ = translatedVertexPoints[0].z;
-  for (const p of translatedVertexPoints) {
-    if (!p.x.sub(minX).isPositive()) {
-      minX = p.x;
-    }
-    if (p.x.sub(maxX).isPositive()) {
-      maxX = p.x;
-    }
-    if (!p.y.sub(minY).isPositive()) {
-      minY = p.y;
-    }
-    if (p.y.sub(maxY).isPositive()) {
-      maxY = p.y;
-    }
-    if (!p.z.sub(minZ).isPositive()) {
-      minZ = p.z;
-    }
-    if (p.z.sub(maxZ).isPositive()) {
-      maxZ = p.z;
-    }
-  }
-  const box = Int64o1Box.fromMinMax(minX, maxX, minY, maxY, minZ, maxZ);
-  console.log('Box:', 
-    minX,
-    maxX,
-    minY,
-    maxY,
-    minZ,
-    maxZ,
-  );
-  console.log('Object: ', object.center.x, object.center.y, object.center.z, object.radius);
-  box.assertObjectIsOutside(object);
+ 
+  const box = Int64o1Box.fromVertexPointsAndATM(translatedVertexPoints, Int64AffineTransformationMatrix.fromElements(matrixElements));
+
+  console.log('Object: ', object.center.x.div(1000000000n).toString(), object.center.y.div(1000000000n).toString(), object.center.z.div(1000000000n).toString(), object.radius.toString());
+  // box.assertObjectIsOutside(object);
   o1Boxes.push(box);
 });
 
@@ -121,41 +89,41 @@ boxes.forEach((b) => {
 // room.assertNoCollisions();
 // room.assertObjectIsInside();
 
-// const objectHash = object.getHash();
+const objectHash = object.getHash();
 
-// const useProof = false;
+const useProof = false;
 
-// const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
-// Mina.setActiveInstance(Local);
-// const { privateKey: deployerKey, publicKey: deployerAccount } =
-//   Local.testAccounts[0];
-// const { privateKey: senderKey, publicKey: senderAccount } =
-//   Local.testAccounts[1];
+const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
+Mina.setActiveInstance(Local);
+const { privateKey: deployerKey, publicKey: deployerAccount } =
+  Local.testAccounts[0];
+const { privateKey: senderKey, publicKey: senderAccount } =
+  Local.testAccounts[1];
 
-// // ----------------------------------------------------
+// ----------------------------------------------------
 
-// // create a destination we will deploy the smart contract to
-// const zkAppPrivateKey = PrivateKey.random();
-// const zkAppAddress = zkAppPrivateKey.toPublicKey();
+// create a destination we will deploy the smart contract to
+const zkAppPrivateKey = PrivateKey.random();
+const zkAppAddress = zkAppPrivateKey.toPublicKey();
 
-// const zkAppInstance = new HotnCold(zkAppAddress);
-// const deployTxn = await Mina.transaction(deployerAccount, () => {
-//   AccountUpdate.fundNewAccount(deployerAccount);
-//   zkAppInstance.deploy();
-//   zkAppInstance.commitObject(objectHash);
-// });
-// await deployTxn.prove();
-// await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+const zkAppInstance = new HotnCold(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+  zkAppInstance.commitObject(objectHash);
+});
+await deployTxn.prove();
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
 
-// // ----------------------------------------------------
+// ----------------------------------------------------
 
-// const txn = await Mina.transaction(senderAccount, () => {
-//   for (const box of o1Boxes) {
-//     zkAppInstance.validateObjectIsOutsideBox(box, object);
-//   }
-//   // for (const planeAndObject of planesAndObjects) {
-//   //   zkAppInstance.validateObjectIsInsideRoom(planeAndObject);
-//   // }
-// });
-// await txn.prove();
-// await txn.sign([senderKey]).send();
+const txn = await Mina.transaction(senderAccount, () => {
+  for (const box of o1Boxes) {
+    zkAppInstance.validateObjectIsOutsideBox(box, object);
+  }
+  // for (const planeAndObject of planesAndObjects) {
+  //   zkAppInstance.validateObjectIsInsideRoom(planeAndObject);
+  // }
+});
+await txn.prove();
+await txn.sign([senderKey]).send();

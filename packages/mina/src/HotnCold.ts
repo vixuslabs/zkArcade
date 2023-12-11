@@ -1,6 +1,6 @@
 import { Field, method, SmartContract, state, State } from "o1js";
 
-import { o1Box, o1Plane, Object3D } from "./structs.js";
+import { o1Box, o1Plane, Object3D, Int64o1Box, Int64Object3D } from "./structs.js";
 
 // The HotnCold contract allows users to commit an object hash and then validate that:
 // 1. A given object matches the previously commited hash.
@@ -17,7 +17,7 @@ export class HotnCold extends SmartContract {
 
   // Check that an object does not collide with a given box
   // (i.e. the object is outside the box)
-  @method validateObjectIsOutsideBox(box: o1Box, object: Object3D) {
+  @method validateObjectIsOutsideBox(box: Int64o1Box, object: Int64Object3D) {
     box.assertObjectIsOutside(object);
   }
 
