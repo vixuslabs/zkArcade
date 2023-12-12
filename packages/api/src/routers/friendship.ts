@@ -1,43 +1,36 @@
+import { clerkClient } from "@clerk/nextjs";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "../trpc";
-import {
-  friendships,
-  friendRequests,
-} from "@hot-n-cold/db/schema/friendships";
-import { users } from "@hot-n-cold/db/schema/users";
-import { eq, inArray, and, or, desc } from "drizzle-orm";
-import { pusher } from "../pusher/server";
-import { clerkClient } from "@clerk/nextjs";
-
 import type { db as Drizzle } from "@hot-n-cold/db";
+import { friendRequests, friendships } from "@hot-n-cold/db/schema/friendships";
+import { users } from "@hot-n-cold/db/schema/users";
+
+import { pusher } from "../pusher/server";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 interface CleanSentRequest {
   requestId: number;
   receiverId: string;
-};
+}
 
 interface CleanReceivedRequest {
   requestId: number;
   senderId: string;
-};
+}
 
 const getFriendRequest = async (requestId: number, db: typeof Drizzle) => {
   const friendRequestsPrepared = db.query.friendRequests
-  .findFirst({
-    where: eq(friendRequests.requestId, requestId),
-    orderBy: desc(friendRequests.updatedAt),
-  })
-  .prepare();
+    .findFirst({
+      where: eq(friendRequests.requestId, requestId),
+      orderBy: desc(friendRequests.updatedAt),
+    })
+    .prepare();
 
   const execute = await friendRequestsPrepared.execute();
 
   return execute;
-}
+};
 
 export const friendshipRouter = createTRPCRouter({
   getUsersFriends: protectedProcedure.query(async ({ ctx }) => {
@@ -220,7 +213,7 @@ export const friendshipRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // need to check if friendship already exists, if so, return error
-
+      console.log("inside sendFriendRequest");
       const senderId = ctx.auth.userId;
 
       console.log("senderId: ", senderId);
@@ -278,13 +271,13 @@ export const friendshipRouter = createTRPCRouter({
       });
 
       const cutId = input.receiverId.split("_")[1];
-
+      console.log("cutId: ", cutId);
       // should only do this when they are online
       await pusher.trigger(`user-${cutId}-friends`, `friend-request-pending`, {
         username: user.username,
         firstName: user.firstName,
         imageUrl: user.imageUrl,
-        requestId: res.insertId,
+        requestId: Number(res.insertId),
         showToast: true,
       });
     }),
@@ -292,7 +285,6 @@ export const friendshipRouter = createTRPCRouter({
   getFriendRequest: publicProcedure
     .input(z.object({ requestId: z.number() }))
     .query(async ({ ctx, input }) => {
-
       const friendRequest = await getFriendRequest(input.requestId, ctx.db);
 
       return friendRequest;
