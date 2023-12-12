@@ -7,51 +7,36 @@ import { o1Box, Object3D, Int64Vector3, o1Plane, Int64AffineTransformationMatrix
 
 const SCALE = 1000000;
 
+// Import the hidden object coordinates
 const objectVector = new Int64Vector3({
   x: Int64.from(Math.round(realWorldHiddenObject.coords[0] * SCALE * SCALE)),
   y: Int64.from(Math.round(realWorldHiddenObject.coords[1] * SCALE * SCALE)),
   z: Int64.from(Math.round(realWorldHiddenObject.coords[2] * SCALE * SCALE)),
 })
-console.log('Int64-typed object vector: ', objectVector.x.toJSON(), objectVector.y.toJSON(), objectVector.z.toJSON());
-const objectRadius = Int64.from(Math.round(realWorldHiddenObject.radius * SCALE));
+const objectRadius = Int64.from(Math.round(realWorldHiddenObject.radius * SCALE * SCALE));
 const object = Int64Object3D.fromPointAndRadius(objectVector, objectRadius);
 
 const o1Boxes: Int64o1Box[] = [];
 boxes.forEach((b) => {
   const vertices = new Float32Array(Object.values(b.vertices));
-  // Translate and scale the original box so that all its vertices are positive integers
-  const scaledAndTranslatedVertices = vertices.map((v) => Math.round(v * SCALE));
-  console.log('Scaled and Translated Vertices: ', scaledAndTranslatedVertices);
-  // Create an array of 8 Vector3 objects from the vertices
+  // Scale the original box so that all its vertices are integers
+  const scaledVertices = vertices.map((v) => Math.round(v * SCALE));
+  // Create an array of 8 Vector3 objects from the scaled vertices
   const vertexPoints: Int64Vector3[] = [];
-  for (let i = 0; i < scaledAndTranslatedVertices.length; i += 3) {
+  for (let i = 0; i < scaledVertices.length; i += 3) {
     vertexPoints.push(
       new Int64Vector3({
-        x: Int64.from(scaledAndTranslatedVertices[i]),
-        y: Int64.from(scaledAndTranslatedVertices[i + 1]),
-        z: Int64.from(scaledAndTranslatedVertices[i + 2]),
+        x: Int64.from(scaledVertices[i]),
+        y: Int64.from(scaledVertices[i + 1]),
+        z: Int64.from(scaledVertices[i + 2]),
       }),
     );
-  }
-  console.log('Int64-typed vertex points:');
-  for (const p of vertexPoints) {
-    console.log(p.x.toString(), p.y.toString(), p.z.toString());
   }
   // Scale the matrix elements and set the last element to 1 to keep it affine
   const matrixElements = b.matrix.map(x => (Math.round(x * SCALE)));
   matrixElements[15] = 1;
-  // Apply the affine transformation matrix to each vertex
-  const translatedVertexPoints = vertexPoints.map((p) => {
-    return p.applyATM(Int64AffineTransformationMatrix.fromElements(matrixElements));
-  });
-  console.log("\nTranslated Vertex Points:");
-  for (const p of translatedVertexPoints) {
-    console.log(p.x.div(1000000000n).toString(), p.y.div(1000000000n).toString(), p.z.div(1000000000n).toString());
-  }
- 
-  const box = Int64o1Box.fromVertexPointsAndATM(translatedVertexPoints, Int64AffineTransformationMatrix.fromElements(matrixElements));
-
-  console.log('Object: ', object.center.x.div(1000000000n).toString(), object.center.y.div(1000000000n).toString(), object.center.z.div(1000000000n).toString(), object.radius.toString());
+  // Instantiate the box from the vertices and the matrix
+  const box = Int64o1Box.fromVertexPointsAndATM(vertexPoints, Int64AffineTransformationMatrix.fromElements(matrixElements));
   // box.assertObjectIsOutside(object);
   o1Boxes.push(box);
 });
