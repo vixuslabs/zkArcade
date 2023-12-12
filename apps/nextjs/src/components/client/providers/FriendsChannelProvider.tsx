@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useState, useMemo, useContext, createContext } from "react";
-
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/components/ui/use-toast";
 import { useFriendsChannel } from "@/lib/hooks/useFriendsChannel";
-import { ToastAction } from "@/components/ui/toast";
-import { useRouter } from "next/navigation";
-
 import type {
   FriendInfo,
-  PusherClientContextValues,
-  PendingFriendRequests,
   Invite,
-  TaggedPendingFriendRequest,
-  TaggedGameInvite,
   Notification,
+  PendingFriendRequests,
+  PusherClientContextValues,
+  TaggedGameInvite,
+  TaggedPendingFriendRequest,
 } from "@/lib/types";
+import { api } from "@/trpc/react";
 
 const PusherClientContext = createContext<PusherClientContextValues>({
   activeFriends: [],
@@ -51,6 +50,9 @@ function FriendsChannelProvider({
     useState<PendingFriendRequests[]>(initFriendRequests);
   const [gameInvites, setGameInvites] = useState<Invite[]>(initGameInvites);
 
+  const acceptFriendRequestMutation =
+    api.friendships.acceptFriendRequest.useMutation();
+
   const router = useRouter();
 
   useFriendsChannel({
@@ -84,6 +86,7 @@ function FriendsChannelProvider({
       });
     },
     "friend-request-pending": (data) => {
+      console.log("friend request pending", data);
       if (!data.requestId) {
         throw new Error("No request id found");
       }
@@ -92,6 +95,18 @@ function FriendsChannelProvider({
         title: "New Friend Request!",
         description: `Sent from ${data.username}`,
         duration: 5000,
+        action: (
+          <ToastAction
+            altText="Accept"
+            onClick={() => {
+              acceptFriendRequestMutation.mutate({
+                requestId: data.requestId!,
+              });
+            }}
+          >
+            Accept
+          </ToastAction>
+        ),
       });
 
       setPendingFriendRequests((prev) => [

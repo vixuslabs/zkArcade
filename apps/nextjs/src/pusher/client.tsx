@@ -1,19 +1,21 @@
 "use client";
 
 import React, { useContext, useEffect, useMemo, useState } from "react";
-
-import { env } from "@/env.mjs";
-import Pusher from "pusher-js";
+import { usePusher } from "@/components/client/lobbyStore";
+// import { env } from "@/env.mjs";
 import { useClerk } from "@clerk/nextjs";
+import type Pusher from "pusher-js";
 
 interface PusherContextValues {
   pusher: Pusher | null;
   isLoading: boolean;
+  initialized: boolean;
 }
 
 const PusherClientContext = React.createContext<PusherContextValues>({
   pusher: null,
   isLoading: true,
+  initialized: false,
 });
 
 /**
@@ -33,59 +35,75 @@ export const usePusherClient = () => {
 };
 
 export function PusherClientProvider(props: { children: React.ReactNode }) {
-  const [pusherClient, setPusherClient] = useState<Pusher>(null!);
+  // const [pusherClient, setPusherClient] = useState<Pusher>(null!);
   const [isLoading, setIsLoading] = useState(true);
+  const { initPusher, pusherInitialized, removePusher, pusher } = usePusher();
   const { user } = useClerk();
 
   useEffect(() => {
     if (!user) {
+      console.log("user not set yet");
       return;
     }
 
-    const client = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: "us2",
-      forceTLS: true,
-      userAuthentication: {
-        endpoint: "../api/pusher/user-auth",
-        transport: "ajax",
-        params: {
-          username: user.username,
-          userId: user.id,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-      channelAuthorization: {
-        endpoint: "../api/pusher/channel-auth",
-        transport: "ajax",
-        params: {
-          username: user.username,
-          userId: user.id,
-          imageUrl: user.imageUrl,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
+    if (pusherInitialized) {
+      console.log("pusher already initialized");
+      console.log(`pusher`, pusher);
+      return;
+    }
+
+    initPusher({
+      userId: user.id,
+      username: user.username ?? "",
+      imageUrl: user.imageUrl,
     });
 
-    client.signin();
+    // const client = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
+    //   cluster: "us2",
+    //   forceTLS: true,
+    //   userAuthentication: {
+    //     endpoint: "../api/pusher/user-auth",
+    //     transport: "ajax",
+    //     params: {
+    //       username: user.username,
+    //       userId: user.id,
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   },
+    //   channelAuthorization: {
+    //     endpoint: "../api/pusher/channel-auth",
+    //     transport: "ajax",
+    //     params: {
+    //       username: user.username,
+    //       userId: user.id,
+    //       imageUrl: user.imageUrl,
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   },
+    // });
+
+    // client.signin();
 
     setIsLoading(false);
 
-    setPusherClient(client);
+    // setPusherClient(client);
     return () => {
-      client.disconnect();
+      // client.disconnect();
+      if (pusherInitialized) removePusher();
     };
-  }, [user]);
+  }, [pusherInitialized, user?.id]);
 
   const values = useMemo(() => {
     return {
-      pusher: pusherClient,
+      pusher,
       isLoading,
+      initialized: pusherInitialized,
     };
-  }, [isLoading, pusherClient]);
+  }, [pusherInitialized]);
 
   return (
     <PusherClientContext.Provider value={values}>

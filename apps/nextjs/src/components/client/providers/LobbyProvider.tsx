@@ -1,18 +1,18 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-empty-function */
 
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React, {
-  useState,
-  useContext,
   createContext,
+  useContext,
   useMemo,
   useRef,
+  useState,
 } from "react";
-
 import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
+import type { GameState, LobbyContextValues, Player } from "@/lib/types";
 import { calculateProximity } from "@/lib/utils";
 
-import type { Player, GameState, LobbyContextValues } from "@/lib/types";
+import { usePusher } from "../lobbyStore";
 
 const LobbyContext = createContext<LobbyContextValues>({
   players: [],
@@ -49,6 +49,10 @@ function LobbyProvider({
   user: Player;
   lobbyId: string;
 }) {
+  const pusherStore = usePusher();
+
+  console.log("pusherStore", pusherStore);
+
   const [starting, setStarting] = useState<boolean>(false);
   const [isMinaOn, setIsMinaOn] = useState<boolean>(false);
   const started = useRef<boolean>(false);
