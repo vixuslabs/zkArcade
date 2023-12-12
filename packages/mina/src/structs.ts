@@ -2,29 +2,8 @@ import { Field, Poseidon, Struct, Provable, Int64 } from "o1js";
 
 export const SCALE = 1000000;
 
-export class Int64Vector3 extends Struct({ x: Int64, y: Int64, z: Int64 }) {
+export class Vector3 extends Struct({ x: Int64, y: Int64, z: Int64 }) {
   constructor(value: { x: Int64; y: Int64; z: Int64 }) {
-    super(value);
-  }
-
-  applyATM(m: Int64AffineTransformationMatrix): Int64Vector3 {
-    let x = m.e0.mul(this.x).add(m.e4.mul(this.y)).add(m.e8.mul(this.z)).add(m.e12);
-    let y = m.e1.mul(this.x).add(m.e5.mul(this.y)).add(m.e9.mul(this.z)).add(m.e13);
-    let z = m.e2.mul(this.x).add(m.e6.mul(this.y)).add(m.e10.mul(this.z)).add(m.e14);
-    return new Int64Vector3({ x, y, z });
-  }
-
-  toJSON() {
-    return JSON.stringify({
-      x: this.x.toJSON(),
-      y: this.y.toJSON(),
-      z: this.z.toJSON(),
-    });
-  }
-}
-
-export class Vector3 extends Struct({ x: Field, y: Field, z: Field }) {
-  constructor(value: { x: Field; y: Field; z: Field }) {
     super(value);
   }
 
@@ -44,7 +23,7 @@ export class Vector3 extends Struct({ x: Field, y: Field, z: Field }) {
   }
 }
 
-export class Int64AffineTransformationMatrix extends Struct({
+export class AffineTransformationMatrix extends Struct({
   e0: Int64,
   e1: Int64,
   e2: Int64,
@@ -66,7 +45,7 @@ export class Int64AffineTransformationMatrix extends Struct({
     if (elements[3] != 0 || elements[7] != 0 || elements[11] != 0 || elements[15] != 1) {
       throw new Error("Not an affine transformation matrix");
     }
-    return new Int64AffineTransformationMatrix({
+    return new AffineTransformationMatrix({
       e0: Int64.from(elements[0]),
       e1: Int64.from(elements[1]),
       e2: Int64.from(elements[2]),
@@ -87,62 +66,17 @@ export class Int64AffineTransformationMatrix extends Struct({
   }
 }
 
-export class AffineTransformationMatrix extends Struct({
-  e0: Field,
-  e1: Field,
-  e2: Field,
-  e3: Field,
-  e4: Field,
-  e5: Field,
-  e6: Field,
-  e7: Field,
-  e8: Field,
-  e9: Field,
-  e10: Field,
-  e11: Field,
-  e12: Field,
-  e13: Field,
-  e14: Field,
-  e15: Field,
-}) {
-  static fromElements(elements: number[]) {
-    if (elements[3] != 0 || elements[7] != 0 || elements[11] != 0 || elements[15] != 1) {
-      throw new Error("Not an affine transformation matrix");
-    }
-    return new AffineTransformationMatrix({
-      e0: Field(elements[0]),
-      e1: Field(elements[1]),
-      e2: Field(elements[2]),
-      e3: Field(0),
-      e4: Field(elements[4]),
-      e5: Field(elements[5]),
-      e6: Field(elements[6]),
-      e7: Field(0),
-      e8: Field(elements[8]),
-      e9: Field(elements[9]),
-      e10: Field(elements[10]),
-      e11: Field(0),
-      e12: Field(elements[12]),
-      e13: Field(elements[13]),
-      e14: Field(elements[14]),
-      e15: Field(1),
-    });
-  }
-}
-
-
 // An object is a sphere.
-
-export class Int64Object3D extends Struct({ center: Int64Vector3, radius: Int64 }) {
-  static fromPointAndRadius(center: Int64Vector3, radius: Int64) {
-    return new Int64Object3D({ center, radius });
+export class Object3D extends Struct({ center: Vector3, radius: Int64 }) {
+  static fromPointAndRadius(center: Vector3, radius: Int64) {
+    return new Object3D({ center, radius });
   }
 
   static createFromJSON(objectString: string) {
     const object = JSON.parse(objectString);
     const center = JSON.parse(object.center);
-    return new Int64Object3D({
-      center: new Int64Vector3({
+    return new Object3D({
+      center: new Vector3({
         x: Int64.fromJSON(center.x),
         y: Int64.fromJSON(center.y),
         z: Int64.fromJSON(center.z),
@@ -160,56 +94,6 @@ export class Int64Object3D extends Struct({ center: Int64Vector3, radius: Int64 
 
   getHash(): Field {
     return Poseidon.hash([ this.center.x.toField(), this.center.y.toField(), this.center.z.toField() ]);
-  }
-
-  // The object's bounding box.
-  minX() {
-    return this.center.x.sub(this.radius);
-  }
-  minY() {
-    return this.center.y.sub(this.radius);
-  }
-  minZ() {
-    return this.center.z.sub(this.radius);
-  }
-  maxX() {
-    return this.center.x.add(this.radius);
-  }
-  maxY() {
-    return this.center.y.add(this.radius);
-  }
-  maxZ() {
-    return this.center.z.add(this.radius);
-  }
-}
-
-export class Object3D extends Struct({ center: Vector3, radius: Field }) {
-  static fromPointAndRadius(center: Vector3, radius: Field) {
-    return new Object3D({ center, radius });
-  }
-
-  static createFromJSON(objectString: string) {
-    const object = JSON.parse(objectString);
-    const center = JSON.parse(object.center);
-    return new Object3D({
-      center: new Vector3({
-        x: Field.fromJSON(center.x),
-        y: Field.fromJSON(center.y),
-        z: Field.fromJSON(center.z),
-      }),
-      radius: Field.fromJSON(object.radius),
-    });
-  }
-
-  toJSON() {
-    return JSON.stringify({
-      center: this.center.toJSON(),
-      radius: this.radius.toJSON(),
-    });
-  }
-
-  getHash(): Field {
-    return Poseidon.hash([ this.center.x, this.center.y, this.center.z ]);
   }
 
   // The object's bounding box.
@@ -321,119 +205,9 @@ export class Object3D extends Struct({ center: Vector3, radius: Field }) {
 //   }
 // }
 
-// A box is defined by 2 points 'a' and 'b'.
-// 'a' is the min point (bottom, near, left) and 'b' is the max point (top, far, right).
-// export class Box extends Struct({ a: Vector3, b: Vector3, object: Object3D }) {
-//   // This static method takes two arguments:
-//   // 1. The vertices of the box as exported from the WebXR experience (an array of 24 elements of type Float32Array)).
-//   // 2. A translation matrix used to translate the box in such a way that:
-//   //   - Its sides are aligned to the x, y, and z axes (so that the box can be represented with just two points).
-//   //   - All vertices have positive coordinates.
-//   // In addition to this, the method also scales the box by a factor of 1000000 and rounds the coordinates to integers
-//   // so that they can be represented with Field elements in o1js.
-//   static fromVerticesTranslationMatricesAndObject(
-//     vertices: Float32Array,
-//     matrices: {
-//       translationToOriginMatrix: Matrix4;
-//       translationToPositiveCoordsMatrix: Matrix4;
-//     },
-//     object: Object3D,
-//   ) {
-//     const v = [];
-//     // Iterate through all vertices and apply the translation matrices to each one.
-//     for (let i = 0; i < vertices.length; i += 3) {
-//       const vertex = new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
-//       vertex.applyMatrix4(matrices.translationToPositiveCoordsMatrix);
-//       vertex.applyMatrix4(matrices.translationToOriginMatrix);
-//       v.push(vertex);
-//     }
-//     // Find the closest and farthest vertices to the origin. These will be the two points that define the box.
-//     let closestVertex = new Vector3();
-//     let farthestVertex = new Vector3();
-//     let closestDistance = Infinity;
-//     let farthestDistance = 0;
-//     // Loop through all vertices to find the closest and farthest
-//     v.forEach((vertex) => {
-//       let distance = vertex.length(); // Get the distance from origin
-//       // Check if this vertex is closer than the current closest
-//       if (distance < closestDistance) {
-//         closestDistance = distance;
-//         closestVertex = vertex;
-//       }
-//       // Check if this vertex is farther than the current farthest
-//       if (distance > farthestDistance) {
-//         farthestDistance = distance;
-//         farthestVertex = vertex;
-//       }
-//     });
-//     // Returns a box with the closest and farthest vertices.
-//     return new Box({
-//       a: new Vector3({
-//         x: Field(Math.round(closestVertex.x * SCALE)),
-//         y: Field(Math.round(closestVertex.y * SCALE)),
-//         z: Field(Math.round(closestVertex.z * SCALE)),
-//       }),
-//       b: new Vector3({
-//         x: Field(Math.round(farthestVertex.x * SCALE)),
-//         y: Field(Math.round(farthestVertex.y * SCALE)),
-//         z: Field(Math.round(farthestVertex.z * SCALE)),
-//       }),
-//       object: object,
-//     });
-//   }
-
-//   static createFromJSON(boxString: string) {
-//     const box = JSON.parse(boxString);
-//     const a = JSON.parse(box.a);
-//     const b = JSON.parse(box.b);
-//     return new Box({
-//       a: new Vector3({
-//         x: Field.fromJSON(a.x),
-//         y: Field.fromJSON(a.y),
-//         z: Field.fromJSON(a.z),
-//       }),
-//       b: new Vector3({
-//         x: Field.fromJSON(b.x),
-//         y: Field.fromJSON(b.y),
-//         z: Field.fromJSON(b.z),
-//       }),
-//       object: Object3D.createFromJSON(box.object),
-//     });
-//   }
-
-//   toJSON() {
-//     return JSON.stringify({
-//       a: this.a.toJSON(),
-//       b: this.b.toJSON(),
-//       object: this.object.toJSON(),
-//     });
-//   }
-
-//   // Check that the object is outside the box.
-//   assertObjectIsOutside() {
-//     const minX = this.a.x;
-//     const minY = this.a.y;
-//     const minZ = this.a.z;
-
-//     const maxX = this.b.x;
-//     const maxY = this.b.y;
-//     const maxZ = this.b.z;
-
-//     this.object
-//       .maxX()
-//       .lessThan(minX)
-//       .or(this.object.maxY().lessThan(minY))
-//       .or(this.object.maxZ().lessThan(minZ))
-//       .or(this.object.minX().greaterThan(maxX))
-//       .or(this.object.minY().greaterThan(maxY))
-//       .or(this.object.minZ().greaterThan(maxZ))
-//       .assertTrue();
-//   }
-// }
-
-export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64 }) {
+export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64 }) {
   static fromMinMax(minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64) {
-    return new Int64o1Box({
+    return new Box({
       minX: minX,
       maxX: maxX,
       minY: minY,
@@ -443,7 +217,7 @@ export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, 
     });
   }
 
-  static fromVertexPointsAndATM(vertexPoints: Int64Vector3[], affineTransformationMatrix: Int64AffineTransformationMatrix) {
+  static fromVertexPointsAndATM(vertexPoints: Vector3[], affineTransformationMatrix: AffineTransformationMatrix) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyATM(affineTransformationMatrix);
     });
@@ -461,7 +235,7 @@ export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, 
       minZ = Provable.if(p.z.sub(minZ).isPositive(), minZ , p.z);
       maxZ = Provable.if(p.z.sub(maxZ).isPositive(), p.z , maxZ);
     }
-    return new Int64o1Box({
+    return new Box({
       minX: minX,
       maxX: maxX,
       minY: minY,
@@ -471,7 +245,7 @@ export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, 
     })
   }
 
-  assertObjectIsOutside(object: Int64Object3D) {
+  assertObjectIsOutside(object: Object3D) {
     object.maxX().sub(this.minX).isPositive().not()
       .or(object.maxY().sub(this.minY).isPositive().not())
       .or(object.maxZ().sub(this.minZ).isPositive().not())
@@ -482,35 +256,13 @@ export class Int64o1Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, 
   }
 }
 
-export class o1Box extends Struct({ minX: Field, maxX: Field, minY: Field, maxY: Field, minZ: Field, maxZ: Field }) {
-  static fromMinMax(minX: Field, maxX: Field, minY: Field, maxY: Field, minZ: Field, maxZ: Field) {
-    return new o1Box({
-      minX: minX,
-      maxX: maxX,
-      minY: minY,
-      maxY: maxY,
-      minZ: minZ,
-      maxZ: maxZ,
-    });
-  }
-  assertObjectIsOutside(object: Object3D) {
-    object.maxX().lessThan(this.minX)
-      .or(object.maxY().lessThan(this.minY))
-      .or(object.maxZ().lessThan(this.minZ))
-      .or(object.minX().greaterThan(this.maxX))
-      .or(object.minY().greaterThan(this.maxY))
-      .or(object.minZ().greaterThan(this.maxZ))
-      .assertTrue();
-  }
-}
-
-export class o1Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
+export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
   static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
-    return new o1Plane({ a, b, c });
+    return new Plane({ a, b, c });
   }
-  assertObjectIsOnInnerSide(object: Object3D) {
-    object.center.y.lessThanOrEqual(this.a.y).assertTrue();
-  }
+  // assertObjectIsOnInnerSide(object: Object3D) {
+  //   object.center.y.lessThanOrEqual(this.a.y).assertTrue();
+  // }
 }
 
 // A room is defined by a list of planes and boxes.
