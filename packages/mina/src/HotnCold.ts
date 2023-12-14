@@ -24,6 +24,6 @@ export class HotnCold extends SmartContract {
   // Check that an object is on the right side of a given plane
   // (i.e. the plane's normal vector points towards the object).
   @method validateObjectIsInsideRoom(plane: Plane, object: Object3D) {
-    // plane.assertObjectIsOnInnerSide(object);
+    plane.assertObjectIsOnInnerSide(object);
   }
 }

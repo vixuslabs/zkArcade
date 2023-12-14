@@ -8,10 +8,36 @@ export class Vector3 extends Struct({ x: Int64, y: Int64, z: Int64 }) {
   }
 
   applyATM(m: AffineTransformationMatrix): Vector3 {
-    let x = m.e0.mul(this.x).add(m.e4.mul(this.y)).add(m.e8.mul(this.z)).add(m.e12);
-    let y = m.e1.mul(this.x).add(m.e5.mul(this.y)).add(m.e9.mul(this.z)).add(m.e13);
-    let z = m.e2.mul(this.x).add(m.e6.mul(this.y)).add(m.e10.mul(this.z)).add(m.e14);
+    let x = (m.e0.mul(this.x).add(m.e4.mul(this.y)).add(m.e8.mul(this.z)).add(m.e12.mul(SCALE))).div(SCALE);
+    let y = (m.e1.mul(this.x).add(m.e5.mul(this.y)).add(m.e9.mul(this.z)).add(m.e13.mul(SCALE))).div(SCALE);
+    let z = (m.e2.mul(this.x).add(m.e6.mul(this.y)).add(m.e10.mul(this.z)).add(m.e14.mul(SCALE))).div(SCALE);
     return new Vector3({ x, y, z });
+  }
+
+  crossProduct(v: Vector3): Vector3 {
+    const ax = this.x;
+    const ay = this.y;
+    const az = this.z;
+    const bx = v.x;
+    const by = v.y;
+    const bz = v.z;
+
+    const x = (ay.mul(bz).sub(az.mul(by))).div(SCALE);
+    const y = (az.mul(bx).sub(ax.mul(bz))).div(SCALE);
+    const z = (ax.mul(by).sub(ay.mul(bx))).div(SCALE);
+    return new Vector3({ x, y, z });
+  }
+
+  dotProduct(v: Vector3): Int64 {
+    return (this.x.mul(v.x).add(this.y.mul(v.y)).add(this.z.mul(v.z)).div(SCALE));
+  }
+
+  sub(v: Vector3): Vector3 {
+    return new Vector3({
+      x: this.x.sub(v.x),
+      y: this.y.sub(v.y),
+      z: this.z.sub(v.z),
+    });
   }
 
   toJSON() {
@@ -118,92 +144,67 @@ export class Object3D extends Struct({ center: Vector3, radius: Int64 }) {
 }
 
 // A plane is defined by 3 points.
-// export class Plane extends Struct({
-//   a: Vector3,
-//   b: Vector3,
-//   c: Vector3,
-//   object: Object3D,
-// }) {
-//   static fromPoints(a: Vector3, b: Vector3, c: Vector3, object: Object3D) {
-//     return new Plane({ a, b, c, object });
-//   }
+export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
+  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
+    return new Plane({ a, b, c });
+  }
 
-//   static fromVerticesTranslationMatricesAndObject(
-//     vertices: Float32Array,
-//     matrices: {
-//       translationToOriginMatrix: Matrix4;
-//       translationToPositiveCoordsMatrix: Matrix4;
-//     },
-//     object: Object3D,
-//   ) {
-//     const v = [];
-//     // Iterate through all vertices and apply the translation matrices to each one.
-//     for (let i = 0; i < vertices.length; i += 3) {
-//       const vertex = new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
-//       vertex.applyMatrix4(matrices.translationToPositiveCoordsMatrix);
-//       vertex.applyMatrix4(matrices.translationToOriginMatrix);
-//       v.push(vertex);
-//     }
+  static fromVertexPointsAndATM(vertexPoints: Vector3[], affineTransformationMatrix: AffineTransformationMatrix) {
+    const translatedVertexPoints = vertexPoints.map((p) => {
+      return p.applyATM(affineTransformationMatrix);
+    });
+    return new Plane({
+      a: translatedVertexPoints[0],
+      b: translatedVertexPoints[1],
+      c: translatedVertexPoints[2],
+    });
+  }
 
-//     // Returns a plane with positive coordinates
-//     return new Plane({
-//       a: new Vector3({
-//         x: Field(Math.round(v[0].x * SCALE)),
-//         y: Field(Math.round(v[0].y * SCALE)),
-//         z: Field(Math.round(v[0].z * SCALE)),
-//       }),
-//       b: new Vector3({
-//         x: Field(Math.round(v[1].x * SCALE)),
-//         y: Field(Math.round(v[1].y * SCALE)),
-//         z: Field(Math.round(v[1].z * SCALE)),
-//       }),
-//       c: new Vector3({
-//         x: Field(Math.round(v[2].x * SCALE)),
-//         y: Field(Math.round(v[2].y * SCALE)),
-//         z: Field(Math.round(v[3].z * SCALE)),
-//       }),
-//       object: object,
-//     });
-//   }
+  normalVector() {
+    return this.b.sub(this.a).crossProduct(this.c.sub(this.a));
+  }
 
-//   static createFromJSON(planeString: string) {
-//     const plane = JSON.parse(planeString);
-//     const a = JSON.parse(plane.a);
-//     const b = JSON.parse(plane.b);
-//     const c = JSON.parse(plane.c);
-//     return new Plane({
-//       a: new Vector3({
-//         x: Field.fromJSON(a.x),
-//         y: Field.fromJSON(a.y),
-//         z: Field.fromJSON(a.z),
-//       }),
-//       b: new Vector3({
-//         x: Field.fromJSON(b.x),
-//         y: Field.fromJSON(b.y),
-//         z: Field.fromJSON(b.z),
-//       }),
-//       c: new Vector3({
-//         x: Field.fromJSON(c.x),
-//         y: Field.fromJSON(c.y),
-//         z: Field.fromJSON(c.z),
-//       }),
-//       object: Object3D.createFromJSON(plane.object),
-//     });
-//   }
+  static createFromJSON(planeString: string) {
+    const plane = JSON.parse(planeString);
+    const a = JSON.parse(plane.a);
+    const b = JSON.parse(plane.b);
+    const c = JSON.parse(plane.c);
+    return new Plane({
+      a: new Vector3({
+        x: Int64.fromJSON(a.x),
+        y: Int64.fromJSON(a.y),
+        z: Int64.fromJSON(a.z),
+      }),
+      b: new Vector3({
+        x: Int64.fromJSON(b.x),
+        y: Int64.fromJSON(b.y),
+        z: Int64.fromJSON(b.z),
+      }),
+      c: new Vector3({
+        x: Int64.fromJSON(c.x),
+        y: Int64.fromJSON(c.y),
+        z: Int64.fromJSON(c.z),
+      })
+    });
+  }
 
-//   toJSON() {
-//     return JSON.stringify({
-//       a: this.a.toJSON(),
-//       b: this.b.toJSON(),
-//       c: this.c.toJSON(),
-//       object: this.object.toJSON(),
-//     });
-//   }
+  toJSON() {
+    return JSON.stringify({
+      a: this.a.toJSON(),
+      b: this.b.toJSON(),
+      c: this.c.toJSON(),
+    });
+  }
 
-//   assertObjectIsOnInnerSide() {
-//     this.object.center.y.lessThanOrEqual(this.a.y).assertTrue();
-//   }
-// }
+  // Check that the object is on the inner side of the plane.
+  assertObjectIsOnInnerSide(object: Object3D) {
+    const objectCenter = object.center;
+    const planeNormalVector = this.normalVector();
+    const planePoint = this.a;
+    const planeToCenterVector = objectCenter.sub(planePoint);
+    planeNormalVector.dotProduct(planeToCenterVector).isPositive().not().assertTrue();
+  }
+}
 
 export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64 }) {
   static fromMinMax(minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64) {
@@ -254,15 +255,6 @@ export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: I
       .or(object.minZ().sub(this.maxZ).isPositive())
       .assertTrue();
   }
-}
-
-export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
-  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
-    return new Plane({ a, b, c });
-  }
-  // assertObjectIsOnInnerSide(object: Object3D) {
-  //   object.center.y.lessThanOrEqual(this.a.y).assertTrue();
-  // }
 }
 
 // A room is defined by a list of planes and boxes.
