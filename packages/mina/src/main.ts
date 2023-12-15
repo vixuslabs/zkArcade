@@ -2,8 +2,7 @@ import { AccountUpdate, Mina, PrivateKey, Int64 } from "o1js";
 
 import { HotnCold } from "./HotnCold.js";
 import { boxes, planes, realWorldHiddenObject } from "./scene.js";
-import { Box, Object3D, Vector3, Plane, AffineTransformationMatrix, SCALE } from "./structs.js";
-// import { meshes } from './meshes.js';
+import { Room, Object3D, Plane, Box, Vector3, AffineTransformationMatrix, SCALE } from "./structs.js";
 
 // Import the hidden object coordinates
 const objectVector = new Vector3({
@@ -35,7 +34,6 @@ boxes.forEach((b) => {
   matrixElements[15] = 1;
   // Instantiate the box from the vertices and the matrix
   const box = Box.fromVertexPointsAndATM(vertexPoints, AffineTransformationMatrix.fromElements(matrixElements));
-  // box.assertObjectIsOutside(object);
   sceneBoxes.push(box);
 });
 
@@ -60,23 +58,15 @@ planes.forEach((p) => {
   matrixElements[15] = 1;
   // Instantiate the plane from the vertices and the matrix
   const plane = Plane.fromVertexPointsAndATM(vertexPoints, AffineTransformationMatrix.fromElements(matrixElements));
-  // plane.assertObjectIsOnInnerSide(object);
   scenePlanes.push(plane);
 });
 
-// const dummyObject = Object3D.fromPointAndRadius(new Point({x: Field(1000), y: Field(1000), z: Field(1000)}), Field(100));
-// const dummyPlane = Plane.fromPoints(new Point({x: Field(0), y: Field(0), z: Field(0)}), new Point({x: Field(0), y: Field(0), z: Field(1)}), new Point({x: Field(0), y: Field(1), z: Field(0)}), dummyObject);
-// const room = Room.fromPlanesAndBoxes([dummyPlane], boxesAndObjects);
-// const room = Room.fromPlanesAndBoxes(planesAndObjects, boxesAndObjects);
-// room.assertNoCollisions();
-// room.assertObjectIsInside();
+// Instantiate the room from the planes and boxes
+const room = Room.fromPlanesAndBoxes(scenePlanes, sceneBoxes);
 
 // ----------------------------------------------------
 
-const objectHash = object.getHash();
-
 const useProof = false;
-
 const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
 Mina.setActiveInstance(Local);
 const { privateKey: deployerKey, publicKey: deployerAccount } =
@@ -94,7 +84,7 @@ const zkAppInstance = new HotnCold(zkAppAddress);
 const deployTxn = await Mina.transaction(deployerAccount, () => {
   AccountUpdate.fundNewAccount(deployerAccount);
   zkAppInstance.deploy();
-  zkAppInstance.commitObject(objectHash);
+  zkAppInstance.commitObject(object);
 });
 await deployTxn.prove();
 await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
@@ -102,12 +92,7 @@ await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
 // ----------------------------------------------------
 
 const txn = await Mina.transaction(senderAccount, () => {
-  // for (const box of sceneBoxes) {
-  //   zkAppInstance.validateObjectIsOutsideBox(box, object);
-  // }
-  for (const plane of scenePlanes) {
-    zkAppInstance.validateObjectIsInsideRoom(plane, object);
-  }
+    zkAppInstance.validateRoom(room, object);
 });
 await txn.prove();
 await txn.sign([senderKey]).send();

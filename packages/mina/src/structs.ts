@@ -207,17 +207,6 @@ export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
 }
 
 export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64 }) {
-  static fromMinMax(minX: Int64, maxX: Int64, minY: Int64, maxY: Int64, minZ: Int64, maxZ: Int64) {
-    return new Box({
-      minX: minX,
-      maxX: maxX,
-      minY: minY,
-      maxY: maxY,
-      minZ: minZ,
-      maxZ: maxZ,
-    });
-  }
-
   static fromVertexPointsAndATM(vertexPoints: Vector3[], affineTransformationMatrix: AffineTransformationMatrix) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyATM(affineTransformationMatrix);
@@ -246,6 +235,29 @@ export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: I
     })
   }
 
+  static createFromJSON(boxString: string) {
+    const box = JSON.parse(boxString);
+    return new Box({
+      minX: Int64.fromJSON(box.minX),
+      maxX: Int64.fromJSON(box.maxX),
+      minY: Int64.fromJSON(box.minY),
+      maxY: Int64.fromJSON(box.maxY),
+      minZ: Int64.fromJSON(box.minZ),
+      maxZ: Int64.fromJSON(box.maxZ),
+    });
+  }
+
+  toJSON() {
+    return JSON.stringify({
+      minX: this.minX.toJSON(),
+      maxX: this.maxX.toJSON(),
+      minY: this.minY.toJSON(),
+      maxY: this.maxY.toJSON(),
+      minZ: this.minZ.toJSON(),
+      maxZ: this.maxZ.toJSON(),
+    });
+  }
+
   assertObjectIsOutside(object: Object3D) {
     object.maxX().sub(this.minX).isPositive().not()
       .or(object.maxY().sub(this.minY).isPositive().not())
@@ -258,49 +270,47 @@ export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: I
 }
 
 // A room is defined by a list of planes and boxes.
-// export class Room extends Struct({ planes: [Plane], boxes: [Box] }) {
-//   static fromPlanesAndBoxes(planes: Plane[], boxes: Box[]) {
-//     return new Room({ planes, boxes });
-//   }
+export class Room extends Struct({ planes: [Plane], boxes: [Box] }) {
+  static fromPlanesAndBoxes(planes: Plane[], boxes: Box[]) {
+    return new Room({ planes, boxes });
+  }
 
-//   static createFromJSON(roomString: string) {
-//     const room = JSON.parse(roomString);
-//     const newRoom = new Room({
-//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//       planes: room.planes.map((plane: any) => {
-//         return Plane.createFromJSON(plane);
-//       }),
-//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//       boxes: room.boxes.map((box: any) => {
-//         return Box.createFromJSON(box);
-//       }),
-//     });
-//     return newRoom;
-//   }
+  static createFromJSON(roomString: string) {
+    const room = JSON.parse(roomString);
+    const newRoom = new Room({
+      planes: room.planes.map((plane: string) => {
+        return Plane.createFromJSON(plane);
+      }),
+      boxes: room.boxes.map((box: string) => {
+        return Box.createFromJSON(box);
+      }),
+    });
+    return newRoom;
+  }
 
-//   toJSON() {
-//     return JSON.stringify({
-//       planes: this.planes.map((plane: Plane) => {
-//         return plane.toJSON();
-//       }),
-//       boxes: this.boxes.map((box: Box) => {
-//         return box.toJSON();
-//       }),
-//     });
-//   }
+  toJSON() {
+    return JSON.stringify({
+      planes: this.planes.map((plane: Plane) => {
+        return plane.toJSON();
+      }),
+      boxes: this.boxes.map((box: Box) => {
+        return box.toJSON();
+      }),
+    });
+  }
 
-//   // Check that the object is inside the room.
-//   assertObjectIsInside() {
-//     for (const plane of this.planes) {
-//       plane.assertObjectIsOnInnerSide();
-//     }
-//   }
+  // Check that the object is inside the room.
+  assertObjectIsInside(object: Object3D) {
+    for (const plane of this.planes) {
+      plane.assertObjectIsOnInnerSide(object);
+    }
+  }
 
-//   // Check that the object does not collide with any of the room's boxes.
-//   assertNoCollisions() {
-//     for (const box of this.boxes) {
-//       box.assertObjectIsOutside();
-//     }
-//   }
-// }
+  // Check that the object does not collide with any of the room's boxes.
+  assertNoCollisions(object: Object3D) {
+    for (const box of this.boxes) {
+      box.assertObjectIsOutside(object);
+    }
+  }
+}
    
