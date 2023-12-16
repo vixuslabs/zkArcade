@@ -1,8 +1,10 @@
+import { SettingsCard } from "@/components/client/dashboard";
+
 function Settings() {
   return (
-    <>
-      <p>settings</p>
-    </>
+    <div className="flex h-full w-full flex-col justify-around gap-y-4">
+      <SettingsCard />
+    </div>
   );
 }
 
