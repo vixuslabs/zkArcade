@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { usePusherClient } from "@/pusher/client";
+import { useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { usePathname } from "next/navigation";
 import { env } from "@/env.mjs";
-
 import type { Player } from "@/lib/types";
-import type { Dispatch, SetStateAction } from "react";
+import { usePusherClient } from "@/pusher/client";
 import type { PresenceChannel } from "pusher-js";
 
 type PushMembers = Record<string, { username: string; imageUrl: string }>;
@@ -94,7 +93,6 @@ export const useLobbyChannel = (
 
       newPlayers.push({
         username: info.username,
-        firstName: null,
         imageUrl: info.imageUrl,
         ready: false,
         // host: isCurrentHost,
@@ -122,7 +120,6 @@ export const useLobbyChannel = (
         console.log("member: ", member);
         return {
           username: member.username,
-          firstName: null,
           imageUrl: member.imageUrl,
           ready: false,
           host: isCurrentHost,

@@ -1,17 +1,17 @@
 import type { ButtonState } from "@coconut-xr/natuerlich/react";
+import type { ThreeEvent } from "@react-three/fiber";
+import type { RapierRigidBody } from "@react-three/rapier";
+import type { PresenceChannel } from "pusher-js";
 import type {
-  Quaternion,
-  Vector3,
-  Mesh,
   BufferGeometry,
   Material,
+  Matrix4,
+  Mesh,
   NormalBufferAttributes,
   Object3DEventMap,
+  Quaternion,
+  Vector3,
 } from "three";
-import type { RapierRigidBody } from "@react-three/rapier";
-import type { ThreeEvent } from "@react-three/fiber";
-import type { Matrix4 } from "three";
-import type { PresenceChannel } from "pusher-js";
 
 /**
  * XR-related types and interfaces
@@ -21,7 +21,7 @@ export interface GamepadButtonState {
   pressed: boolean;
   touched: boolean;
   value: number;
-};
+}
 
 interface GamepadBase {
   axes: readonly number[];
@@ -69,23 +69,23 @@ export interface PointerState {
   state: TriggerState;
   heldObject: { uuid: string; name?: string } | null;
   controllerState?: RightControllerState | LeftControllerState | null;
-};
+}
 
 export interface Pointers {
   left: PointerState;
   right: PointerState;
-};
+}
 
 export interface ObjectHeldCheck {
   objectHeldByPointer: boolean;
   handness: "left" | "right" | undefined;
-};
+}
 
 export interface ControllerStateContextValue {
   pointers: Pointers;
   setLeftPointer: (data: PointerState) => void;
   setRightPointer: (data: PointerState) => void;
-};
+}
 
 export type ButtonsType = "a-button" | "b-button" | "x-button" | "y-button";
 
@@ -103,7 +103,6 @@ export interface RigidAndMeshRefs {
 export type AppUser = {
   id: string;
   username: string;
-  firstName: string | null;
   image_url: string | null;
 } | null;
 
@@ -220,7 +219,6 @@ export interface PlaneInfo {
 
 export interface Player {
   username: string;
-  firstName: string | null;
   imageUrl: string | null;
   ready: boolean;
   host: boolean;
@@ -238,27 +236,26 @@ export interface Player {
 }
 
 /**
- * Friends
+ * Users
  */
 
-export interface FriendInfo {
-  username: string;
-  firstName: string | null;
-  imageUrl: string;
+export interface UserInfo {
   id: string;
+  username: string;
+  imageUrl: string | null;
 }
 
 export interface Invite {
-  sender: FriendInfo;
   gameId: string;
+  sender: UserInfo;
+  receiver?: UserInfo;
 }
 
 export interface PendingFriendRequests {
   requestId: number;
-  imageUrl: string;
-  username: string;
-  firstName: string | null;
-};
+  sender: UserInfo;
+  receiver?: UserInfo;
+}
 
 export type NotificationType = "PendingFriendRequest" | "GameInvite";
 
@@ -279,7 +276,7 @@ export interface TaggedGameInvite extends Invite, BaseNotification {
 export type Notification = TaggedPendingFriendRequest | TaggedGameInvite;
 
 export interface PusherClientContextValues {
-  activeFriends: FriendInfo[];
+  activeFriends: UserInfo[];
   pendingFriendRequests: PendingFriendRequests[];
   gameInvites: Invite[];
   allNotifications: Notification[];

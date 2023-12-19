@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -33,10 +32,6 @@ import * as z from "zod";
 const handleUpdatedUser = (values: SettingsFormScheme) => {
   const updatedData: Partial<SettingsFormScheme> = {};
   const updatedPasswords: Partial<SettingsFormScheme> = {};
-
-  if (values.firstName !== "") {
-    updatedData.firstName = values.firstName;
-  }
 
   if (values.username !== "") {
     updatedData.username = values.username;
@@ -65,19 +60,6 @@ const settingsFormScheme = z.object({
         "Username must be at least 3 and no more than 15 characters long.",
     },
   ),
-  firstName: z.string().refine(
-    (val) => {
-      return (
-        val === undefined ||
-        val === "" ||
-        (val.length >= 3 && val.length <= 15 && val.match(/^[a-zA-Z]+$/))
-      );
-    },
-    {
-      message: "Name must be at least 3 and no more than 15 characters long.",
-    },
-  ),
-
   currentPassword: z.string().refine(
     (val) => {
       return (
@@ -132,7 +114,6 @@ function SettingsForm() {
   );
 
   const defaultValues = {
-    firstName: "",
     username: "",
     currentPassword: "",
     newPassword: "",
@@ -174,10 +155,7 @@ function SettingsForm() {
         });
     }
 
-    if (
-      updatedData.username !== undefined ||
-      updatedData.firstName !== undefined
-    ) {
+    if (updatedData.username !== undefined) {
       user
         ?.update({ ...updatedData })
         .then(() => {
@@ -202,130 +180,112 @@ function SettingsForm() {
   }
 
   return (
-    <>
-      <Card className="h-full overflow-scroll">
-        <CardHeader className="items-center">
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>
-            <div
-              role="button"
-              tabIndex={0}
-              className="group relative"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  console.log("clicked profile picture");
-                }
-              }}
-              onClick={() => console.log("clicked profile picture")}
+    <Card className="h-full overflow-scroll">
+      <CardHeader className="items-center">
+        <CardTitle>Settings</CardTitle>
+        <CardDescription>
+          <div
+            role="button"
+            tabIndex={0}
+            className="group relative"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                console.log("clicked profile picture");
+              }
+            }}
+            onClick={() => console.log("clicked profile picture")}
+          >
+            <Avatar
+              // onPointerOver={() => setOverProfilePicture(true)}
+              // onPointerLeave={() => setOverProfilePicture(false)}
+              className={cn(
+                "my-2 h-24 w-24 transition-all duration-300 ease-in-out hover:cursor-pointer group-hover:blur-sm",
+                // overProfilePicture && "opacity-50 backdrop-blur-md",
+                "",
+              )}
             >
-              <Avatar
-                // onPointerOver={() => setOverProfilePicture(true)}
-                // onPointerLeave={() => setOverProfilePicture(false)}
-                className={cn(
-                  "my-2 h-24 w-24 transition-all duration-300 ease-in-out hover:cursor-pointer group-hover:blur-sm",
-                  // overProfilePicture && "opacity-50 backdrop-blur-md",
-                  "",
-                )}
-              >
-                <AvatarImage
-                  className="transform"
-                  src={user?.imageUrl}
-                  alt="Profile Picture"
-                />
-                <AvatarFallback>SC</AvatarFallback>
-              </Avatar>
-              <div
-                className="
+              <AvatarImage
+                className="transform"
+                src={user?.imageUrl}
+                alt="Profile Picture"
+              />
+              <AvatarFallback>SC</AvatarFallback>
+            </Avatar>
+            <div
+              className="
                         absolute inset-0 flex items-center justify-center
                         rounded-full text-center
                         font-bold text-white 
                         opacity-0 transition-all duration-300
                         ease-in-out group-hover:cursor-pointer group-hover:bg-black group-hover:opacity-50
                     "
-              >
-                Change Image
-              </div>
+            >
+              Change Image
             </div>
-            <div className="text-center">{user?.username}</div>
-          </CardDescription>
-        </CardHeader>
-        <Separator className="mb-2" />
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder={user?.username ?? ""} {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      This is your username. It must be unique.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder={user?.firstName ?? ""} {...field} />
-                    </FormControl>
-                    <FormDescription>This is your first name</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="currentPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={""} {...field} />
-                    </FormControl>
-                    <FormDescription>Confirm current password</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={""} {...field} />
-                    </FormControl>
-                    <FormDescription>Change password</FormDescription>
-                  </FormItem>
-                )}
-              />
-              <Button
-                disabled={isExternalUser}
-                type="submit"
-                className={cn("z-20 w-full items-center rounded px-4 py-2 ")}
-              >
-                {isExternalUser
-                  ? `Change on ${user?.externalAccounts[0]?.provider}`
-                  : "Save"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-
-        <CardFooter className="flex items-center justify-center"></CardFooter>
-      </Card>
-    </>
+          </div>
+          <div className="text-center">{user?.username}</div>
+        </CardDescription>
+      </CardHeader>
+      <Separator className="mb-2" />
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder={user?.username ?? ""} {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This is your username. It must be unique.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="currentPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder={""} {...field} />
+                  </FormControl>
+                  <FormDescription>Confirm current password</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder={""} {...field} />
+                  </FormControl>
+                  <FormDescription>Change password</FormDescription>
+                </FormItem>
+              )}
+            />
+            <Button
+              disabled={isExternalUser}
+              type="submit"
+              className={cn("z-20 w-full items-center rounded px-4 py-2 ")}
+            >
+              {isExternalUser
+                ? `Change on ${user?.externalAccounts[0]?.provider}`
+                : "Save"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }
 

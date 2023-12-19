@@ -1,6 +1,8 @@
 "use client";
 
 import { Fragment } from "react";
+import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DialogClose,
@@ -12,12 +14,9 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { api } from "@/trpc/react";
-import { usePathname } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { api } from "@/trpc/react";
 
 function DialogCloseButton() {
   const friends = api.friendships.getUsersFriends.useQuery();
@@ -74,7 +73,7 @@ function DialogCloseButton() {
       {friends.isSuccess && (
         <ScrollArea className="max-h-full">
           <ul className="divide-y divide-gray-100">
-            {friends.data.map(({ username, firstName, imageUrl, id }) => (
+            {friends.data.map(({ username, imageUrl, id }) => (
               <Fragment key={username ?? id}>
                 <li className="flex items-center justify-between gap-x-6 py-5">
                   <div className="flex min-w-0 gap-x-4">
@@ -86,9 +85,6 @@ function DialogCloseButton() {
                       <AvatarFallback>SC</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-auto">
-                      <p className="text-sm font-semibold leading-6">
-                        {firstName}
-                      </p>
                       <p className="mt-1 truncate text-xs leading-5 text-gray-500">
                         {username}
                       </p>

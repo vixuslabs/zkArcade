@@ -36,7 +36,6 @@ function AddFriend() {
   const [retrievedUser, setRetrievedUser] = useState<{
     id: string;
     username: string;
-    firstName: string | null;
     image_url: string | null;
   }>();
 
@@ -146,9 +145,6 @@ function AddFriend() {
                 <div className="min-w-0 flex-auto">
                   <p className="text-sm font-semibold leading-6">
                     {retrievedUser.username}
-                  </p>
-                  <p className="mt-1 truncate text-xs leading-5">
-                    {retrievedUser.firstName}
                   </p>
                 </div>
                 <Button

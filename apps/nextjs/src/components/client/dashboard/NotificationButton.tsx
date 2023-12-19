@@ -1,32 +1,28 @@
 "use client";
-import { BellIcon } from "@heroicons/react/24/outline";
 
 import React, { Fragment } from "react";
-
+import { useRouter } from "next/navigation";
+import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { api } from "@/trpc/react";
 import { toast } from "@/components/ui/use-toast";
-
-import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
-import { useRouter } from "next/navigation";
+import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
+import { BellIcon } from "@heroicons/react/24/outline";
 
 function NotificationButton() {
   const { allNotifications } = useFriendsProvider();
   const user = useUser();
 
   const router = useRouter();
-
-  console.log(allNotifications);
 
   const acceptRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();

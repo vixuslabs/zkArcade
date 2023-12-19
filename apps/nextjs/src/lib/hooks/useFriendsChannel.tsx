@@ -5,7 +5,6 @@ import { useUser } from "@clerk/nextjs";
 
 export interface FriendData {
   username: string;
-  firstName: string | null;
   imageUrl: string;
   id: string;
   requestId?: number;

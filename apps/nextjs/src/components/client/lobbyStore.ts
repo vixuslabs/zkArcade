@@ -45,7 +45,6 @@ export type FriendEvents =
 
 export interface FriendData {
   username: string;
-  firstName: string | null;
   imageUrl: string;
   id: string;
   requestId?: number;

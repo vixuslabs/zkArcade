@@ -58,36 +58,6 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
       imageUrl: user.imageUrl,
     });
 
-    // const client = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
-    //   cluster: "us2",
-    //   forceTLS: true,
-    //   userAuthentication: {
-    //     endpoint: "../api/pusher/user-auth",
-    //     transport: "ajax",
-    //     params: {
-    //       username: user.username,
-    //       userId: user.id,
-    //     },
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   },
-    //   channelAuthorization: {
-    //     endpoint: "../api/pusher/channel-auth",
-    //     transport: "ajax",
-    //     params: {
-    //       username: user.username,
-    //       userId: user.id,
-    //       imageUrl: user.imageUrl,
-    //     },
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   },
-    // });
-
-    // client.signin();
-
     setIsLoading(false);
 
     // setPusherClient(client);

@@ -6,13 +6,13 @@ import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/components/ui/use-toast";
 import { useFriendsChannel } from "@/lib/hooks/useFriendsChannel";
 import type {
-  FriendInfo,
   Invite,
   Notification,
   PendingFriendRequests,
   PusherClientContextValues,
   TaggedGameInvite,
   TaggedPendingFriendRequest,
+  UserInfo,
 } from "@/lib/types";
 import { api } from "@/trpc/react";
 
@@ -40,12 +40,12 @@ function FriendsChannelProvider({
   initGameInvites,
 }: {
   children: React.ReactNode;
-  initFriendsInfo: FriendInfo[];
+  initFriendsInfo: UserInfo[];
   initFriendRequests: PendingFriendRequests[];
   initGameInvites: Invite[];
 }) {
   const [activeFriends, setActiveFriends] =
-    useState<FriendInfo[]>(initFriendsInfo);
+    useState<UserInfo[]>(initFriendsInfo);
   const [pendingFriendRequests, setPendingFriendRequests] =
     useState<PendingFriendRequests[]>(initFriendRequests);
   const [gameInvites, setGameInvites] = useState<Invite[]>(initGameInvites);
@@ -59,14 +59,13 @@ function FriendsChannelProvider({
     "friend-added": (data) => {
       console.log("friend added", data);
       setPendingFriendRequests((prev) =>
-        prev.filter((request) => request.username !== data.username),
+        prev.filter((request) => request.sender.username !== data.username),
       );
       setActiveFriends((prev) => {
         return [
           ...prev,
           {
             username: data.username,
-            firstName: data.firstName,
             imageUrl: data.imageUrl,
             id: data.id,
           },
@@ -112,10 +111,12 @@ function FriendsChannelProvider({
       setPendingFriendRequests((prev) => [
         ...prev,
         {
-          username: data.username,
-          firstName: data.firstName,
-          imageUrl: data.imageUrl,
-          requestId: Number(data.requestId!),
+          requestId: data.requestId!,
+          sender: {
+            id: data.id,
+            username: data.username,
+            imageUrl: data.imageUrl,
+          },
         },
       ]);
     },
@@ -129,13 +130,12 @@ function FriendsChannelProvider({
       setGameInvites((prev) => [
         ...prev,
         {
+          gameId: data.gameId!,
           sender: {
             username: data.username,
-            firstName: data.firstName,
             imageUrl: data.imageUrl,
             id: data.id,
           },
-          gameId: data.gameId!,
         },
       ]);
 
