@@ -30,7 +30,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { usePusher } from "../lobbyStore";
+// import { usePusher } from "../lobbyStore";
 
 function AddFriend() {
   const [retrievedUser, setRetrievedUser] = useState<{

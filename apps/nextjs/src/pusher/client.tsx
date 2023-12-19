@@ -93,6 +93,8 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
     // setPusherClient(client);
     return () => {
       // client.disconnect();
+      console.log("removing pusher");
+      console.log(`pusher`, pusher);
       if (pusherInitialized) removePusher();
     };
   }, [pusherInitialized, user?.id]);
