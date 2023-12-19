@@ -1,6 +1,6 @@
-import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import { LobbyProvider, MinaProvider } from "@/components/client/providers";
+import { api } from "@/trpc/server";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function XRLayout({
@@ -22,7 +22,6 @@ export default async function XRLayout({
     <LobbyProvider
       user={{
         username: user.username,
-        firstName: user.firstName,
         imageUrl: user.image_url,
         host: params.username === user.username,
         ready: false,

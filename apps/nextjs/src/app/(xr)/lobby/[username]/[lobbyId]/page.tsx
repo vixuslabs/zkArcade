@@ -1,8 +1,7 @@
-import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 import { LobbyProvider } from "@/components/client/providers";
-
 import { Lobby } from "@/components/client/ui/lobby";
+import { api } from "@/trpc/server";
 import { currentUser } from "@clerk/nextjs";
 
 async function LobbyPage({
@@ -22,7 +21,6 @@ async function LobbyPage({
     <LobbyProvider
       user={{
         username: user.username,
-        firstName: user.firstName,
         imageUrl: user.image_url,
         host: params.username === user.username,
         ready: false,

@@ -54,7 +54,6 @@ export async function POST(req: Request) {
     let id: string | undefined,
       username: string | null,
       image_url: string,
-      first_name: string,
       // created_at: number,
       email_addresses: EmailAddressJSON[];
 
@@ -63,7 +62,7 @@ export async function POST(req: Request) {
         console.log("User created");
 
         try {
-          ({ id, username, email_addresses, first_name, image_url } = evt.data);
+          ({ id, username, email_addresses, image_url } = evt.data);
 
           if (!email_addresses[0]?.email_address) {
             return new Response(
@@ -77,7 +76,6 @@ export async function POST(req: Request) {
           await api.users.createUser.mutate({
             id,
             username: username ?? "",
-            firstName: first_name,
             email: email_addresses[0]?.email_address,
             imageUrl: image_url,
           });
@@ -94,7 +92,7 @@ export async function POST(req: Request) {
         }
 
       case "user.updated":
-        ({ id, username, image_url, first_name } = evt.data);
+        ({ id, username, image_url } = evt.data);
 
         console.log("User updated");
 
@@ -114,7 +112,6 @@ export async function POST(req: Request) {
             id: id,
             username: username,
             imageUrl: image_url,
-            firstName: first_name,
           });
 
           return new Response(`Account ${id} Updated`, { status: 200 });
