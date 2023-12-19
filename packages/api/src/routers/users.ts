@@ -26,7 +26,6 @@ export const userRouter = createTRPCRouter({
       return {
         id: userDB.id,
         username: userDB.username,
-        firstName: userDB.firstName,
         image_url: userDB.imageUrl,
       };
     }),
@@ -47,7 +46,6 @@ export const userRouter = createTRPCRouter({
     return {
       id: userClerk.id,
       username: userDB.username,
-      firstName: userDB.firstName,
       image_url: userDB.imageUrl,
     };
   }),
@@ -57,7 +55,6 @@ export const userRouter = createTRPCRouter({
       z.object({
         id: z.string().min(1),
         username: z.string().min(1),
-        firstName: z.string().min(1).optional(),
         imageUrl: z.string().min(1),
         email: z.string().min(1),
       }),
@@ -66,7 +63,6 @@ export const userRouter = createTRPCRouter({
       await ctx.db.insert(users).values({
         id: input.id,
         username: input.username,
-        firstName: input.firstName,
         imageUrl: input.imageUrl,
         email: input.email,
       });
@@ -77,7 +73,6 @@ export const userRouter = createTRPCRouter({
       z.object({
         id: z.string().startsWith("user_"),
         username: z.string().optional(),
-        firstName: z.string().optional(),
         imageUrl: z.string().optional(),
       }),
     )
@@ -88,10 +83,6 @@ export const userRouter = createTRPCRouter({
 
       if (input.username !== undefined) {
         updateData.username = input.username;
-      }
-
-      if (input.firstName !== undefined) {
-        updateData.firstName = input.firstName;
       }
 
       if (input.imageUrl !== undefined) {

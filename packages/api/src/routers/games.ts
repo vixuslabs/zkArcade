@@ -1,10 +1,12 @@
+import { clerkClient } from "@clerk/nextjs";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+
 import { gameInvites } from "@hot-n-cold/db/schema/games";
 import { users } from "@hot-n-cold/db/schema/users";
-import { eq, and, or } from "drizzle-orm";
+
 import { pusher } from "../pusher/server";
-import { clerkClient } from "@clerk/nextjs";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const gameRouter = createTRPCRouter({
   sendGameInvite: protectedProcedure
@@ -34,8 +36,6 @@ export const gameRouter = createTRPCRouter({
       });
 
       const cutId = input.receiverId.split("_")[1];
-
-      console.log("sending to: ", `user-${cutId}-friends`);
 
       await pusher.trigger(`user-${cutId}-friends`, `invite-sent`, {
         gameId: input.lobbyId,
@@ -80,19 +80,67 @@ export const gameRouter = createTRPCRouter({
       });
     }),
 
-  getGameInvites: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.auth.userId;
+  getGameInvites: protectedProcedure
+    .input(
+      z.object({
+        role: z.enum(["sender", "receiver"]).optional(),
+        status: z.enum(["accepted", "declined", "pending"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.auth.userId;
 
-    const invites = await ctx.db.query.gameInvites.findMany({
-      where: and(
-        or(
+      let whereClause;
+
+      if (input.role === "sender") {
+        whereClause = eq(gameInvites.senderId, userId);
+      } else if (input.role === "receiver") {
+        whereClause = eq(gameInvites.receiverId, userId);
+      } else {
+        whereClause = or(
           eq(gameInvites.receiverId, userId),
           eq(gameInvites.senderId, userId),
-        ),
-        eq(gameInvites.status, "sent"),
-      ),
-    });
+        );
+      }
 
-    return invites;
-  }),
+      if (input.status !== undefined) {
+        whereClause = and(whereClause, eq(gameInvites.status, input.status));
+      }
+
+      const invites = await ctx.db.query.gameInvites.findMany({
+        where: whereClause,
+      });
+
+      const invitesWithUsers = await Promise.all(
+        invites.map(async (invite) => {
+          const sender = await clerkClient.users.getUser(invite.senderId);
+
+          const receiver = await clerkClient.users.getUser(invite.receiverId);
+
+          if (!sender.username) {
+            throw new Error(`Username for id: ${sender.id} not found`);
+          }
+
+          if (!receiver.username) {
+            throw new Error(`Username for id: ${receiver.id} not found`);
+          }
+
+          return {
+            gameId: invite.lobbyId,
+            receiver: {
+              id: invite.receiverId,
+              username: receiver.username,
+              imageUrl: receiver.imageUrl,
+            },
+            sender: {
+              id: sender.id,
+              username: sender.username,
+              imageUrl: sender.imageUrl,
+            },
+          };
+        }),
+      );
+
+      return invitesWithUsers;
+    }),
 });
