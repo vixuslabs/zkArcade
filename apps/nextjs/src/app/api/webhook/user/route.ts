@@ -1,10 +1,8 @@
-import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { api } from "@/trpc/server";
-
 import { env } from "@/env.mjs";
-
+import { api } from "@/trpc/server";
 import type { EmailAddressJSON, WebhookEvent } from "@clerk/nextjs/server";
+import { Webhook } from "svix";
 
 /**
  * Need to add better error handling and add queue for processing
@@ -90,15 +88,45 @@ export async function POST(req: Request) {
           return new Response(
             `Received 'user.created' webhook, but an error occurred during processing.`,
             {
-              status: 200,
+              status: 500,
             },
           );
         }
 
       case "user.updated":
-        ({ id, username, image_url } = evt.data);
-        // TODO: update user in db
-        break;
+        ({ id, username, image_url, first_name } = evt.data);
+
+        console.log("User updated");
+
+        console.log("id: ", id);
+
+        if (!username) {
+          return new Response(
+            `Received 'user.updated' webhook, but did not have username so not updated db.`,
+            {
+              status: 200,
+            },
+          );
+        }
+
+        try {
+          await api.users.updateUser.mutate({
+            id: id,
+            username: username,
+            imageUrl: image_url,
+            firstName: first_name,
+          });
+
+          return new Response(`Account ${id} Updated`, { status: 200 });
+        } catch (err) {
+          console.error("Error processing 'user.created' event:", err);
+          return new Response(
+            `Received 'user.updated' webhook, but an error occurred during processing.`,
+            {
+              status: 500,
+            },
+          );
+        }
 
       case "user.deleted":
         try {
@@ -127,7 +155,7 @@ export async function POST(req: Request) {
           return new Response(
             `Received 'user.deleted' webhook, but an error occurred during processing.`,
             {
-              status: 200,
+              status: 500,
             },
           );
         }

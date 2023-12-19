@@ -1,13 +1,10 @@
+import { clerkClient } from "@clerk/nextjs";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "../trpc";
 import { users } from "@hot-n-cold/db/schema/users";
-import { eq } from "drizzle-orm";
-import { clerkClient } from "@clerk/nextjs";
+
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure
@@ -73,6 +70,42 @@ export const userRouter = createTRPCRouter({
         imageUrl: input.imageUrl,
         email: input.email,
       });
+    }),
+
+  updateUser: publicProcedure
+    .input(
+      z.object({
+        id: z.string().startsWith("user_"),
+        username: z.string().optional(),
+        firstName: z.string().optional(),
+        imageUrl: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updateData: Partial<typeof users.$inferSelect> = {};
+
+      console.log("input", input);
+
+      if (input.username !== undefined) {
+        updateData.username = input.username;
+      }
+
+      if (input.firstName !== undefined) {
+        updateData.firstName = input.firstName;
+      }
+
+      if (input.imageUrl !== undefined) {
+        updateData.imageUrl = input.imageUrl;
+      }
+
+      /**
+       * TODO: Check if username already exists
+       */
+
+      await ctx.db
+        .update(users)
+        .set({ ...updateData })
+        .where(eq(users.id, input.id));
     }),
 
   deleteUser: publicProcedure

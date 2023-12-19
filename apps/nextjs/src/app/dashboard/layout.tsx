@@ -1,15 +1,17 @@
-import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
-import { currentUser, clerkClient } from "@clerk/nextjs";
-
-import UserAvatar from "@/components/client/ui/Avatar";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { api } from "@/trpc/server";
+import {
+  ActiveTabContent,
+  NotificationButton,
+  SidebarNav,
+} from "@/components/client/dashboard";
 import {
   DashboardTabProvider,
   FriendsChannelProvider,
 } from "@/components/client/providers";
-import { NotificationButton } from "@/components/client/dashboard";
-import Image from "next/image";
+import UserAvatar from "@/components/client/ui/Avatar";
+import { api } from "@/trpc/server";
+import { clerkClient, currentUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -32,7 +34,7 @@ interface PendingFriendRequest {
   imageUrl: string;
   username: string;
   firstName: string | null;
-};
+}
 
 interface Invite {
   sender: FriendInfo;
