@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { useFriendsStore, usePusher } from "@/components/client/lobbyStore";
-import type { FriendsEventMap } from "@/components/client/lobbyStore";
+import { useFriendsStore, usePusher } from "@/components/client/stores";
+import type { FriendsEventMap } from "@/components/client/stores";
 import { useUser } from "@clerk/nextjs";
+import { shallow } from "zustand/shallow";
 
 export interface FriendData {
   username: string;
@@ -12,31 +13,22 @@ export interface FriendData {
   showToast?: boolean;
   gameId?: string;
 }
-// type EventMap = {
-//   [key in FriendEvents]: EventCallback;
-// };
 
 export const useFriendsChannel = (events: FriendsEventMap) => {
-  // const {
-  //   pusherInitialized,
-  //   addEventsToChannel,
-  //   subscribeToChannel,
-  //   unsubscribeFromChannel,
-  // } = usePusher();
-  const { addFriendEvents } = useFriendsStore();
-  const { pusherInitialized, unsubscribeFromChannel, subscribeToChannel } =
-    usePusher();
+  const friendsStore = useFriendsStore();
+  const {
+    pusherInitialized,
+    unsubscribeFromChannel,
+    subscribeToChannel,
+    pusher,
+  } = usePusher();
+
+  const activeChannels = usePusher((state) => state.activeChannels, shallow);
 
   const user = useUser();
 
-  console.log("pusherInitialized", pusherInitialized);
   useEffect(() => {
-    console.log(
-      "inside useFriendsChannel - pusherInitialized",
-      pusherInitialized,
-    );
-    if (!pusherInitialized) {
-      console.log("pusher not initialized yet - inside useFriendsChannel");
+    if (!pusherInitialized || !user.isSignedIn) {
       return;
     }
 
@@ -52,25 +44,12 @@ export const useFriendsChannel = (events: FriendsEventMap) => {
       );
     }
 
-    addFriendEvents(events);
-
-    // const friendsChannel = pusher.subscribe(`user-${rawId}-friends`);
-
-    // Bind additional events passed in
-    // Object.entries(events).forEach(([eventName, handler]) => {
-    //   friendsChannel.bind(eventName, handler);
-    // });
-
-    console.log("added events to friend channel", friendsChannel);
+    friendsStore.addFriendEvents(events);
 
     return () => {
       console.log("unsubscribing from friends channel");
-      unsubscribeFromChannel(friendsChannel.name);
-      // Object.keys(events).forEach((eventName) => {
-      //   friendsChannel.unbind(eventName);
-      // });
-      // pusher.unsubscribe(`user-${user.user?.id}-friends`);
+      if (pusher) unsubscribeFromChannel(friendsChannel.name);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pusherInitialized, user.user?.id]);
+  }, [pusherInitialized, user.isSignedIn, pusher]);
 };

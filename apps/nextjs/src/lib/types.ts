@@ -13,10 +13,7 @@ import type {
   Vector3,
 } from "three";
 
-/**
- * XR-related types and interfaces
- */
-
+// XR-related types and interfaces
 export interface GamepadButtonState {
   pressed: boolean;
   touched: boolean;
@@ -100,6 +97,7 @@ export interface RigidAndMeshRefs {
   >;
 }
 
+// App-related types and interfaces
 export type AppUser = {
   id: string;
   username: string;
@@ -178,10 +176,7 @@ export interface GrabProps {
   isAnchorable?: boolean;
 }
 
-/**
- * Online Components
- */
-
+// Online Components
 export interface GeometryData {
   position: {
     itemSize: number;
@@ -217,27 +212,56 @@ export interface PlaneInfo {
   name: string;
 }
 
-export interface Player {
-  username: string;
-  imageUrl: string | null;
-  ready: boolean;
-  host: boolean;
-  id?: string;
-  publicKey?: string;
-  privateKey?: string;
-  playerPosition?: Vector3;
-  playerProximity?: number;
-  objectPosition?: Vector3;
-  objectMatrix?: Matrix4;
-  roomLayout?: {
-    meshes: MeshInfo[];
-    planes: PlaneInfo[];
-  };
+// Game Types
+export enum GameType {
+  HotNCold = "HotNCold",
 }
 
-/**
- * Users
- */
+export enum GeneralGameStatus {
+  LOBBY = "LOBBY",
+  PREGAME = "PREGAME",
+}
+
+export enum HotnColdGameStatus {
+  LOBBY = "lobby",
+  PREGAME = "pregame",
+  IDLE = "idle",
+  BOTHHIDING = "bothHiding",
+  ONEHIDING = "oneHiding",
+  SEEKING = "seeking",
+  GAMEOVER = "gameover",
+}
+
+export interface HotnColdGameState {
+  status: HotnColdGameStatus;
+  me: HotnColdPlayer | null;
+  opponent: HotnColdPlayer | null;
+}
+
+// Users
+export interface Player {
+  id: string;
+  username: string;
+  imageUrl: string | null;
+  host: boolean;
+  ready: boolean;
+  inGame: boolean;
+  publicKey?: string;
+  privateKey?: string;
+}
+
+export interface HotnColdPlayer extends Player {
+  hiding: boolean;
+  foundObject: boolean;
+  playerPosition: Vector3 | null;
+  playerProximity: number | null;
+  objectPosition: Vector3 | null;
+  objectMatrix: Matrix4 | null;
+  roomLayout: {
+    meshes: MeshInfo[];
+    planes: PlaneInfo[];
+  } | null;
+}
 
 export interface UserInfo {
   id: string;

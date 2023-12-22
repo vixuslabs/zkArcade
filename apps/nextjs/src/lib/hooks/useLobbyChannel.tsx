@@ -46,6 +46,20 @@ type LobbyEvents =
   | "client-game-setObjectPosition"
   | "client-game-seeking-done";
 
+// type HotNColdGameEvents =
+//   | "client-game-joined"
+//   | "client-game-left"
+//   | "client-game-started"
+//   | "client-game-ended"
+//   | "client-game-roomLayout"
+//   | "client-game-hiding"
+//   | "client-game-hiding-done"
+//   | "client-game-seeking-start"
+//   | "client-game-requestProximity"
+//   | "client-game-setProximity"
+//   | "client-game-setObjectPosition"
+//   | "client-game-seeking-done";
+
 type PartialeEventMap = Partial<Record<LobbyEvents, EventCallback>>;
 
 type EventCallback = (data: Player) => void;
@@ -56,8 +70,8 @@ export const useLobbyChannel = (
   initialPlayer: Player,
   lobbyId: string,
   isHost: boolean,
-  // events: Partial<EventMap>,
   events: PartialeEventMap,
+  // gameName: GameType,
 ): [
   Player[],
   Dispatch<SetStateAction<Player[]>>,
