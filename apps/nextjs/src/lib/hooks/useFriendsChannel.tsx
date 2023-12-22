@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useFriendsStore, usePusher } from "@/components/client/stores";
-import type { FriendsEventMap } from "@/components/client/stores";
+import type { FriendsEventMap } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
-import { shallow } from "zustand/shallow";
 
 export interface FriendData {
   username: string;
@@ -22,8 +21,6 @@ export const useFriendsChannel = (events: FriendsEventMap) => {
     subscribeToChannel,
     pusher,
   } = usePusher();
-
-  const activeChannels = usePusher((state) => state.activeChannels, shallow);
 
   const user = useUser();
 

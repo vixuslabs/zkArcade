@@ -316,3 +316,63 @@ export interface ActiveDashboardTabContext {
   activeTab: ActiveDashboardTab;
   setActiveTab: React.Dispatch<React.SetStateAction<ActiveDashboardTab>>;
 }
+
+/**
+ * Zustand Store Types
+ */
+
+export interface PusherUserInfo {
+  username: string;
+  userId: string;
+  imageUrl: string;
+}
+
+export type GeneralLobbyEvent =
+  | "client-ready-toggle"
+  | "client-mina-toggle"
+  | "client-game-started";
+
+export type HotnColdGameEvents =
+  | GeneralLobbyEvent
+  | "client-game-roomLayout"
+  | "client-game-hiding"
+  | "client-game-hiding-done"
+  | "client-game-seeking-start"
+  | "client-game-requestProximity"
+  | "client-game-setProximity"
+  | "client-game-setObjectPosition"
+  | "client-game-seeking-done";
+
+export type FriendEvents =
+  | `friend-added`
+  | `friend-deleted`
+  | `friend-request-pending`
+  | `invite-sent`
+  | "invite-accepted";
+
+export interface FriendData {
+  username: string;
+  imageUrl: string;
+  id: string;
+  requestId?: number;
+  friendId?: string;
+  showToast?: boolean;
+  gameId?: string;
+}
+
+export type EventCallback = (data?: Player) => void;
+
+export type FriendCallback = (data: FriendData) => void;
+
+export type LobbyCallbacks =
+  | (() => void)
+  | (({ ready, username }: { ready: boolean; username: string }) => void)
+  | (({ minaToggle }: { minaToggle: boolean }) => void);
+
+export type FriendsEventMap = Record<FriendEvents, FriendCallback>;
+
+export type LobbyEventMap = Record<GeneralLobbyEvent, LobbyCallbacks>;
+
+export type GeneralEventMap = Record<string, EventCallback>;
+
+export type PartialEventMap = Partial<Record<string, EventCallback>>;
