@@ -5,6 +5,7 @@
 /* eslint-disable */
 
 import "./src/env.mjs";
+
 // import "@hot-n-cold/auth/env.mjs";
 
 /** @type {import("next").NextConfig} */
@@ -46,7 +47,7 @@ const config = {
       //   ],
       // },
       {
-        source: "/lobby/(.*)",
+        source: "/play/(.*)",
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",
@@ -59,7 +60,8 @@ const config = {
         ],
       },
       {
-        source: "/game",
+        source:
+          "/_next/static/chunks/_app-pages-browser_src_components_client_mina_zkAppWorker_ts.js",
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",
