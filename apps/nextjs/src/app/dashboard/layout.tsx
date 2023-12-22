@@ -80,7 +80,6 @@ export default async function DashboardLayout({
         initGameInvites={friendsData.pendingGameInvites}
       >
         <DashboardTabProvider>
-          {/* Static sidebar for desktop */}
           <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-20 md:overflow-y-auto md:bg-gray-900 md:pb-4">
             <div className="flex h-full flex-col items-center justify-between">
               <div className="flex w-full flex-col gap-y-4">
@@ -88,6 +87,7 @@ export default async function DashboardLayout({
                   <Image
                     width={32}
                     height={32}
+                    priority
                     className="h-10 w-auto"
                     src="/hotNcold.png"
                     alt="Your Company"

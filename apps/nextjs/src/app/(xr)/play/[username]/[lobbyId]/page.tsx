@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
-import { LobbyProvider, MinaProvider } from "@/components/client/providers";
+// import { LobbyProvider } from "@/components/client/providers";
+// import { Lobby } from "@/components/client/ui/lobby";
+import Lobby from "@/components/client/ui/lobby/LobbyZ";
 import { api } from "@/trpc/server";
 import { currentUser } from "@clerk/nextjs";
 
-export default async function XRLayout({
-  children,
+async function LobbyPage({
   params,
 }: {
-  children: React.ReactNode;
-  params: { username?: string; lobbyId?: string };
+  params: { username: string; lobbyId: string };
 }) {
   const clerkUser = await currentUser();
 
@@ -26,13 +26,11 @@ export default async function XRLayout({
     //     host: params.username === user.username,
     //     ready: false,
     //   }}
-    //   lobbyId={params.lobbyId ?? "game"}
+    //   lobbyId={params.lobbyId}
     // >
-    <MinaProvider>
-      <div className="flex h-full min-h-screen w-full flex-col items-center justify-center">
-        {children}
-      </div>
-    </MinaProvider>
+    <Lobby />
     // </LobbyProvider>
   );
 }
+
+export default LobbyPage;
