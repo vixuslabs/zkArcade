@@ -1,20 +1,22 @@
 "use client";
 
 import React from "react";
-
+import { useRouter } from "next/navigation";
+import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { useClerk } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+
+import { usePusher } from "../stores";
 
 interface UserAvatarProps {
   imageUrl?: string;
@@ -22,7 +24,8 @@ interface UserAvatarProps {
 }
 
 function UserAvatar({ imageUrl, username }: UserAvatarProps) {
-  //   console.log(user);
+  const { pusher, removePusher } = usePusher();
+  const { setActiveTab } = useDashboardTabContext();
   const { signOut } = useClerk();
   const router = useRouter();
   //   const handleSignOut = async () => {};
@@ -45,11 +48,20 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem onPointerDown={() => setActiveTab("settings")}>
+            Settings
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onPointerDown={() => signOut(() => router.push("/"))}>
+        <DropdownMenuItem
+          onPointerDown={() => {
+            if (pusher) {
+              removePusher();
+            }
+
+            void signOut(() => router.push("/"));
+          }}
+        >
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

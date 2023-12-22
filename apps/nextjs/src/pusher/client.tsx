@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { usePusher } from "@/components/client/lobbyStore";
+import { usePusher } from "@/components/client/stores";
 // import { env } from "@/env.mjs";
-import { useClerk } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import type Pusher from "pusher-js";
+import { shallow } from "zustand/shallow";
 
 interface PusherContextValues {
   pusher: Pusher | null;
@@ -37,18 +38,15 @@ export const usePusherClient = () => {
 export function PusherClientProvider(props: { children: React.ReactNode }) {
   // const [pusherClient, setPusherClient] = useState<Pusher>(null!);
   const [isLoading, setIsLoading] = useState(true);
-  const { initPusher, pusherInitialized, removePusher, pusher } = usePusher();
-  const { user } = useClerk();
+  const { initPusher, removePusher, pusher } = usePusher();
+  const pusherInitialized = usePusher(
+    (state) => state.pusherInitialized,
+    shallow,
+  );
+  const { user, isSignedIn } = useUser();
 
   useEffect(() => {
-    if (!user) {
-      console.log("user not set yet");
-      return;
-    }
-
-    if (pusherInitialized) {
-      console.log("pusher already initialized");
-      console.log(`pusher`, pusher);
+    if (!isSignedIn || pusherInitialized) {
       return;
     }
 
@@ -60,14 +58,18 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
 
     setIsLoading(false);
 
-    // setPusherClient(client);
     return () => {
-      // client.disconnect();
-      console.log("removing pusher");
-      console.log(`pusher`, pusher);
       if (pusherInitialized) removePusher();
     };
-  }, [pusherInitialized, user?.id]);
+  }, [
+    pusherInitialized,
+    user?.id,
+    user?.username,
+    user?.imageUrl,
+    initPusher,
+    removePusher,
+    isSignedIn,
+  ]);
 
   const values = useMemo(() => {
     return {
@@ -75,7 +77,7 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
       isLoading,
       initialized: pusherInitialized,
     };
-  }, [pusherInitialized]);
+  }, [pusherInitialized, pusher, isLoading]);
 
   return (
     <PusherClientContext.Provider value={values}>

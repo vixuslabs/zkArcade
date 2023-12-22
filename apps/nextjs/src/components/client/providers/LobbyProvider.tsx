@@ -12,7 +12,7 @@ import { useLobbyChannel } from "@/lib/hooks/useLobbyChannel";
 import type { GameState, LobbyContextValues, Player } from "@/lib/types";
 import { calculateProximity } from "@/lib/utils";
 
-import { usePusher } from "../lobbyStore";
+import { usePusher } from "../stores";
 
 const LobbyContext = createContext<LobbyContextValues>({
   players: [],
@@ -51,7 +51,7 @@ function LobbyProvider({
 }) {
   const pusherStore = usePusher();
 
-  console.log("pusherStore", pusherStore);
+  console.log("channels", pusherStore.pusher?.allChannels());
 
   const [starting, setStarting] = useState<boolean>(false);
   const [isMinaOn, setIsMinaOn] = useState<boolean>(false);

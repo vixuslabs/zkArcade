@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,15 +20,11 @@ import { api } from "@/trpc/react";
 
 function DialogCloseButton() {
   const friends = api.friendships.getUsersFriends.useQuery();
-  const path = usePathname();
+  const { lobbyId }: { lobbyId: string } = useParams();
 
   const invite = api.games.sendGameInvite.useMutation();
 
   const handleSendInvite = (id: string, username: string) => {
-    const splitPath = path.split("/");
-
-    const lobbyId = splitPath[splitPath.length - 1];
-
     if (!lobbyId) throw new Error("No lobbyId found");
 
     invite.mutate({
@@ -40,7 +36,7 @@ function DialogCloseButton() {
       title: "Invite Sent!",
       description: `${username} has been invited to play!`,
       variant: "default",
-      duration: 5000,
+      duration: 3000,
     });
   };
 

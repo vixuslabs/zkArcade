@@ -163,12 +163,6 @@ function FriendsChannelProvider({
       if (!friendId || !gameId) {
         throw new Error("No friend id or game id found");
       }
-
-      // toast({
-      //   title: "Invite Accepted!",
-      //   description: `${data.username} has accepted your invite.`,
-      //   duration: 5000,
-      // });
     },
   });
 
@@ -204,4 +198,4 @@ function FriendsChannelProvider({
   );
 }
 
-export default FriendsChannelProvider;
+export default React.memo(FriendsChannelProvider);

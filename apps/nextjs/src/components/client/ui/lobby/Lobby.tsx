@@ -1,15 +1,17 @@
 "use client";
 
 import React, { Fragment, useMemo } from "react";
-
-import { PlayerCard, LobbyDialogWrapper, LobbySettings } from ".";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
+import { useHotnCold } from "@/components/client/stores";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
-import dynamic from "next/dynamic";
+import { LobbyDialogWrapper, LobbySettings, PlayerCard } from ".";
 
 const MinaProvider = dynamic(
   () => import("@/components/client/providers/MinaProvider"),
@@ -25,8 +27,6 @@ const InitiateMina = dynamic(
   },
 );
 
-import { useUser } from "@clerk/nextjs";
-
 function Lobby() {
   const {
     players,
@@ -37,6 +37,7 @@ function Lobby() {
     isMinaOn,
     setIsMinaOn,
   } = useLobbyContext();
+
   const user = useUser();
   const me = useMemo(() => {
     return players.find((p) => p.username === user.user?.username);
