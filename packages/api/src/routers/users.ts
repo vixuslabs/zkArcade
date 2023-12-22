@@ -1,13 +1,10 @@
+import { clerkClient } from "@clerk/nextjs";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "../trpc";
 import { users } from "@hot-n-cold/db/schema/users";
-import { eq } from "drizzle-orm";
-import { clerkClient } from "@clerk/nextjs";
+
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure
@@ -29,7 +26,6 @@ export const userRouter = createTRPCRouter({
       return {
         id: userDB.id,
         username: userDB.username,
-        firstName: userDB.firstName,
         image_url: userDB.imageUrl,
       };
     }),
@@ -50,7 +46,6 @@ export const userRouter = createTRPCRouter({
     return {
       id: userClerk.id,
       username: userDB.username,
-      firstName: userDB.firstName,
       image_url: userDB.imageUrl,
     };
   }),
@@ -60,7 +55,6 @@ export const userRouter = createTRPCRouter({
       z.object({
         id: z.string().min(1),
         username: z.string().min(1),
-        firstName: z.string().min(1).optional(),
         imageUrl: z.string().min(1),
         email: z.string().min(1),
       }),
@@ -69,10 +63,40 @@ export const userRouter = createTRPCRouter({
       await ctx.db.insert(users).values({
         id: input.id,
         username: input.username,
-        firstName: input.firstName,
         imageUrl: input.imageUrl,
         email: input.email,
       });
+    }),
+
+  updateUser: publicProcedure
+    .input(
+      z.object({
+        id: z.string().startsWith("user_"),
+        username: z.string().optional(),
+        imageUrl: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updateData: Partial<typeof users.$inferSelect> = {};
+
+      console.log("input", input);
+
+      if (input.username !== undefined) {
+        updateData.username = input.username;
+      }
+
+      if (input.imageUrl !== undefined) {
+        updateData.imageUrl = input.imageUrl;
+      }
+
+      /**
+       * TODO: Check if username already exists
+       */
+
+      await ctx.db
+        .update(users)
+        .set({ ...updateData })
+        .where(eq(users.id, input.id));
     }),
 
   deleteUser: publicProcedure

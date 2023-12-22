@@ -1,16 +1,15 @@
 "use client";
 
 import React from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   ChartPieIcon,
+  CogIcon,
   HomeIcon,
   UsersIcon,
-  CogIcon,
 } from "@heroicons/react/24/outline";
-
-import { cn } from "@/lib/utils";
 
 type ActiveDashboardTab = "home" | "friends" | "leaderboard" | "settings";
 
@@ -22,7 +21,9 @@ function SidebarNav() {
       defaultValue="home"
       role="list"
       className="h-[25vh] bg-inherit"
-      onValueChange={(value) => setActiveTab(value as ActiveDashboardTab)}
+      onValueChange={(value) => {
+        if (value !== activeTab) setActiveTab(value as ActiveDashboardTab);
+      }}
       orientation="vertical"
       asChild
     >

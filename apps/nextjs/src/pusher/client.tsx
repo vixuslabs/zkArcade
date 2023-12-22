@@ -1,19 +1,22 @@
 "use client";
 
 import React, { useContext, useEffect, useMemo, useState } from "react";
-
-import { env } from "@/env.mjs";
-import Pusher from "pusher-js";
-import { useClerk } from "@clerk/nextjs";
+import { usePusher } from "@/components/client/stores";
+// import { env } from "@/env.mjs";
+import { useUser } from "@clerk/nextjs";
+import type Pusher from "pusher-js";
+import { shallow } from "zustand/shallow";
 
 interface PusherContextValues {
   pusher: Pusher | null;
   isLoading: boolean;
+  initialized: boolean;
 }
 
 const PusherClientContext = React.createContext<PusherContextValues>({
   pusher: null,
   isLoading: true,
+  initialized: false,
 });
 
 /**
@@ -33,59 +36,48 @@ export const usePusherClient = () => {
 };
 
 export function PusherClientProvider(props: { children: React.ReactNode }) {
-  const [pusherClient, setPusherClient] = useState<Pusher>(null!);
+  // const [pusherClient, setPusherClient] = useState<Pusher>(null!);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useClerk();
+  const { initPusher, removePusher, pusher } = usePusher();
+  const pusherInitialized = usePusher(
+    (state) => state.pusherInitialized,
+    shallow,
+  );
+  const { user, isSignedIn } = useUser();
 
   useEffect(() => {
-    if (!user) {
+    if (!isSignedIn || pusherInitialized) {
       return;
     }
 
-    const client = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: "us2",
-      forceTLS: true,
-      userAuthentication: {
-        endpoint: "../api/pusher/user-auth",
-        transport: "ajax",
-        params: {
-          username: user.username,
-          userId: user.id,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-      channelAuthorization: {
-        endpoint: "../api/pusher/channel-auth",
-        transport: "ajax",
-        params: {
-          username: user.username,
-          userId: user.id,
-          imageUrl: user.imageUrl,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
+    initPusher({
+      userId: user.id,
+      username: user.username ?? "",
+      imageUrl: user.imageUrl,
     });
-
-    client.signin();
 
     setIsLoading(false);
 
-    setPusherClient(client);
     return () => {
-      client.disconnect();
+      if (pusherInitialized) removePusher();
     };
-  }, [user]);
+  }, [
+    pusherInitialized,
+    user?.id,
+    user?.username,
+    user?.imageUrl,
+    initPusher,
+    removePusher,
+    isSignedIn,
+  ]);
 
   const values = useMemo(() => {
     return {
-      pusher: pusherClient,
+      pusher,
       isLoading,
+      initialized: pusherInitialized,
     };
-  }, [isLoading, pusherClient]);
+  }, [pusherInitialized, pusher, isLoading]);
 
   return (
     <PusherClientContext.Provider value={values}>

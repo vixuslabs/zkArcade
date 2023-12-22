@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useState, useMemo, useContext, createContext } from "react";
-
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/components/ui/use-toast";
 import { useFriendsChannel } from "@/lib/hooks/useFriendsChannel";
-import { ToastAction } from "@/components/ui/toast";
-import { useRouter } from "next/navigation";
-
 import type {
-  FriendInfo,
-  PusherClientContextValues,
-  PendingFriendRequests,
   Invite,
-  TaggedPendingFriendRequest,
-  TaggedGameInvite,
   Notification,
+  PendingFriendRequests,
+  PusherClientContextValues,
+  TaggedGameInvite,
+  TaggedPendingFriendRequest,
+  UserInfo,
 } from "@/lib/types";
+import { api } from "@/trpc/react";
 
 const PusherClientContext = createContext<PusherClientContextValues>({
   activeFriends: [],
@@ -41,15 +40,18 @@ function FriendsChannelProvider({
   initGameInvites,
 }: {
   children: React.ReactNode;
-  initFriendsInfo: FriendInfo[];
+  initFriendsInfo: UserInfo[];
   initFriendRequests: PendingFriendRequests[];
   initGameInvites: Invite[];
 }) {
   const [activeFriends, setActiveFriends] =
-    useState<FriendInfo[]>(initFriendsInfo);
+    useState<UserInfo[]>(initFriendsInfo);
   const [pendingFriendRequests, setPendingFriendRequests] =
     useState<PendingFriendRequests[]>(initFriendRequests);
   const [gameInvites, setGameInvites] = useState<Invite[]>(initGameInvites);
+
+  const acceptFriendRequestMutation =
+    api.friendships.acceptFriendRequest.useMutation();
 
   const router = useRouter();
 
@@ -57,14 +59,13 @@ function FriendsChannelProvider({
     "friend-added": (data) => {
       console.log("friend added", data);
       setPendingFriendRequests((prev) =>
-        prev.filter((request) => request.username !== data.username),
+        prev.filter((request) => request.sender.username !== data.username),
       );
       setActiveFriends((prev) => {
         return [
           ...prev,
           {
             username: data.username,
-            firstName: data.firstName,
             imageUrl: data.imageUrl,
             id: data.id,
           },
@@ -84,6 +85,7 @@ function FriendsChannelProvider({
       });
     },
     "friend-request-pending": (data) => {
+      console.log("friend request pending", data);
       if (!data.requestId) {
         throw new Error("No request id found");
       }
@@ -92,15 +94,29 @@ function FriendsChannelProvider({
         title: "New Friend Request!",
         description: `Sent from ${data.username}`,
         duration: 5000,
+        action: (
+          <ToastAction
+            altText="Accept"
+            onClick={() => {
+              acceptFriendRequestMutation.mutate({
+                requestId: data.requestId!,
+              });
+            }}
+          >
+            Accept
+          </ToastAction>
+        ),
       });
 
       setPendingFriendRequests((prev) => [
         ...prev,
         {
-          username: data.username,
-          firstName: data.firstName,
-          imageUrl: data.imageUrl,
-          requestId: Number(data.requestId!),
+          requestId: data.requestId!,
+          sender: {
+            id: data.id,
+            username: data.username,
+            imageUrl: data.imageUrl,
+          },
         },
       ]);
     },
@@ -114,13 +130,12 @@ function FriendsChannelProvider({
       setGameInvites((prev) => [
         ...prev,
         {
+          gameId: data.gameId!,
           sender: {
             username: data.username,
-            firstName: data.firstName,
             imageUrl: data.imageUrl,
             id: data.id,
           },
-          gameId: data.gameId!,
         },
       ]);
 
@@ -148,12 +163,6 @@ function FriendsChannelProvider({
       if (!friendId || !gameId) {
         throw new Error("No friend id or game id found");
       }
-
-      // toast({
-      //   title: "Invite Accepted!",
-      //   description: `${data.username} has accepted your invite.`,
-      //   duration: 5000,
-      // });
     },
   });
 
@@ -189,4 +198,4 @@ function FriendsChannelProvider({
   );
 }
 
-export default FriendsChannelProvider;
+export default React.memo(FriendsChannelProvider);

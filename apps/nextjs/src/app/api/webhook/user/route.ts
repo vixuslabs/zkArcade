@@ -1,10 +1,8 @@
-import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { api } from "@/trpc/server";
-
 import { env } from "@/env.mjs";
-
+import { api } from "@/trpc/server";
 import type { EmailAddressJSON, WebhookEvent } from "@clerk/nextjs/server";
+import { Webhook } from "svix";
 
 /**
  * Need to add better error handling and add queue for processing
@@ -56,7 +54,6 @@ export async function POST(req: Request) {
     let id: string | undefined,
       username: string | null,
       image_url: string,
-      first_name: string,
       // created_at: number,
       email_addresses: EmailAddressJSON[];
 
@@ -65,7 +62,7 @@ export async function POST(req: Request) {
         console.log("User created");
 
         try {
-          ({ id, username, email_addresses, first_name, image_url } = evt.data);
+          ({ id, username, email_addresses, image_url } = evt.data);
 
           if (!email_addresses[0]?.email_address) {
             return new Response(
@@ -79,7 +76,6 @@ export async function POST(req: Request) {
           await api.users.createUser.mutate({
             id,
             username: username ?? "",
-            firstName: first_name,
             email: email_addresses[0]?.email_address,
             imageUrl: image_url,
           });
@@ -90,15 +86,44 @@ export async function POST(req: Request) {
           return new Response(
             `Received 'user.created' webhook, but an error occurred during processing.`,
             {
-              status: 200,
+              status: 500,
             },
           );
         }
 
       case "user.updated":
         ({ id, username, image_url } = evt.data);
-        // TODO: update user in db
-        break;
+
+        console.log("User updated");
+
+        console.log("id: ", id);
+
+        if (!username) {
+          return new Response(
+            `Received 'user.updated' webhook, but did not have username so not updated db.`,
+            {
+              status: 200,
+            },
+          );
+        }
+
+        try {
+          await api.users.updateUser.mutate({
+            id: id,
+            username: username,
+            imageUrl: image_url,
+          });
+
+          return new Response(`Account ${id} Updated`, { status: 200 });
+        } catch (err) {
+          console.error("Error processing 'user.created' event:", err);
+          return new Response(
+            `Received 'user.updated' webhook, but an error occurred during processing.`,
+            {
+              status: 500,
+            },
+          );
+        }
 
       case "user.deleted":
         try {
@@ -127,7 +152,7 @@ export async function POST(req: Request) {
           return new Response(
             `Received 'user.deleted' webhook, but an error occurred during processing.`,
             {
-              status: 200,
+              status: 500,
             },
           );
         }

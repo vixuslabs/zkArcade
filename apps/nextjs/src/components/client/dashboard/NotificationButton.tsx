@@ -1,32 +1,28 @@
 "use client";
-import { BellIcon } from "@heroicons/react/24/outline";
 
 import React, { Fragment } from "react";
-
+import { useRouter } from "next/navigation";
+import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { api } from "@/trpc/react";
 import { toast } from "@/components/ui/use-toast";
-
-import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
-import { useRouter } from "next/navigation";
+import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
+import { BellIcon } from "@heroicons/react/24/outline";
 
 function NotificationButton() {
   const { allNotifications } = useFriendsProvider();
-  const user = useUser();
+  const { user } = useUser();
 
   const router = useRouter();
-
-  console.log(allNotifications);
 
   const acceptRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();
@@ -100,7 +96,7 @@ function NotificationButton() {
             {allNotifications.length ? (
               allNotifications.map((noti) => {
                 if (noti.type === "GameInvite") {
-                  if (noti.sender.username === user.user?.username) return;
+                  if (!user || noti.sender.username === user.username) return;
                   return (
                     <Fragment key={noti.gameId}>
                       <div className="my-2 flex flex-1 justify-between">
@@ -117,7 +113,7 @@ function NotificationButton() {
                             onClick={() =>
                               void handleAcceptGameInvite(
                                 noti.gameId,
-                                `/${noti.sender.username}/${noti.gameId}`,
+                                `/play/${noti.sender.username}/${noti.gameId}`,
                               )
                             }
                           >
@@ -146,7 +142,7 @@ function NotificationButton() {
                         <DropdownMenuItem>
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">
-                              {noti.username} sent you a friend request!
+                              {noti.sender.username} sent you a friend request!
                             </p>
                           </div>
                         </DropdownMenuItem>
@@ -157,7 +153,7 @@ function NotificationButton() {
                               console.log("accepting friend request");
                               void handleAcceptFriendRequest(
                                 noti.requestId,
-                                noti.username,
+                                noti.sender.username,
                               );
                             }}
                           >

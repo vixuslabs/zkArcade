@@ -1,16 +1,15 @@
 "use client";
 
 import React from "react";
-
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
 import type { PresenceChannel } from "pusher-js";
 
 function LobbySettings({
@@ -20,7 +19,7 @@ function LobbySettings({
   channel,
 }: {
   isMinaOn: boolean;
-  setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsMinaOn: (isMinaOn: boolean) => void;
   isHost: boolean | undefined;
   channel: PresenceChannel | null;
 }) {
@@ -40,11 +39,11 @@ function LobbySettings({
             disabled={true}
             checked={isMinaOn}
             onCheckedChange={() => {
-              setIsMinaOn((prev) => !prev);
+              setIsMinaOn(!isMinaOn);
 
               if (isHost) {
-                channel?.trigger(`client-mina-${isMinaOn ? "off" : "on"}`, {
-                  isMinaOn: !isMinaOn,
+                channel?.trigger(`client-mina-toggle`, {
+                  minaToggle: !isMinaOn,
                 });
               }
             }}

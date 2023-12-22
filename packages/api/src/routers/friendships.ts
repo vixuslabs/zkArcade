@@ -1,101 +1,71 @@
+import { clerkClient } from "@clerk/nextjs";
+import { and, desc, eq, or } from "drizzle-orm";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "../trpc";
-import {
-  friendships,
-  friendRequests,
-} from "@hot-n-cold/db/schema/friendships";
-import { users } from "@hot-n-cold/db/schema/users";
-import { eq, inArray, and, or, desc } from "drizzle-orm";
-import { pusher } from "../pusher/server";
-import { clerkClient } from "@clerk/nextjs";
-
 import type { db as Drizzle } from "@hot-n-cold/db";
+import { friendRequests, friendships } from "@hot-n-cold/db/schema/friendships";
+
+import { pusher } from "../pusher/server";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 interface CleanSentRequest {
   requestId: number;
   receiverId: string;
-};
+}
 
 interface CleanReceivedRequest {
   requestId: number;
   senderId: string;
-};
+}
 
 const getFriendRequest = async (requestId: number, db: typeof Drizzle) => {
   const friendRequestsPrepared = db.query.friendRequests
-  .findFirst({
-    where: eq(friendRequests.requestId, requestId),
-    orderBy: desc(friendRequests.updatedAt),
-  })
-  .prepare();
+    .findFirst({
+      where: eq(friendRequests.requestId, requestId),
+      orderBy: desc(friendRequests.updatedAt),
+    })
+    .prepare();
 
   const execute = await friendRequestsPrepared.execute();
 
   return execute;
-}
+};
 
 export const friendshipRouter = createTRPCRouter({
   getUsersFriends: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.auth.userId;
-    const friendshipsInitiatedByUserPrepared = ctx.db.query.friendships
+
+    const friendsPrepared = ctx.db.query.friendships
       .findMany({
-        // where: eq(friendships.userId, input.userId),
-        where: eq(friendships.userId, userId),
+        where: or(
+          eq(friendships.userId, userId),
+          eq(friendships.friendId, userId),
+        ),
+        with: {
+          user: true,
+          friend: true,
+        },
       })
       .prepare();
 
-    const friendshipsReceivedByUserPrepared = ctx.db.query.friendships
-      .findMany({
-        // where: eq(friendships.friendId, input.userId),
-        where: eq(friendships.friendId, userId),
-      })
-      .prepare();
+    const friends = await friendsPrepared.execute();
 
-    const friendshipsInitiatedByUser =
-      await friendshipsInitiatedByUserPrepared.execute();
+    const cleanedFriends = [];
 
-    const friendshipsReceivedByUser =
-      await friendshipsReceivedByUserPrepared.execute();
-
-    const friendIdsInitiatedByUser = friendshipsInitiatedByUser.map(
-      (f) => f.friendId,
-    );
-    const friendIdsReceivedByUser = friendshipsReceivedByUser.map(
-      (f) => f.userId,
-    );
-
-    const allFriendIds = [
-      ...new Set([...friendIdsInitiatedByUser, ...friendIdsReceivedByUser]),
-    ];
-
-    if (allFriendIds.length === 0) {
-      return [];
+    for (const friend of friends) {
+      if (friend.userId === userId) {
+        cleanedFriends.push(friend.friend);
+      } else {
+        cleanedFriends.push(friend.user);
+      }
     }
 
-    const friends = await ctx.db.query.users.findMany({
-      where: inArray(users.id, allFriendIds),
-    });
-
-    return friends;
+    return cleanedFriends;
   }),
 
   deleteFriend: protectedProcedure
     .input(z.object({ userId: z.string().min(1), friendId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      //   return await ctx.db
-      //     .delete(friendships)
-      //     .where(
-      //       and(
-      //         eq(friendships.userId, input.userId),
-      //         eq(friendships.friendId, input.friendId),
-      //       ),
-      //     );
-
       return await ctx.db
         .delete(friendships)
         .where(
@@ -123,6 +93,63 @@ export const friendshipRouter = createTRPCRouter({
             eq(friendships.friendId, input.userId),
           ),
         );
+    }),
+
+  getFriendRequests: protectedProcedure
+    .input(
+      z.object({
+        role: z.enum(["sender", "receiver"]).optional(),
+        status: z.enum(["pending", "accepted", "declined"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.auth.userId;
+
+      let whereClause;
+
+      if (input.role === "sender") {
+        whereClause = eq(friendRequests.senderId, userId);
+      } else if (input.role === "receiver") {
+        whereClause = eq(friendRequests.receiverId, userId);
+      } else {
+        whereClause = or(
+          eq(friendRequests.senderId, userId),
+          eq(friendRequests.receiverId, userId),
+        );
+      }
+
+      if (input.status !== undefined) {
+        whereClause = and(whereClause, eq(friendRequests.status, input.status));
+      }
+
+      const friendRequestsPrepared = ctx.db.query.friendRequests
+        .findMany({
+          where: whereClause,
+          with: {
+            sender: true,
+            receiver: true,
+          },
+        })
+        .prepare();
+
+      const requests = await friendRequestsPrepared.execute();
+
+      const finalRequests = await Promise.all(
+        requests.map(async (request) => {
+          const user = await clerkClient.users.getUser(request.senderId);
+
+          return {
+            requestId: request.requestId,
+            sender: {
+              id: request.senderId,
+              username: request.sender.username,
+              imageUrl: user.imageUrl,
+            },
+          };
+        }),
+      );
+
+      return finalRequests;
     }),
 
   getAllRequestsToUser: protectedProcedure
@@ -220,7 +247,7 @@ export const friendshipRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // need to check if friendship already exists, if so, return error
-
+      console.log("inside sendFriendRequest");
       const senderId = ctx.auth.userId;
 
       console.log("senderId: ", senderId);
@@ -272,19 +299,17 @@ export const friendshipRouter = createTRPCRouter({
 
       console.log({
         username: user.username,
-        firstName: user.firstName,
         imageUrl: user.imageUrl,
         requestId: Number(res.insertId),
       });
 
       const cutId = input.receiverId.split("_")[1];
-
+      console.log("cutId: ", cutId);
       // should only do this when they are online
       await pusher.trigger(`user-${cutId}-friends`, `friend-request-pending`, {
         username: user.username,
-        firstName: user.firstName,
         imageUrl: user.imageUrl,
-        requestId: res.insertId,
+        requestId: Number(res.insertId),
         showToast: true,
       });
     }),
@@ -292,7 +317,6 @@ export const friendshipRouter = createTRPCRouter({
   getFriendRequest: publicProcedure
     .input(z.object({ requestId: z.number() }))
     .query(async ({ ctx, input }) => {
-
       const friendRequest = await getFriendRequest(input.requestId, ctx.db);
 
       return friendRequest;
@@ -343,7 +367,6 @@ export const friendshipRouter = createTRPCRouter({
 
       await pusher.trigger(`user-${cutReceiverId}-friends`, `friend-added`, {
         username: friend.username,
-        firstName: friend.firstName,
         imageUrl: friend.imageUrl,
         showToast: false,
       });
@@ -352,7 +375,6 @@ export const friendshipRouter = createTRPCRouter({
       // is online. Otherwise, it will be a waste.
       await pusher.trigger(`user-${cutSenderId}-friends`, `friend-added`, {
         username: user.username,
-        firstName: user.firstName,
         imageUrl: user.imageUrl,
         showToast: true,
       });

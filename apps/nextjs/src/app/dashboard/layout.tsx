@@ -1,15 +1,18 @@
-import { ActiveTabContent, SidebarNav } from "@/components/client/dashboard";
-import { currentUser, clerkClient } from "@clerk/nextjs";
-
-import UserAvatar from "@/components/client/ui/Avatar";
+import { cache } from "react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { api } from "@/trpc/server";
+import {
+  ActiveTabContent,
+  NotificationButton,
+  SidebarNav,
+} from "@/components/client/dashboard";
 import {
   DashboardTabProvider,
   FriendsChannelProvider,
 } from "@/components/client/providers";
-import { NotificationButton } from "@/components/client/dashboard";
-import Image from "next/image";
+import UserAvatar from "@/components/client/ui/Avatar";
+import { api } from "@/trpc/server";
+import { currentUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -20,24 +23,34 @@ interface DashboardLayoutProps {
   settings: React.ReactNode;
 }
 
-interface FriendInfo {
-  username: string;
-  firstName: string | null;
-  imageUrl: string;
-  id: string;
-}
+const fetchDashboardData = cache(async () => {
+  const usersFriends = await api.friendships.getUsersFriends.query();
 
-interface PendingFriendRequest {
-  requestId: number;
-  imageUrl: string;
-  username: string;
-  firstName: string | null;
-};
+  const cleanedUserFriends = usersFriends.map((friend) => {
+    return {
+      username: friend.username,
+      imageUrl: friend.imageUrl,
+      id: friend.id,
+    };
+  });
 
-interface Invite {
-  sender: FriendInfo;
-  gameId: string;
-}
+  const pendingFriendRequests = await api.friendships.getFriendRequests.query({
+    role: "receiver",
+    status: "pending",
+  });
+  const pendingGameInvites = await api.games.getGameInvites.query({
+    role: "receiver",
+    status: "pending",
+  });
+
+  return {
+    usersFriends: cleanedUserFriends,
+    pendingFriendRequests,
+    pendingGameInvites,
+  };
+});
+
+export const revalidate = 300;
 
 export default async function DashboardLayout({
   primary, // top right container content
@@ -47,10 +60,6 @@ export default async function DashboardLayout({
   leaderboard,
   settings,
 }: DashboardLayoutProps) {
-  const friendsInfo: FriendInfo[] = [];
-  const pendingFriendRequests: PendingFriendRequest[] = [];
-  const filteredInvites: Invite[] = [];
-
   const user = await currentUser();
 
   if (!user) {
@@ -61,58 +70,16 @@ export default async function DashboardLayout({
     throw new Error("No username found");
   }
 
-  const usersFriends = await api.friendships.getUsersFriends.query();
-  const rawPendingFriendRequests =
-    await api.friendships.getAllRequestsToUser.query({ type: "pending" });
-  const rawGameInvites = await api.games.getGameInvites.query();
-
-  /**
-   * ABSOLUTELY NEED TO REFACTOR DB SCHEMA
-   * THIS IS DISGUSTING
-   */
-  for (const invite of rawGameInvites) {
-    const requestClerkInfo = await clerkClient.users.getUser(invite.senderId);
-    if (invite.status !== "sent" || invite.senderId === user.id) continue;
-    filteredInvites.push({
-      gameId: invite.lobbyId,
-      sender: {
-        username: requestClerkInfo.username!,
-        firstName: requestClerkInfo.firstName,
-        imageUrl: requestClerkInfo.imageUrl,
-        id: invite.senderId,
-      },
-    });
-  }
-
-  for (const request of rawPendingFriendRequests) {
-    const requestClerkInfo = await clerkClient.users.getUser(request.senderId);
-    pendingFriendRequests.push({
-      requestId: request.requestId,
-      firstName: requestClerkInfo.firstName,
-      imageUrl: requestClerkInfo.imageUrl,
-      username: requestClerkInfo.username!,
-    });
-  }
-
-  for (const friend of usersFriends) {
-    const friendClerkInfo = await clerkClient.users.getUser(friend.id);
-    friendsInfo.push({
-      username: friend.username,
-      firstName: friend.firstName,
-      imageUrl: friendClerkInfo.imageUrl,
-      id: friend.id,
-    });
-  }
+  const friendsData = await fetchDashboardData();
 
   return (
     <>
       <FriendsChannelProvider
-        initFriendsInfo={friendsInfo}
-        initFriendRequests={pendingFriendRequests}
-        initGameInvites={filteredInvites}
+        initFriendsInfo={friendsData.usersFriends}
+        initFriendRequests={friendsData.pendingFriendRequests}
+        initGameInvites={friendsData.pendingGameInvites}
       >
         <DashboardTabProvider>
-          {/* Static sidebar for desktop */}
           <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-20 md:overflow-y-auto md:bg-gray-900 md:pb-4">
             <div className="flex h-full flex-col items-center justify-between">
               <div className="flex w-full flex-col gap-y-4">
@@ -120,6 +87,7 @@ export default async function DashboardLayout({
                   <Image
                     width={32}
                     height={32}
+                    priority
                     className="h-10 w-auto"
                     src="/hotNcold.png"
                     alt="Your Company"
@@ -134,8 +102,8 @@ export default async function DashboardLayout({
               </div>
             </div>
           </div>
-          <main className="lg:pl-20">
-            <div className="xl:pl-96">
+          <main className="md:pl-20">
+            <div className="lg:pl-96">
               <div className="relative h-full px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
                 <div className="inset-y-0 flex flex-col gap-y-8">
                   {/* Top Container  */}
@@ -155,7 +123,6 @@ export default async function DashboardLayout({
                   </div>
                   {/* Bottom container */}
                   <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
-                    {/* hello{" "} */}
                     <div className="relative m-1 flex flex-grow flex-col items-center rounded-md ">
                       {secondary}
                     </div>
@@ -165,7 +132,7 @@ export default async function DashboardLayout({
             </div>
           </main>
 
-          <aside className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
+          <aside className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:block lg:px-8">
             {/* Secondary column (hidden on smaller screens) */}
             <div className="h-full rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
               <ActiveTabContent

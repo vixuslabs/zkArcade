@@ -17,6 +17,6 @@
       "@hot-n-cold/tsconfig": "workspace:^0.1.0",
       "typescript": "^5.2.2"
     },
-    "prettier": "@acme/prettier-config"
+    "prettier": "@hot-n-cold/prettier-config"
   }
   
