@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useCallback, useEffect } from "react";
-import type { Player } from "@/lib/types";
+import Link from "next/link";
 import { useMinaContext } from "@/components/client/providers/MinaProvider";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+
 import { LoadingSpinner } from "../ui";
 
 function InitiateMina({
-  player, // setGameReady,
+  publicKey,
+  privateKey,
 }: {
-  player: Player;
+  publicKey?: string;
+  privateKey?: string;
 }) {
   const { initiateMina, zkappWorkerClient, zkAppPublicKey } = useMinaContext();
 
@@ -33,13 +35,17 @@ function InitiateMina({
   useEffect(() => {
     // setPlayer(player);
     void (async () => {
-      await initiateMina(player);
+      if (publicKey && privateKey) {
+        await initiateMina({ publicKey, privateKey });
 
-      console.log("starting to load contract");
-      await handleLoadContract();
-      // ideally have a check here to see if the contract is loaded
-      setGameReady(true);
-      console.log("handleLoadContract done");
+        console.log("starting to load contract");
+        await handleLoadContract();
+        // ideally have a check here to see if the contract is loaded
+        setGameReady(true);
+        console.log("handleLoadContract done");
+      } else {
+        throw new Error("publicKey or privateKey is undefined");
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

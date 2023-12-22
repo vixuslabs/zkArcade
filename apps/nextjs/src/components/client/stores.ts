@@ -1,13 +1,17 @@
 import { env } from "@/env.mjs";
-// import { usePusherClient } from "@/pusher/client";
-
 import type {
+  FriendsEventMap,
   GameState,
+  GeneralEventMap,
+  HotnColdGameEvents,
   HotnColdGameState,
   HotnColdPlayer,
+  LobbyEventMap,
   MeshInfo,
+  PartialEventMap,
   PlaneInfo,
   Player,
+  PusherUserInfo,
 } from "@/lib/types";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { Channel, PresenceChannel } from "pusher-js";
@@ -15,59 +19,6 @@ import Pusher from "pusher-js";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { createWithEqualityFn } from "zustand/traditional";
-
-interface PusherUserInfo {
-  username: string;
-  userId: string;
-  imageUrl: string;
-}
-
-type GeneralLobbyEvent =
-  | "client-ready-toggle"
-  | "client-mina-toggle"
-  | "client-game-started";
-
-type HotnColdGameEvents =
-  | GeneralLobbyEvent
-  | "client-game-roomLayout"
-  | "client-game-hiding"
-  | "client-game-hiding-done"
-  | "client-game-seeking-start"
-  | "client-game-requestProximity"
-  | "client-game-setProximity"
-  | "client-game-setObjectPosition"
-  | "client-game-seeking-done";
-
-export type FriendEvents =
-  | `friend-added`
-  | `friend-deleted`
-  | `friend-request-pending`
-  | `invite-sent`
-  | "invite-accepted";
-
-export interface FriendData {
-  username: string;
-  imageUrl: string;
-  id: string;
-  requestId?: number;
-  friendId?: string;
-  showToast?: boolean;
-  gameId?: string;
-}
-
-type EventCallback = (data?: Player) => void;
-
-type FriendCallback = (data: FriendData) => void;
-
-type LobbyCallback = () => void;
-
-export type FriendsEventMap = Record<FriendEvents, FriendCallback>;
-
-export type LobbyEventMap = Record<GeneralLobbyEvent, LobbyCallback>;
-
-export type GeneralEventMap = Record<string, EventCallback>;
-
-type PartialEventMap = Partial<Record<string, EventCallback>>;
 
 interface LobbyState {
   players: Player[];
@@ -390,32 +341,6 @@ export const useLobbyStore = createWithEqualityFn(
       setHost: (host: boolean) => {
         set({ isHost: host });
       },
-      addPlayer: (player: Player) => {
-        const { players } = get();
-
-        if (players.find((p) => p.id === player.id) ?? players.length >= 2) {
-          return;
-        }
-
-        set((state) => ({
-          players: [...state.players, player],
-        }));
-      },
-      removePlayer: (player: Player) => {
-        const { players } = get();
-
-        if (!players.find((p) => p.id === player.id)) {
-          return;
-        }
-
-        if (players.length === 0) {
-          throw new Error("No players to remove");
-        }
-
-        set((state) => ({
-          players: state.players.filter((p) => p.id !== player.id),
-        }));
-      },
       updatePlayer: (player: Player) => {
         const { players } = get();
 
@@ -485,15 +410,18 @@ export const useLobbyStore = createWithEqualityFn(
                   return;
                 }
 
-                const newPlayer = {
-                  ...info,
-                  id,
-                  ready: false,
-                  host: id === me.id && isHost,
-                  inGame: false,
-                };
+                let prKey: string;
+                let puKey: string;
 
-                // useLobbyStore.getState().addPlayer(newPlayer);
+                // Temp solution to assign keys, Meta Quest Browser
+                // does not have the Auro Wallet extension
+                if (prevPlayers.length === 0) {
+                  prKey = env.NEXT_PUBLIC_PRIV_KEY1;
+                  puKey = env.NEXT_PUBLIC_PUB_KEY1;
+                } else {
+                  prKey = env.NEXT_PUBLIC_PRIV_KEY2;
+                  puKey = env.NEXT_PUBLIC_PUB_KEY2;
+                }
 
                 const unorderedPlayers = [
                   ...prevPlayers,
@@ -503,6 +431,8 @@ export const useLobbyStore = createWithEqualityFn(
                     ready: false,
                     host: id === me.id && isHost,
                     inGame: false,
+                    privateKey: prKey,
+                    publicKey: puKey,
                   },
                 ];
 
@@ -532,44 +462,33 @@ export const useLobbyStore = createWithEqualityFn(
               return;
             }
 
-            const unorderedPlayers = [
-              ...get().players,
-              {
-                ...member.info,
-                id: member.id,
-                ready: false,
-                host: false,
-                inGame: false,
-              },
-            ];
-
-            const sortedPlayers: Player[] = [];
-
-            unorderedPlayers.forEach((p) => {
-              if (isHost && p.id === me.id) {
-                sortedPlayers.unshift(p);
-              } else {
-                sortedPlayers.push(p);
-              }
-            });
-
-            console.log(sortedPlayers);
-
             set({
-              players: [...sortedPlayers],
+              players: [
+                ...prevPlayers,
+                {
+                  ...member.info,
+                  id: member.id,
+                  ready: false,
+                  host: false,
+                  inGame: false,
+                },
+              ],
             });
           });
 
-          channel.bind(
-            "pusher:member_removed",
-            ({ members }: { members: MembersObject }) => {
-              Object.entries(members).forEach(([id, _]) => {
-                set({
-                  players: get().players.filter((p) => p.id !== id),
-                });
-              });
-            },
-          );
+          channel.bind("pusher:member_removed", (member: PusherMember) => {
+            const prevPlayers = get().players;
+
+            const player = prevPlayers.find((p) => p.id !== member.id);
+
+            if (!player) {
+              return;
+            }
+
+            const newPlayers = prevPlayers.filter((p) => p.id !== member.id);
+
+            set({ players: newPlayers });
+          });
         } catch (error) {
           console.error("subscribeToPresenceChannel: ", error);
         }

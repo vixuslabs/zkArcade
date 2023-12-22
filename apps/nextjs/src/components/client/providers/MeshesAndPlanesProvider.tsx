@@ -1,15 +1,12 @@
 "use client";
 
 import React, {
-  useState,
-  useMemo,
   createContext,
   useContext,
   useEffect,
+  useMemo,
+  useState,
 } from "react";
-
-import { useLobbyContext } from "./LobbyProvider";
-
 import type {
   MeshesAndPlanesContextValue,
   MyMeshInfo,

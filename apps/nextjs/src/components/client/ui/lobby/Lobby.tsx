@@ -1,15 +1,21 @@
 "use client";
 
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
-import { useHotnCold } from "@/components/client/stores";
+import {
+  //   useHotnCold,
+  useLobbyStore,
+  usePusher,
+} from "@/components/client/stores";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import type { LobbyEventMap } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import type { PresenceChannel } from "pusher-js";
+import { shallow } from "zustand/shallow";
 
 import { LobbyDialogWrapper, LobbySettings, PlayerCard } from ".";
 
@@ -29,43 +35,167 @@ const InitiateMina = dynamic(
 
 function Lobby() {
   const {
-    players,
-    setPlayers,
-    starting,
-    setStarting,
+    username: hostUsername,
+    lobbyId,
+  }: { username: string; lobbyId: string } = useParams();
+
+  const { user, isSignedIn } = useUser();
+
+  const {
+    subscribeToChannel,
+    activeChannels,
+    unsubscribeFromChannel,
+    me,
+    pusherInitialized,
+    initPusher,
+  } = usePusher((state) => {
+    return {
+      subscribeToChannel: state.subscribeToChannel,
+      activeChannels: state.activeChannels,
+      unsubscribeFromChannel: state.unsubscribeFromChannel,
+      me: state.me,
+      pusherInitialized: state.pusherInitialized,
+      initPusher: state.initPusher,
+    };
+  }, shallow);
+  const {
+    addEventsToPresenceChannel,
+    updatePlayer,
     channel,
     isMinaOn,
     setIsMinaOn,
-  } = useLobbyContext();
+    setStarting,
+    starting,
+    me: lobbyMe,
+  } = useLobbyStore();
+  const [lobbyChannel, setLobbyChannel] =
+    React.useState<PresenceChannel | null>(null);
 
-  const user = useUser();
-  const me = useMemo(() => {
-    return players.find((p) => p.username === user.user?.username);
-  }, [players, user.user?.username]);
+  const lobbyEvents: LobbyEventMap = useMemo(() => {
+    return {
+      "client-ready-toggle": ({
+        ready,
+        username,
+      }: {
+        ready: boolean;
+        username: string;
+      }) => {
+        const players = useLobbyStore.getState().players;
 
-  const handleReady = () => {
-    setPlayers((prev) =>
-      prev.map((player) =>
-        player.username === user.user?.username
-          ? { ...player, ready: !player.ready }
-          : player,
-      ),
+        const opponent = players.find((p) => p.username === username);
+
+        if (!opponent) {
+          throw new Error("LobbyZ client-ready: Could not find opponent");
+        }
+
+        updatePlayer({
+          ...opponent,
+          ready,
+        });
+      },
+      "client-mina-toggle": ({ minaToggle }: { minaToggle: boolean }) => {
+        console.log("client mina on");
+        setIsMinaOn(minaToggle);
+      },
+      "client-game-started": () => {
+        console.log("client game started");
+      },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.username, updatePlayer, setIsMinaOn]);
+
+  const presenceChannelName = useMemo(
+    () => `presence-lobby-${lobbyId}`,
+    [lobbyId],
+  );
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      return;
+    }
+
+    if (!pusherInitialized) {
+      initPusher(
+        me
+          ? {
+              userId: me.id,
+              username: me.username ?? "",
+              imageUrl: me.imageUrl,
+            }
+          : {
+              userId: user.id,
+              username: user.username ?? "",
+              imageUrl: user.imageUrl,
+            },
+      );
+    }
+
+    if (activeChannels.find((c) => c.name === presenceChannelName)) {
+      console.log("already subscribed to presence channel");
+      return;
+    }
+
+    console.log("subscribing to presence lobby channel");
+    const channel = subscribeToChannel(presenceChannelName);
+
+    if (!channel) {
+      throw new Error(
+        `Could not subscribe to presence channel: presence-lobby-${lobbyId}`,
+      );
+    }
+    setLobbyChannel(channel as PresenceChannel);
+
+    addEventsToPresenceChannel(
+      presenceChannelName,
+      lobbyEvents,
+      hostUsername === user.username!,
     );
 
-    channel?.trigger("client-ready", {
-      username: user.user?.username,
-    });
-  };
+    return () => {
+      console.log("unsubscribing from presence channel");
+      unsubscribeFromChannel(presenceChannelName);
+      setLobbyChannel(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lobbyId, presenceChannelName, isSignedIn]);
+
+  const handleReady = useCallback(
+    (username: string) => {
+      console.log("inside handleReady");
+
+      const players = useLobbyStore.getState().players;
+
+      const player = players.find((p) => p.username === username);
+
+      if (!player) {
+        throw new Error("LobbyZ: Could not find player");
+      }
+
+      updatePlayer({
+        ...player,
+        ready: !player.ready,
+      });
+      console.log("player: ", player);
+
+      lobbyChannel?.trigger("client-ready-toggle", {
+        ready: !player.ready,
+        username: player.username,
+      });
+    },
+    [updatePlayer, lobbyChannel],
+  );
 
   return (
     <>
       <div
         className={cn(
           "flex h-screen w-screen items-center",
-          players.length > 1 ? "justify-evenly" : "justify-evenly",
+          useLobbyStore.getState().players.length > 1
+            ? "justify-evenly"
+            : "justify-evenly",
         )}
       >
-        {players.map((player, index) => (
+        {useLobbyStore.getState().players.map((player, index) => (
           <Fragment key={player.username}>
             <div
               className="relative flex w-1/2 flex-col items-center"
@@ -75,7 +205,7 @@ function Lobby() {
                 username={player.username}
                 imageUrl={player.imageUrl}
                 isHost={player.host}
-                handleReady={handleReady}
+                handleReady={() => handleReady(player.username)}
                 isReady={player.ready}
               />
             </div>
@@ -84,7 +214,9 @@ function Lobby() {
             )}
           </Fragment>
         ))}
-        {players.length === 1 && <LobbyDialogWrapper />}
+        {useLobbyStore.getState().players.length === 1 && (
+          <LobbyDialogWrapper />
+        )}
       </div>
       <div className="absolute bottom-16 flex items-center gap-x-12">
         {!starting ? (
@@ -93,16 +225,12 @@ function Lobby() {
               variant="default"
               className="relative"
               disabled={
-                players.some((p) => !p.ready) ||
-                players.find((p) => p.username === user?.user!.username)
-                  ?.host === false ||
+                useLobbyStore.getState().players.some((p) => !p.ready) ||
+                hostUsername === me?.username ||
                 starting
               }
               onClick={() => {
-                if (
-                  user.user?.username &&
-                  players.find((p) => p.username === user?.user.username)?.host
-                ) {
+                if (hostUsername === me?.username) {
                   console.log("starting");
                   channel?.trigger("client-start-game", {
                     starting: true,
@@ -116,13 +244,16 @@ function Lobby() {
             <LobbySettings
               isMinaOn={isMinaOn}
               setIsMinaOn={setIsMinaOn}
-              isHost={me?.host}
+              isHost={me?.username === hostUsername}
               channel={channel}
             />
           </>
         ) : isMinaOn ? (
           <MinaProvider>
-            <InitiateMina player={me!} />
+            <InitiateMina
+              publicKey={lobbyMe?.publicKey}
+              privateKey={lobbyMe?.privateKey}
+            />
           </MinaProvider>
         ) : (
           <Button variant={"default"} asChild>

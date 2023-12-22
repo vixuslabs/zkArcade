@@ -42,7 +42,9 @@ function LobbySettings({
               setIsMinaOn(!isMinaOn);
 
               if (isHost) {
-                channel?.trigger(`client-mina-toggle`);
+                channel?.trigger(`client-mina-toggle`, {
+                  minaToggle: !isMinaOn,
+                });
               }
             }}
             id="mina"
