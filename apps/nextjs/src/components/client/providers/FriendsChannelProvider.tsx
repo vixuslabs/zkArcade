@@ -147,7 +147,7 @@ function FriendsChannelProvider({
           <ToastAction
             altText="Accept"
             onClick={() => {
-              router.push(`/${data.username}/${data.gameId}`);
+              router.push(`/play/${data.username}/${data.gameId}`);
             }}
           >
             Join

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ interface PlayerCardProps {
   imageUrl: string | null;
   handleReady: (username: string) => void;
   isReady: boolean;
+  starting: boolean;
   isHost?: boolean;
   className?: string;
 }
@@ -30,8 +30,8 @@ function PlayerCard({
   isReady,
   imageUrl,
   className,
+  starting,
 }: PlayerCardProps) {
-  const { starting } = useLobbyContext();
   const user = useUser();
 
   return (
@@ -75,7 +75,6 @@ function PlayerCard({
         >
           Ready Up
         </Button>
-        {/* <button onClick={onReady}>Ready Up</button> */}
       </CardFooter>
     </Card>
   );

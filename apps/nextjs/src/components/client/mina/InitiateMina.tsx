@@ -14,6 +14,9 @@ function InitiateMina({
   publicKey?: string;
   privateKey?: string;
 }) {
+  console.log("InitiateMina publicKey", publicKey);
+  console.log("InitiateMina privateKey", privateKey);
+
   const { initiateMina, zkappWorkerClient, zkAppPublicKey } = useMinaContext();
 
   const [gameReady, setGameReady] = React.useState<boolean>(false);
@@ -33,7 +36,6 @@ function InitiateMina({
   }, [zkappWorkerClient, zkAppPublicKey]);
 
   useEffect(() => {
-    // setPlayer(player);
     void (async () => {
       if (publicKey && privateKey) {
         await initiateMina({ publicKey, privateKey });
@@ -48,13 +50,14 @@ function InitiateMina({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [publicKey, privateKey]);
 
   return (
     <Button variant={"default"} asChild disabled={!gameReady}>
+      {/* change from Link to Webxr Components directly */}
       {gameReady ? <Link href={"/game"}>Start Game</Link> : <LoadingSpinner />}
     </Button>
   );
 }
 
-export default React.memo(InitiateMina);
+export default InitiateMina;

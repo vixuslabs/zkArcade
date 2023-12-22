@@ -80,54 +80,6 @@ export const initialHotnColdState: HotnColdGameState = {
   opponent: null,
 };
 
-// const getUrlSearch = () => {
-//   return window.location.search.slice(1);
-// };
-
-// const persistentStorage: StateStorage = {
-//   getItem: (key): string => {
-//     // Check URL first
-//     if (getUrlSearch()) {
-//       const searchParams = new URLSearchParams(getUrlSearch());
-//       const storedValue = searchParams.get(key);
-
-//       if (storedValue) {
-//         // If no value, return null
-//         // return "null";
-//         return JSON.parse(storedValue) as string;
-//       }
-//       return "null";
-//     } else {
-//       const localItem = localStorage.getItem(key);
-//       if (localItem) {
-//         return JSON.parse(localItem) as string;
-//       }
-//       // Otherwise, we should load from localstorage or alternative storage
-//       return "null";
-//     }
-//   },
-//   setItem: (key, newValue): void => {
-//     // Check if query params exist at all, can remove check if always want to set URL
-//     if (getUrlSearch()) {
-//       const searchParams = new URLSearchParams(getUrlSearch());
-//       searchParams.set(key, JSON.stringify(newValue));
-//       window.history.replaceState(null, "null", `?${searchParams.toString()}`);
-//     }
-
-//     localStorage.setItem(key, JSON.stringify(newValue));
-//   },
-//   removeItem: (key): void => {
-//     const searchParams = new URLSearchParams(getUrlSearch());
-//     searchParams.delete(key);
-//     window.location.search = searchParams.toString();
-//   },
-// };
-
-// const storageOptions = {
-//   name: "pusher-storage",
-//   getStorage: createJSONStorage(() => persistentStorage)!,
-// };
-
 export const usePusher = createWithEqualityFn(
   combine(initialPusherState, (set, get) => ({
     initPusher: (userInfo: PusherUserInfo) => {
@@ -416,11 +368,31 @@ export const useLobbyStore = createWithEqualityFn(
                 // Temp solution to assign keys, Meta Quest Browser
                 // does not have the Auro Wallet extension
                 if (prevPlayers.length === 0) {
+                  console.log("prevPlayers.length === 0");
+
                   prKey = env.NEXT_PUBLIC_PRIV_KEY1;
                   puKey = env.NEXT_PUBLIC_PUB_KEY1;
                 } else {
+                  console.log("prevPlayers.length !== 0");
                   prKey = env.NEXT_PUBLIC_PRIV_KEY2;
                   puKey = env.NEXT_PUBLIC_PUB_KEY2;
+                }
+
+                console.log("prKey", prKey);
+                console.log("puKey", puKey);
+
+                if (id === me.id) {
+                  set({
+                    me: {
+                      ...info,
+                      id,
+                      ready: false,
+                      host: id === me.id && isHost,
+                      inGame: false,
+                      privateKey: prKey,
+                      publicKey: puKey,
+                    },
+                  });
                 }
 
                 const unorderedPlayers = [
@@ -462,6 +434,25 @@ export const useLobbyStore = createWithEqualityFn(
               return;
             }
 
+            let prKey: string;
+            let puKey: string;
+
+            // Temp solution to assign keys, Meta Quest Browser
+            // does not have the Auro Wallet extension
+            if (prevPlayers.length === 0) {
+              console.log("prevPlayers.length === 0");
+
+              prKey = env.NEXT_PUBLIC_PRIV_KEY1;
+              puKey = env.NEXT_PUBLIC_PUB_KEY1;
+            } else {
+              console.log("prevPlayers.length !== 0");
+              prKey = env.NEXT_PUBLIC_PRIV_KEY2;
+              puKey = env.NEXT_PUBLIC_PUB_KEY2;
+            }
+
+            console.log("prKey", prKey);
+            console.log("puKey", puKey);
+
             set({
               players: [
                 ...prevPlayers,
@@ -471,6 +462,8 @@ export const useLobbyStore = createWithEqualityFn(
                   ready: false,
                   host: false,
                   inGame: false,
+                  privateKey: prKey,
+                  publicKey: puKey,
                 },
               ],
             });

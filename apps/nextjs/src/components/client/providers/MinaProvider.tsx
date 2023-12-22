@@ -116,47 +116,6 @@ function MinaProvider({
     [mina, timeout],
   );
 
-  // useEffect(() => {
-  //   async function timeout(seconds: number): Promise<void> {
-  //     return new Promise<void>((resolve) => {
-  //       setTimeout(() => {
-  //         resolve();
-  //       }, seconds * 1000);
-  //     });
-  //   }
-  //   void (async () => {
-  //     if (mina) return;
-  //     const { PrivateKey, PublicKey } = await import("o1js");
-  //     const ZkappWorkerClient = (await import("@/mina/zkappWorkerClient"))
-  //       .default;
-
-  //     console.log(PrivateKey, PublicKey, ZkappWorkerClient);
-
-  //     const zkappWorkerClient = new ZkappWorkerClient();
-  //     await timeout(5);
-
-  //     /* eslint-disable */
-  //     const globalMina = (window as any).mina; // we actually wont have this in the meta browser
-  //     /* eslint-enable */
-  //     await zkappWorkerClient.setActiveInstanceToBerkeley();
-
-  //     const pubKey = player.publicKey;
-  //     const privKey = player.privateKey;
-
-  //     if (!pubKey || !privKey) {
-  //       throw new Error("No keys");
-  //     }
-
-  //     setMina({
-  //       ZkappWorkerClient: zkappWorkerClient,
-  //       initialized: true,
-  //       player: player,
-  //       pubKey: pubKey,
-  //       privKey: privKey,
-  //     });
-  //   })();
-  // }, []);
-
   const value = useMemo(() => {
     console.log("mina", mina);
     if (mina && setMina)

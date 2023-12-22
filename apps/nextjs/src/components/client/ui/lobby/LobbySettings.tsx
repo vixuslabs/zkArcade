@@ -33,18 +33,16 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            className="hover:cursor-not-allowed"
-            // disabled={!isHost}
-            // Disable due to bug
-            disabled={true}
+            className={!isHost ? "hover:cursor-not-allowed" : ""}
+            disabled={!isHost}
             checked={isMinaOn}
             onCheckedChange={() => {
-              setIsMinaOn(!isMinaOn);
-
+              console.log("isHost", isHost);
               if (isHost) {
                 channel?.trigger(`client-mina-toggle`, {
                   minaToggle: !isMinaOn,
                 });
+                setIsMinaOn(!isMinaOn);
               }
             }}
             id="mina"

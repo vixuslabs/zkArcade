@@ -61,7 +61,6 @@ function Lobby() {
   const {
     addEventsToPresenceChannel,
     updatePlayer,
-    channel,
     isMinaOn,
     setIsMinaOn,
     setStarting,
@@ -99,6 +98,8 @@ function Lobby() {
       },
       "client-game-started": () => {
         console.log("client game started");
+        console.log("lobbyMe", lobbyMe);
+        setStarting(true);
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,6 +208,7 @@ function Lobby() {
                 isHost={player.host}
                 handleReady={() => handleReady(player.username)}
                 isReady={player.ready}
+                starting={starting}
               />
             </div>
             {index === 0 && (
@@ -226,13 +228,13 @@ function Lobby() {
               className="relative"
               disabled={
                 useLobbyStore.getState().players.some((p) => !p.ready) ||
-                hostUsername === me?.username ||
+                hostUsername !== me?.username ||
                 starting
               }
               onClick={() => {
                 if (hostUsername === me?.username) {
                   console.log("starting");
-                  channel?.trigger("client-start-game", {
+                  lobbyChannel?.trigger("client-game-started", {
                     starting: true,
                   });
                   setStarting(true);
@@ -245,7 +247,7 @@ function Lobby() {
               isMinaOn={isMinaOn}
               setIsMinaOn={setIsMinaOn}
               isHost={me?.username === hostUsername}
-              channel={channel}
+              channel={lobbyChannel}
             />
           </>
         ) : isMinaOn ? (
