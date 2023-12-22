@@ -1,6 +1,6 @@
-import { Field, method, SmartContract, state, State } from "o1js";
+import { Field, method, SmartContract, state, State, Poseidon } from "o1js";
 
-import { Box, Plane } from "./structs.js";
+import { Room, Object3D } from "./structs.js";
 
 // The HotnCold contract allows users to commit an object hash and then validate that:
 // 1. A given object matches the previously commited hash.
@@ -11,19 +11,28 @@ export class HotnCold extends SmartContract {
   @state(Field) objectHash = State<Field>();
 
   // Commit the object hash on-chain.
-  @method commitObject(objectHash: Field) {
-    this.objectHash.set(objectHash);
+  @method commitObject(object: Object3D) {
+    this.objectHash.set(Poseidon.hash([ object.center.x.toField(), object.center.y.toField(), object.center.z.toField() ]))
   }
 
-  // Check that an object does not collide with a given box
-  // (i.e. the object is outside the box)
-  @method validateObjectIsOutsideBox(box: Box) {
-    box.assertObjectIsOutside();
-  }
+  // Validate that the object matches the previously commited hash and that it is inside the room.
+  @method validateRoom(room: Room, object: Object3D) {
+    // Get the object hash from the contract state
+    const onChainObjectHash = this.objectHash.get();
+    this.objectHash.assertEquals(onChainObjectHash);
 
-  // Check that an object is on the right side of a given plane
-  // (i.e. the plane's normal vector points towards the object).
-  @method validateObjectIsInsideRoom(plane: Plane) {
-    plane.assertObjectIsOnInnerSide();
+    // Check that this object's hash matches the previously commited object hash.
+    const objectHash = Poseidon.hash([ object.center.x.toField(), object.center.y.toField(), object.center.z.toField() ]);
+    objectHash.assertEquals(onChainObjectHash);
+
+    // Check that an object is on the inner side of every plane
+    room.planes.forEach((plane) => {
+      plane.assertObjectIsOnInnerSide(object);
+    });
+
+    // Check that an object does not collide with a any of the boxes
+    room.boxes.forEach((box) => {
+      box.assertObjectIsOutside(object);
+    });
   }
 }

@@ -53,9 +53,10 @@ export default class ZkappWorkerClient {
     });
   }
 
-  createValidateObjectIsOutsideBoxTransaction(boxesAndObjects: string) {
-    return this._call("createValidateObjectIsOutsideBoxTransaction", {
-      boxesAndObjects: boxesAndObjects,
+  createValidateRoomTransaction(room: string, object: string) {
+    return this._call('createValidateRoomTransaction', {
+      room: room,
+      object: object
     });
   }
 
