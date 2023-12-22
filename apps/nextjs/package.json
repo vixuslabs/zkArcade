@@ -7,7 +7,7 @@
     "dev": "pnpm with-env next dev",
     "start": "pnpm with-env next start",
     "clean": "git clean -xdf .next .turbo node_modules",
-    "lint": "eslint ./src/**/*.{ts,tsx}",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 3",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
