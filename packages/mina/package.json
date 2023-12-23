@@ -10,6 +10,9 @@
     "zkapp"
   ],
   "type": "module",
+  "files": [
+    "/build"
+  ],
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
@@ -19,7 +22,8 @@
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "lint": "npx eslint src/* --fix"
+    "lint": "eslint src/* --fix",
+    "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
     "@hot-n-cold/eslint-config": "workspace:^0.2.0",
@@ -33,7 +37,6 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "three": "^0.158.0",
     "o1js": "^0.14.0"
   },
   "eslintConfig": {

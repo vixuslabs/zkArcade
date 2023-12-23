@@ -7,6 +7,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { HOTNCOLD_ADDRESS } from "@/lib/constants";
 import type { PrivateKey, PublicKey } from "o1js";
 
 import type ZkappWorkerClient from "../mina/zkAppWorkerClient";
@@ -20,6 +21,11 @@ interface MinaState {
   zkAppPrivateKey?: PrivateKey;
 }
 
+interface InitiateMinaReturn {
+  zkAppClient: ZkappWorkerClient;
+  zkAppPublicKey: PublicKey;
+}
+
 interface MinaContextValues {
   mina: MinaState | null;
   setMina: React.Dispatch<React.SetStateAction<MinaState | null>> | null;
@@ -29,9 +35,10 @@ interface MinaContextValues {
   }: {
     publicKey: string;
     privateKey: string;
-  }) => Promise<void>;
+  }) => Promise<InitiateMinaReturn | null>;
   zkappWorkerClient: ZkappWorkerClient | null;
-  zkAppPublicKey?: PublicKey;
+  zkAppPublicKey: PublicKey | null;
+  initialized: boolean;
   // setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
 }
 
@@ -39,8 +46,10 @@ const MinaContext = createContext<MinaContextValues>({
   mina: null,
   setMina: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  initiateMina: async () => {},
+  initiateMina: async () => await Promise.resolve(null),
   zkappWorkerClient: null,
+  zkAppPublicKey: null,
+  initialized: false,
 });
 
 export const useMinaContext = () => {
@@ -71,69 +80,79 @@ function MinaProvider({
     });
   }, []);
 
-  const handleInitiateMina = useCallback(
+  const initiateMina = useCallback(
     async ({
       publicKey,
       privateKey,
     }: {
       publicKey: string;
       privateKey: string;
-    }) => {
+    }): Promise<InitiateMinaReturn | null> => {
       if (mina) {
-        return;
+        return null;
       }
       if (!publicKey || !privateKey) {
         throw new Error("Both public and private keys must be provided");
       }
-      const { PublicKey } = await import("o1js");
-      console.log("pre zkappWorkerClient");
-      const ZkappWorkerClient = (await import("../mina/zkAppWorkerClient"))
-        .default;
 
-      console.log("post zkappWorkerClient");
+      console.log("publicKey and privateKey are provided, initiating Mina...");
 
-      console.log("pre new zkappWorkerClient");
-      const zkappWorkerClient = new ZkappWorkerClient();
-      await timeout(10);
-      console.log("post new zkappWorkerClient");
+      try {
+        const { PublicKey } = await import("o1js");
+        const ZkappWorkerClient = (
+          await import("@/components/client/mina/zkAppWorkerClient")
+        ).default;
 
-      console.log("pre setActiveInstanceToBerkeley");
-      await zkappWorkerClient.setActiveInstanceToBerkeley();
-      console.log("post setActiveInstanceToBerkeley");
+        console.log("Successfully imported ZkappWorkerClient");
 
-      const zkappPublicKey = PublicKey.fromBase58(
-        "B62qkYHTNVjroM1PyPkASFvd8e8ByCfQJAxExhvYtYY8DYSyWGpJzFD", // deploy005
-      );
+        const zkappWorkerClient = new ZkappWorkerClient();
+        await timeout(10);
 
-      setMina({
-        zkappWorkerClient: zkappWorkerClient,
-        zkAppPublicKey: zkappPublicKey,
-        initialized: true,
-        pubKey: publicKey,
-        privKey: privateKey,
-      });
+        await zkappWorkerClient.setActiveInstanceToBerkeley();
+
+        const zkAppPublicKey = PublicKey.fromBase58(
+          HOTNCOLD_ADDRESS, // deploy009
+        );
+
+        console.log("zkappWorkerClient - instance set to Berkeley");
+
+        setMina({
+          zkappWorkerClient: zkappWorkerClient,
+          zkAppPublicKey,
+          initialized: true,
+          pubKey: publicKey,
+          privKey: privateKey,
+        });
+
+        return { zkAppClient: zkappWorkerClient, zkAppPublicKey };
+      } catch (err) {
+        console.log("err", err);
+        return Promise.reject(null);
+      }
     },
     [mina, timeout],
   );
 
   const value = useMemo(() => {
-    console.log("mina", mina);
     if (mina && setMina)
       return {
         mina: mina,
         setMina: setMina,
-        initiateMina: handleInitiateMina,
+        initiateMina,
         zkappWorkerClient: mina.zkappWorkerClient,
-        zkAppPublicKey: mina.zkAppPublicKey,
+        zkAppPublicKey: mina.zkAppPublicKey ?? null,
+        initialized: mina.initialized,
       };
     else
       return {
         mina: null,
         setMina: null,
-        initiateMina: handleInitiateMina,
+        initiateMina,
         zkappWorkerClient: null,
+        zkAppPublicKey: null,
+        initialized: false,
       };
-  }, [mina, handleInitiateMina]);
+  }, [mina, initiateMina, setMina]);
 
   return <MinaContext.Provider value={value}>{children}</MinaContext.Provider>;
 }
