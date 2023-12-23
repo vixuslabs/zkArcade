@@ -13,11 +13,13 @@ import { Switch } from "@/components/ui/switch";
 import type { PresenceChannel } from "pusher-js";
 
 function LobbySettings({
+  toXR,
   isMinaOn,
   setIsMinaOn,
   isHost,
   channel,
 }: {
+  toXR: boolean;
   isMinaOn: boolean;
   setIsMinaOn: (isMinaOn: boolean) => void;
   isHost: boolean | undefined;
@@ -33,8 +35,8 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            className={!isHost ? "hover:cursor-not-allowed" : ""}
-            disabled={!isHost}
+            className={!isHost || toXR ? "hover:cursor-not-allowed" : ""}
+            disabled={!isHost || toXR}
             checked={isMinaOn}
             onCheckedChange={() => {
               console.log("isHost", isHost);

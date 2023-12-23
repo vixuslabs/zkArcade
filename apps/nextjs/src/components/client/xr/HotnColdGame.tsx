@@ -1,37 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import { ControllerStateProvider } from "@/components/client/providers";
+import { BuildRoom } from "@/components/client/xr";
+import { GameControllers } from "@/components/client/xr/inputDevices";
+import GameSphere from "@/components/client/xr/objects/GameSphere";
+import { FriendRoom } from "@/components/client/xr/rooms";
+import { Button } from "@/components/ui/button";
+import type { RoomCaptureProps } from "@/lib/types";
+import { useUser } from "@clerk/nextjs";
+import { clippingEvents } from "@coconut-xr/koestlich";
+import { getInputSourceId } from "@coconut-xr/natuerlich";
 import {
-  XRCanvas,
   Hands,
   TeleportController,
+  XRCanvas,
 } from "@coconut-xr/natuerlich/defaults";
 import {
-  useEnterXR,
-  NonImmersiveCamera,
   ImmersiveSessionOrigin,
+  NonImmersiveCamera,
+  useEnterXR,
   useHeighestAvailableFrameRate,
-  useNativeFramebufferScaling,
   useInputSources,
+  useNativeFramebufferScaling,
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
-import { clippingEvents } from "@coconut-xr/koestlich";
-import { GameControllers } from "@/components/client/xr/inputDevices";
-import { getInputSourceId } from "@coconut-xr/natuerlich";
-import { Button } from "@/components/ui/button";
-import { BuildRoom } from "@/components/client/xr";
-import { ControllerStateProvider } from "@/components/client/providers";
 import { Physics } from "@react-three/rapier";
-import { useLobbyContext } from "../providers/LobbyProvider";
-import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
-import { useUser } from "@clerk/nextjs";
-import { FriendRoom } from "@/components/client/xr/rooms";
-import GameSphere from "@/components/client/xr/objects/GameSphere";
-
 import { Vector3 } from "three";
 
-import type { RoomCaptureProps } from "@/lib/types";
+// import { useLobbyContext } from "../providers/LobbyProvider";
+import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],

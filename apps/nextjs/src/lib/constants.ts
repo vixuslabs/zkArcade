@@ -13,6 +13,9 @@ export const initialPointerState: Pointers = {
   },
 };
 
+export const HOTNCOLD_ADDRESS =
+  "B62qo1qSixN7vRuXdkpuVfDMBEqCgmREjWrNB2ibpwk6SdsaU7NAwWL" as string;
+
 export const realWorldHiddenObject = {
   coords: [0.5, 0.5, -0.5],
   radius: 0.02,

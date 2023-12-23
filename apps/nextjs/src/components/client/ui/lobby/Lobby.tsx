@@ -2,22 +2,24 @@
 
 import React, { Fragment, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   //   useHotnCold,
   useLobbyStore,
   usePusher,
 } from "@/components/client/stores";
+import {
+  HotnColdInstructions,
+  LobbySettings,
+  PlayersContainer,
+} from "@/components/client/ui/lobby";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
 import type { LobbyEventMap } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import { Transition } from "@headlessui/react";
 import type { PresenceChannel } from "pusher-js";
 import { shallow } from "zustand/shallow";
-
-import { LobbyDialogWrapper, LobbySettings, PlayerCard } from ".";
 
 const MinaProvider = dynamic(
   () => import("@/components/client/providers/MinaProvider"),
@@ -26,8 +28,8 @@ const MinaProvider = dynamic(
   },
 );
 
-const InitiateMina = dynamic(
-  () => import("@/components/client/mina/InitiateMina"),
+const MinaStartButton = dynamic(
+  () => import("@/components/client/mina/MinaStartButton"),
   {
     ssr: false,
   },
@@ -38,6 +40,10 @@ function Lobby() {
     username: hostUsername,
     lobbyId,
   }: { username: string; lobbyId: string } = useParams();
+  const [toXR, setToXR] = React.useState<boolean>(false);
+  const [launchXR, setLaunchXR] = React.useState<boolean>(false);
+  const [showInstructions, setShowInstructions] =
+    React.useState<boolean>(false);
 
   const { user, isSignedIn } = useUser();
 
@@ -160,6 +166,14 @@ function Lobby() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyId, presenceChannelName, isSignedIn]);
 
+  const [mounted, setMounted] = React.useState(false);
+  useEffect(() => {
+    if (mounted) {
+      return;
+    }
+    setMounted(true);
+  }, [mounted]);
+
   const handleReady = useCallback(
     (username: string) => {
       console.log("inside handleReady");
@@ -188,38 +202,47 @@ function Lobby() {
 
   return (
     <>
-      <div
-        className={cn(
-          "flex h-screen w-screen items-center",
-          useLobbyStore.getState().players.length > 1
-            ? "justify-evenly"
-            : "justify-evenly",
-        )}
+      <Transition
+        // appear={true}
+        show={!toXR && mounted}
+        beforeEnter={() => console.log("transition starting to open")}
+        afterEnter={() => console.log("transition opened")}
+        beforeLeave={() => console.log("transition starting to close")}
+        afterLeave={() => setShowInstructions(true)}
+
+        // className="flex h-screen w-screen items-center justify-evenly"
       >
-        {useLobbyStore.getState().players.map((player, index) => (
-          <Fragment key={player.username}>
-            <div
-              className="relative flex w-1/2 flex-col items-center"
-              key={player.username}
-            >
-              <PlayerCard
-                username={player.username}
-                imageUrl={player.imageUrl}
-                isHost={player.host}
-                handleReady={() => handleReady(player.username)}
-                isReady={player.ready}
-                starting={starting}
-              />
-            </div>
-            {index === 0 && (
-              <Separator className="h-24 text-white" orientation="vertical" />
-            )}
-          </Fragment>
-        ))}
-        {useLobbyStore.getState().players.length === 1 && (
-          <LobbyDialogWrapper />
-        )}
-      </div>
+        <Transition.Child
+          as={Fragment}
+          enter="transform duration-200 transition ease-out-in"
+          enterFrom="opacity-50 scale-50"
+          enterTo="opacity-100 scale-100"
+          leave="transform duration-200 transition ease-in-out"
+          leaveFrom="opacity-100 rotate-0 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <PlayersContainer
+            players={useLobbyStore.getState().players}
+            handleReady={handleReady}
+            starting={starting}
+          />
+        </Transition.Child>
+      </Transition>
+
+      <Transition show={showInstructions}>
+        <Transition.Child
+          as={Card}
+          enter="transform duration-200 transition ease-out-in"
+          enterFrom="opacity-50 scale-50"
+          enterTo="opacity-100 scale-100"
+          leave="transform duration-200 transition ease-in-out"
+          leaveFrom="opacity-100 rotate-0 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <HotnColdInstructions />
+        </Transition.Child>
+      </Transition>
+
       <div className="absolute bottom-16 flex items-center gap-x-12">
         {!starting ? (
           <>
@@ -238,12 +261,14 @@ function Lobby() {
                     starting: true,
                   });
                   setStarting(true);
+                  setToXR(true);
                 }
               }}
             >
               Start Game
             </Button>
             <LobbySettings
+              toXR={toXR}
               isMinaOn={isMinaOn}
               setIsMinaOn={setIsMinaOn}
               isHost={me?.username === hostUsername}
@@ -252,14 +277,27 @@ function Lobby() {
           </>
         ) : isMinaOn ? (
           <MinaProvider>
-            <InitiateMina
+            <MinaStartButton
+              setToXR={setToXR}
               publicKey={lobbyMe?.publicKey}
               privateKey={lobbyMe?.privateKey}
-            />
+            >
+              <Button
+                variant={"default"}
+                onPointerDown={() => setLaunchXR(true)}
+                disabled={launchXR}
+              >
+                Launch XR
+              </Button>
+            </MinaStartButton>
           </MinaProvider>
         ) : (
-          <Button variant={"default"} asChild>
-            <Link href={"/game"}>Start Game</Link>
+          <Button
+            variant={"default"}
+            onPointerDown={() => setLaunchXR(true)}
+            disabled={launchXR}
+          >
+            Launch XR
           </Button>
         )}
       </div>
