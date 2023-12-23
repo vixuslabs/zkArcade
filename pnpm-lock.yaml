@@ -332,9 +332,6 @@ importers:
       o1js:
         specifier: ^0.14.0
         version: 0.14.2(encoding@0.1.13)
-      three:
-        specifier: ^0.158.0
-        version: 0.158.0
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.16.4
