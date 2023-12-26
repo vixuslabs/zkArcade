@@ -59,8 +59,8 @@ function NotificationButton() {
     });
   };
 
-  const handleAcceptGameInvite = async (gameId: string, url: string) => {
-    await acceptGameInviteMutation.mutateAsync({
+  const handleAcceptGameInvite = (gameId: string, url: string) => {
+    acceptGameInviteMutation.mutate({
       lobbyId: gameId,
     });
     router.push(url);

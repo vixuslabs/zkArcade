@@ -52,6 +52,7 @@ function FriendsChannelProvider({
 
   const acceptFriendRequestMutation =
     api.friendships.acceptFriendRequest.useMutation();
+  const acceptGameInviteMutation = api.games.acceptGameInvite.useMutation();
 
   const router = useRouter();
 
@@ -121,7 +122,7 @@ function FriendsChannelProvider({
       ]);
     },
     "invite-sent": (data) => {
-      if (data.gameId === undefined) {
+      if (!data.gameId) {
         throw new Error("No game id found");
       }
 
@@ -147,6 +148,9 @@ function FriendsChannelProvider({
           <ToastAction
             altText="Accept"
             onClick={() => {
+              acceptGameInviteMutation.mutate({
+                lobbyId: data.gameId!,
+              });
               router.push(`/play/${data.username}/${data.gameId}`);
             }}
           >
