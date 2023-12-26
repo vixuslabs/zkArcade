@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useMemo } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { usePusherClient } from "@/pusher/client";
 import { useUser } from "@clerk/nextjs";
 
@@ -24,7 +24,9 @@ function CreateMatchButton() {
         asChild
       >
         {user.user && (
-          <Link href={`/lobby/${user.user.username}/${id}`}>Create Match</Link>
+          <Link href={`/play/${user.user.username}/${id}`} prefetch={false}>
+            Create Match
+          </Link>
         )}
       </Button>
     </>

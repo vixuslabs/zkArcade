@@ -1,31 +1,31 @@
 "use client";
 
 import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
   useRef,
   useState,
-  useEffect,
-  Suspense,
-  useMemo,
-  useCallback,
 } from "react";
-import { Vector2, Vector3 } from "three";
-import { useFrame } from "@react-three/fiber";
-import { XCurvedPointer } from "@coconut-xr/xinteraction/react";
+import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
+import { useHotnCold } from "@/components/client/stores";
+import { HotnColdGameStatus } from "@/lib/types";
+import type { TriggerState } from "@/lib/types";
 import { RayBasicMaterial } from "@coconut-xr/natuerlich/defaults";
 import {
-  useInputSourceEvent,
-  SpaceGroup,
-  DynamicControllerModel,
   ButtonState,
+  DynamicControllerModel,
+  SpaceGroup,
+  useInputSourceEvent,
   useXRGamepadReader,
 } from "@coconut-xr/natuerlich/react";
-
-import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
 import type { XLinesIntersection } from "@coconut-xr/xinteraction";
-import type { TriggerState } from "@/lib/types";
+import { XCurvedPointer } from "@coconut-xr/xinteraction/react";
 import type { InputDeviceFunctions } from "@coconut-xr/xinteraction/react";
+import { useFrame } from "@react-three/fiber";
+import { Vector2, Vector3 } from "three";
 import type { Group } from "three";
-import { useLobbyContext } from "../../providers/LobbyProvider";
 
 const rayMaterial = new RayBasicMaterial({
   transparent: true,
@@ -50,7 +50,7 @@ function GameControllers({
     name?: string;
   } | null>(null);
   const controllerRef = useRef<Group>(null);
-  const { gameState } = useLobbyContext();
+  const { status, me } = useHotnCold();
   const { pointers, setLeftPointer, setRightPointer } =
     useControllerStateContext();
 
@@ -69,7 +69,11 @@ function GameControllers({
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (gameState && gameState.me.isSeeking && !sendingPosition) {
+    if (
+      (status === HotnColdGameStatus.ONEHIDING ||
+        status === HotnColdGameStatus.BOTHHIDING) &&
+      !sendingPosition
+    ) {
       interval = setInterval(() => {
         inputSource.gamepad?.hapticActuators.forEach((haptic) => {
           void haptic.playEffect("dual-rumble", {
@@ -87,7 +91,7 @@ function GameControllers({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState]);
+  }, [status, me]);
 
   const updatePointerState = useCallback(
     (

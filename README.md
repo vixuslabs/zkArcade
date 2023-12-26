@@ -1,11 +1,11 @@
-<img width="50" height="50" alt="logo" src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/logo.png"/>
+<img width="50" height="50" alt="logo" src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/logo.png"/>
 
 # Hot 'n Cold
 
 <p float="left">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/one.png" alt="chart 1" width="75">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/two.png" alt="chart 2" width="75">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/public/readme/third.png" alt="chart 3" width="75">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/one.png" alt="chart 1" width="75">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/two.png" alt="chart 2" width="75">
+  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/third.png" alt="chart 3" width="75">
 </p>
 
 ## Welcome!
@@ -40,12 +40,12 @@ Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so
 ## Projects That Made this Possible
 
 - [Mina](https://minaprotocol.com/)
+- [React](https://react.dev/)
+- [Nextjs](https://nextjs.org/)
 - [@react-three/fiber](https://github.com/pmndrs/react-three-fiber)
 - [@coconut-xr](https://www.coconut-xr.com/)
 - [Clerk](https://clerk.com/)
 - [Planetscale](https://planetscale.com/)
-- [Nextjs](https://nextjs.org/)
-- and of course - [React](https://react.dev/)
 
 ## License
 

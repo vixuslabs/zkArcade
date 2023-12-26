@@ -9,31 +9,11 @@ export default authMiddleware({
   publicRoutes: ["/", "/dashboard"],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
-    // console.log(auth);
     if (!auth.userId && !auth.isPublicRoute) {
-      console.log(auth.user);
-      console.log(auth.userId);
-      console.log("redirecting to sign in");
       redirectToSignIn({ returnBackUrl: "/" });
     }
   },
-  ignoredRoutes: [
-    "/((?!api|trpc))(_next.*|.+.[w]+$)",
-    "/api/trpc/post.hello",
-    "/api/trpc/friendships.getUsersFriends",
-    "/api/trpc/friendships.deleteFriend",
-    "/api/trpc/friendships.deleteAllFriends",
-    "/api/trpc/friendships.getAllRequestToUser",
-    "/api/trpc/friendships.getAllRequestsFromUser",
-    "/api/trpc/friendships.getAllFriendRequests",
-    "/api/trpc/friendships.sendFriendRequest",
-    "/api/trpc/friendships.getFriendRequest",
-    "/api/trpc/friendships.acceptFriendRequest",
-    "/api/trpc/friendships.declineFriendRequest",
-    "/api/trpc/games.sendGameInvite",
-    "/api/trpc/games.acceptGameInvite",
-    "/api/trpc/games.getGameInvites",
-  ],
+  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)"],
   authorizedParties: [
     "http://localhost:3000",
     `https://${process.env.VERCEL_URL!}`,

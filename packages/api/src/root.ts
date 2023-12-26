@@ -1,7 +1,7 @@
+import { friendshipRouter } from "./routers/friendships";
+import { gameRouter } from "./routers/games";
+import { userRouter } from "./routers/users";
 import { createTRPCRouter } from "./trpc";
-import { userRouter } from "./routers/user";
-import { friendshipRouter } from "./routers/friendship";
-import { gameRouter } from "./routers/game";
 
 /**
  * This is the primary router for your server.

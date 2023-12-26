@@ -1,18 +1,8 @@
 "use client";
 
 import React from "react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface PlayerCardProps {
-  username: string | null;
-  imageUrl: string | null;
-  handleReady?: () => void;
-  isReady: boolean;
-  isHost?: boolean;
-  className?: string;
-}
-
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,22 +11,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Check, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 
-import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
+interface PlayerCardProps {
+  username: string | null;
+  imageUrl: string | null;
+  handleReady: (username: string) => void;
+  isReady: boolean;
+  starting: boolean;
+  isHost?: boolean;
+  className?: string;
+}
 
 function PlayerCard({
   username,
-  handleReady = () => {
-    console.log("ready");
-  },
+  handleReady,
   isReady,
   imageUrl,
   className,
+  starting,
 }: PlayerCardProps) {
-  const { starting } = useLobbyContext();
   const user = useUser();
 
   return (
@@ -69,8 +64,9 @@ function PlayerCard({
         <Button
           variant="default"
           onClick={() => {
-            if (user.user?.username === username) {
-              handleReady();
+            console.log("ready");
+            if (user.user?.username === username && username) {
+              handleReady(username);
             } else {
               console.log("cant ready somebody else silly");
             }
@@ -79,7 +75,6 @@ function PlayerCard({
         >
           Ready Up
         </Button>
-        {/* <button onClick={onReady}>Ready Up</button> */}
       </CardFooter>
     </Card>
   );

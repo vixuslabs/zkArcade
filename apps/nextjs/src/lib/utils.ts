@@ -1,8 +1,6 @@
-import {  clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-// import { type Vector3 } from "three";
-
+import { clsx } from "clsx";
 import type { ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

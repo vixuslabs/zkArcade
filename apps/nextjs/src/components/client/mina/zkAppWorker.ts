@@ -1,14 +1,14 @@
 "use client";
+
 /* eslint-disable */
-
-import { Mina, PublicKey, fetchAccount, Field } from "o1js";
-
-type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
+import { fetchAccount, Field, Mina, PublicKey } from "o1js";
 
 // ---------------------------------------------------------------------------------------
 
-import type{ HotnCold } from "@hot-n-cold/mina/src";
-import { Object3D, Box, Room } from "@hot-n-cold/mina/src/structs";
+import type { HotnCold } from "@hot-n-cold/mina/src";
+import { Box, Object3D, Room } from "@hot-n-cold/mina/src/structs";
+
+type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 const state = {
   HotnCold: null as null | typeof HotnCold,
@@ -23,11 +23,12 @@ const functions = {
     const Berkeley = Mina.Network(
       "https://api.minascan.io/node/berkeley/v1/graphql",
     );
+    // const Berkeley = Mina.Network("https://berkeley.minascan.io/graphql");
     console.log("Berkeley Instance Created");
     Mina.setActiveInstance(Berkeley);
   },
   loadContract: async (args: {}) => {
-    const { HotnCold } = await import("@hot-n-cold/mina/src/HotnCold");
+    const { HotnCold } = await import("@hot-n-cold/mina");
     state.HotnCold = HotnCold;
   },
   compileContract: async (args: {}) => {
@@ -45,13 +46,16 @@ const functions = {
     const currentObjectHash = await state.zkapp!.objectHash.get();
     return JSON.stringify(currentObjectHash.toJSON());
   },
-  createCommitObjectTransaction: async (args: { object: string}) => {
+  createCommitObjectTransaction: async (args: { object: string }) => {
     const transaction = await Mina.transaction(() => {
       state.zkapp!.commitObject(Object3D.createFromJSON(args.object));
     });
     state.transaction = transaction;
   },
-  createValidateRoomTransaction: async (args: {room: string, object: string}) => {
+  createValidateRoomTransaction: async (args: {
+    room: string;
+    object: string;
+  }) => {
     const room = Room.createFromJSON(args.room);
     const object = Object3D.createFromJSON(args.object);
     const transaction = await Mina.transaction(() => {

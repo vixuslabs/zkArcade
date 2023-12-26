@@ -1,27 +1,24 @@
 import type { ButtonState } from "@coconut-xr/natuerlich/react";
+import type { ThreeEvent } from "@react-three/fiber";
+import type { RapierRigidBody } from "@react-three/rapier";
+import type { PresenceChannel } from "pusher-js";
 import type {
-  Quaternion,
-  Vector3,
-  Mesh,
   BufferGeometry,
   Material,
+  Matrix4,
+  Mesh,
   NormalBufferAttributes,
   Object3DEventMap,
+  Quaternion,
+  Vector3,
 } from "three";
-import type { RapierRigidBody } from "@react-three/rapier";
-import type { ThreeEvent } from "@react-three/fiber";
-import type { Matrix4 } from "three";
-import type { PresenceChannel } from "pusher-js";
 
-/**
- * XR-related types and interfaces
- */
-
+// XR-related types and interfaces
 export interface GamepadButtonState {
   pressed: boolean;
   touched: boolean;
   value: number;
-};
+}
 
 interface GamepadBase {
   axes: readonly number[];
@@ -69,23 +66,23 @@ export interface PointerState {
   state: TriggerState;
   heldObject: { uuid: string; name?: string } | null;
   controllerState?: RightControllerState | LeftControllerState | null;
-};
+}
 
 export interface Pointers {
   left: PointerState;
   right: PointerState;
-};
+}
 
 export interface ObjectHeldCheck {
   objectHeldByPointer: boolean;
   handness: "left" | "right" | undefined;
-};
+}
 
 export interface ControllerStateContextValue {
   pointers: Pointers;
   setLeftPointer: (data: PointerState) => void;
   setRightPointer: (data: PointerState) => void;
-};
+}
 
 export type ButtonsType = "a-button" | "b-button" | "x-button" | "y-button";
 
@@ -100,10 +97,10 @@ export interface RigidAndMeshRefs {
   >;
 }
 
+// App-related types and interfaces
 export type AppUser = {
   id: string;
   username: string;
-  firstName: string | null;
   image_url: string | null;
 } | null;
 
@@ -179,10 +176,7 @@ export interface GrabProps {
   isAnchorable?: boolean;
 }
 
-/**
- * Online Components
- */
-
+// Online Components
 export interface GeometryData {
   position: {
     itemSize: number;
@@ -218,47 +212,74 @@ export interface PlaneInfo {
   name: string;
 }
 
-export interface Player {
-  username: string;
-  firstName: string | null;
-  imageUrl: string | null;
-  ready: boolean;
-  host: boolean;
-  id?: string;
-  publicKey?: string;
-  privateKey?: string;
-  playerPosition?: Vector3;
-  playerProximity?: number;
-  objectPosition?: Vector3;
-  objectMatrix?: Matrix4;
-  roomLayout?: {
-    meshes: MeshInfo[];
-    planes: PlaneInfo[];
-  };
+// Game Types
+export enum GameType {
+  HotNCold = "HotNCold",
 }
 
-/**
- * Friends
- */
+export enum GeneralGameStatus {
+  LOBBY = "LOBBY",
+  PREGAME = "PREGAME",
+}
 
-export interface FriendInfo {
-  username: string;
-  firstName: string | null;
-  imageUrl: string;
+export enum HotnColdGameStatus {
+  LOBBY = "lobby",
+  PREGAME = "pregame",
+  IDLE = "idle",
+  BOTHHIDING = "bothHiding",
+  ONEHIDING = "oneHiding",
+  SEEKING = "seeking",
+  GAMEOVER = "gameover",
+}
+
+export interface HotnColdGameState {
+  status: HotnColdGameStatus;
+  me: HotnColdPlayer | null;
+  opponent: HotnColdPlayer | null;
+}
+
+// Users
+export interface Player {
   id: string;
+  username: string;
+  imageUrl: string | null;
+  host: boolean;
+  ready: boolean;
+  inGame: boolean;
+  publicKey?: string;
+  privateKey?: string;
+}
+
+export interface HotnColdPlayer extends Player {
+  hiding: boolean;
+  foundObject: boolean;
+  playerPosition: Vector3 | null;
+  playerProximity: number | null;
+  objectPosition: Vector3 | null;
+  objectMatrix: Matrix4 | null;
+  roomLayout: {
+    meshes: MeshInfo[];
+    planes: PlaneInfo[];
+  } | null;
+}
+
+export interface UserInfo {
+  id: string;
+  username: string;
+  imageUrl: string | null;
 }
 
 export interface Invite {
-  sender: FriendInfo;
   gameId: string;
+  sender: UserInfo;
+  receiver?: UserInfo;
 }
 
 export interface PendingFriendRequests {
   requestId: number;
-  imageUrl: string;
-  username: string;
-  firstName: string | null;
-};
+  sender: UserInfo;
+  receiver?: UserInfo;
+}
 
 export type NotificationType = "PendingFriendRequest" | "GameInvite";
 
@@ -279,7 +300,7 @@ export interface TaggedGameInvite extends Invite, BaseNotification {
 export type Notification = TaggedPendingFriendRequest | TaggedGameInvite;
 
 export interface PusherClientContextValues {
-  activeFriends: FriendInfo[];
+  activeFriends: UserInfo[];
   pendingFriendRequests: PendingFriendRequests[];
   gameInvites: Invite[];
   allNotifications: Notification[];
@@ -295,3 +316,63 @@ export interface ActiveDashboardTabContext {
   activeTab: ActiveDashboardTab;
   setActiveTab: React.Dispatch<React.SetStateAction<ActiveDashboardTab>>;
 }
+
+/**
+ * Zustand Store Types
+ */
+
+export interface PusherUserInfo {
+  username: string;
+  userId: string;
+  imageUrl: string;
+}
+
+export type GeneralLobbyEvent =
+  | "client-ready-toggle"
+  | "client-mina-toggle"
+  | "client-game-started";
+
+export type HotnColdGameEvents =
+  | GeneralLobbyEvent
+  | "client-game-roomLayout"
+  | "client-game-hiding"
+  | "client-game-hiding-done"
+  | "client-game-seeking-start"
+  | "client-game-requestProximity"
+  | "client-game-setProximity"
+  | "client-game-setObjectPosition"
+  | "client-game-seeking-done";
+
+export type FriendEvents =
+  | `friend-added`
+  | `friend-deleted`
+  | `friend-request-pending`
+  | `invite-sent`
+  | "invite-accepted";
+
+export interface FriendData {
+  username: string;
+  imageUrl: string;
+  id: string;
+  requestId?: number;
+  friendId?: string;
+  showToast?: boolean;
+  gameId?: string;
+}
+
+export type EventCallback = (data?: Player) => void;
+
+export type FriendCallback = (data: FriendData) => void;
+
+export type LobbyCallbacks =
+  | (() => void)
+  | (({ ready, username }: { ready: boolean; username: string }) => void)
+  | (({ minaToggle }: { minaToggle: boolean }) => void);
+
+export type FriendsEventMap = Record<FriendEvents, FriendCallback>;
+
+export type LobbyEventMap = Record<GeneralLobbyEvent, LobbyCallbacks>;
+
+export type GeneralEventMap = Record<string, EventCallback>;
+
+export type PartialEventMap = Partial<Record<string, EventCallback>>;

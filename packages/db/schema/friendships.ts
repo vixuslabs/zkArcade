@@ -1,14 +1,15 @@
-import { sql, relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   bigint,
   index,
+  mysqlEnum,
   mysqlTableCreator,
+  primaryKey,
   timestamp,
   uniqueIndex,
   varchar,
-  primaryKey,
-  mysqlEnum,
 } from "drizzle-orm/mysql-core";
+
 import { users } from "./users";
 
 export const mysqlTable = mysqlTableCreator((name) => `hot-n-cold_${name}`);
@@ -23,8 +24,7 @@ export const friendships = mysqlTable(
       .notNull(),
   },
   (t) => ({
-    // uniqueIndex: uniqueIndex("unique_idx").on(t.userId, t.friendId),
-    pk: primaryKey(t.userId, t.friendId),
+    pk: primaryKey({ columns: [t.userId, t.friendId] }),
   }),
 );
 
@@ -63,7 +63,6 @@ export const friendRequests = mysqlTable(
     requestIndex: uniqueIndex("request_idx").on(t.requestId),
     senderIndex: index("sender_idx").on(t.senderId),
     receiverIndex: index("receiver_idx").on(t.receiverId),
-    // statusIndex: index("status_idx").on(t.status),
   }),
 );
 

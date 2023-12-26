@@ -2,11 +2,11 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   index,
+  mysqlEnum,
   mysqlTableCreator,
   timestamp,
   uniqueIndex,
   varchar,
-  mysqlEnum,
 } from "drizzle-orm/mysql-core";
 
 export const mysqlTable = mysqlTableCreator((name) => `hot-n-cold_${name}`);
@@ -38,9 +38,14 @@ export const gameInvites = mysqlTable(
     lobbyId: varchar("lobbyId", { length: 256 }).notNull().unique(),
     senderId: varchar("senderId", { length: 256 }).notNull(),
     receiverId: varchar("receiverId", { length: 256 }).notNull(),
-    status: mysqlEnum("status", ["sent", "accepted", "declined", "cancelled"])
+    status: mysqlEnum("status", [
+      "pending",
+      "accepted",
+      "declined",
+      "cancelled",
+    ])
       .notNull()
-      .default("sent"),
+      .default("pending"),
     createdAt: timestamp("createdAt")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

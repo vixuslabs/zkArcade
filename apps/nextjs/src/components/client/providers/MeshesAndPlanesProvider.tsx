@@ -1,15 +1,13 @@
 "use client";
 
 import React, {
-  useState,
-  useMemo,
   createContext,
   useContext,
   useEffect,
+  useMemo,
+  useState,
 } from "react";
-
-import { useLobbyContext } from "./LobbyProvider";
-
+import { useHotnCold } from "@/components/client/stores";
 import type {
   MeshesAndPlanesContextValue,
   MyMeshInfo,
@@ -40,7 +38,7 @@ export const useMeshesAndPlanesContext = () => {
 };
 
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
-  const { channel } = useLobbyContext();
+  const channel = useHotnCold().getGameChannel();
   const meshes = useTrackedMeshes();
   const planes = useTrackedPlanes();
   const [myMeshes, setMyMeshes] = useState<MyMeshInfo[]>([]);

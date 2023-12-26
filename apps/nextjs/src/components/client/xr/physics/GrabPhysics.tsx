@@ -1,27 +1,27 @@
 "use client";
+
 /* eslint-disable react/display-name */
-
-import React, { forwardRef, useRef, useMemo, useCallback } from "react";
-import { Vector3 } from "three";
-import { isXIntersection } from "@coconut-xr/xinteraction";
-import { vec3 } from "@react-three/rapier";
-import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
-import useTrackControllers from "@/lib/hooks/useTrackControllers";
-import { ButtonState } from "@coconut-xr/natuerlich/react";
-import { useLobbyContext } from "@/components/client/providers/LobbyProvider";
-
+import React, { forwardRef, useCallback, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
+import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
+import { useHotnCold } from "@/components/client/stores";
+import useTrackControllers from "@/lib/hooks/useTrackControllers";
+import type { GrabProps, ObjectHeldCheck, RigidAndMeshRefs } from "@/lib/types";
+import { ButtonState } from "@coconut-xr/natuerlich/react";
+import { isXIntersection } from "@coconut-xr/xinteraction";
 import type { ThreeEvent } from "@react-three/fiber";
+import { vec3 } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
+import { Vector3 } from "three";
 import type { Mesh } from "three";
-import type { RigidAndMeshRefs, GrabProps, ObjectHeldCheck } from "@/lib/types";
 
 const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
   (
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
-    const { setGameState, channel, gameState } = useLobbyContext();
+    const { me, setObjectPosition, getGameChannel } = useHotnCold();
+
     const [isObjectSet, setIsObjectSet] = React.useState(false);
     const [isAnchored, setIsAnchored] = React.useState(false);
     const downState = useRef<{
@@ -116,53 +116,35 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
 
       console.log("anchoring");
 
-      if (
-        gameState &&
-        gameState.isGameStarted &&
-        gameState.me.isHiding &&
-        !isObjectSet
-      ) {
+      if (me && me.hiding && !isObjectSet) {
         setIsObjectSet(true);
-        setGameState((prev) => {
-          if (!prev) {
-            return prev;
-          }
+        // setGameState((prev) => {
+        //   if (!prev) {
+        //     return prev;
+        //   }
 
-          const _myObjectPosition = meshRef.current.getWorldPosition(
-            meshRef.current.position,
-          );
+        const _myObjectPosition = meshRef.current.getWorldPosition(
+          meshRef.current.position,
+        );
 
-          // const myObjectPosition = _myObjectPosition.divideScalar(2);
+        // const myObjectPosition = _myObjectPosition.divideScalar(2);
 
-          // console.log("myObjectPosition before", myObjectPosition);
+        // console.log("myObjectPosition before", myObjectPosition);
 
-          // const t = myObjectPosition.applyMatrix4(objMatrix);
+        // const t = myObjectPosition.applyMatrix4(objMatrix);
 
-          // console.log("myObjectPosition after", t);
+        // console.log("myObjectPosition after", t);
 
-          channel?.trigger("client-game-hiding-done", {
-            objectPosition: _myObjectPosition,
-            // objectMatrix: objMatrix,
-          });
+        setObjectPosition(_myObjectPosition, "me");
 
-          return {
-            ...prev,
-            me: {
-              ...prev.me,
-              myObjectPosition: _myObjectPosition,
-              isHiding: false,
-              isIdle: true,
-            },
-            opponent: {
-              ...prev.opponent,
-              isSeeking: true,
-              isIdle: false,
-            },
-          };
+        const channel = getGameChannel();
+
+        channel.trigger("client-game-hiding-done", {
+          objectPosition: _myObjectPosition,
+          // objectMatrix: objMatrix,
         });
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rigidRef, meshRef, gameState, setGameState]);
+    }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet, getGameChannel]);
 
     const handleUnanchor = useCallback(() => {
       if (!rigidRef?.current) return;

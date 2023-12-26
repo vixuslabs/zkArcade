@@ -1,26 +1,27 @@
 "use client";
 
 import React from "react";
-
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
 import type { PresenceChannel } from "pusher-js";
 
 function LobbySettings({
+  toXR,
   isMinaOn,
   setIsMinaOn,
   isHost,
   channel,
 }: {
+  toXR: boolean;
   isMinaOn: boolean;
-  setIsMinaOn: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsMinaOn: (isMinaOn: boolean) => void;
   isHost: boolean | undefined;
   channel: PresenceChannel | null;
 }) {
@@ -34,18 +35,16 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            className="hover:cursor-not-allowed"
-            // disabled={!isHost}
-            // Disable due to bug
-            disabled={true}
+            className={!isHost || toXR ? "hover:cursor-not-allowed" : ""}
+            disabled={!isHost || toXR}
             checked={isMinaOn}
             onCheckedChange={() => {
-              setIsMinaOn((prev) => !prev);
-
+              console.log("isHost", isHost);
               if (isHost) {
-                channel?.trigger(`client-mina-${isMinaOn ? "off" : "on"}`, {
-                  isMinaOn: !isMinaOn,
+                channel?.trigger(`client-mina-toggle`, {
+                  minaToggle: !isMinaOn,
                 });
+                setIsMinaOn(!isMinaOn);
               }
             }}
             id="mina"
