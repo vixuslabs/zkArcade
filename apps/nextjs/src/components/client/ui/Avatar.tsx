@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
+import { usePusher } from "@/components/client/stores";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useClerk } from "@clerk/nextjs";
 
-import { usePusher } from "../stores";
-
 interface UserAvatarProps {
   imageUrl?: string;
   username: string | null;
@@ -28,7 +27,6 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
   const { setActiveTab } = useDashboardTabContext();
   const { signOut } = useClerk();
   const router = useRouter();
-  //   const handleSignOut = async () => {};
 
   return (
     <DropdownMenu>
