@@ -501,6 +501,190 @@ export const useLobbyStore = createWithEqualityFn(
 export const useHotnCold = create(
   combine(initialHotnColdState, (set, get) => {
     return {
+      updatePlayers: () => {
+        const me = useLobbyStore.getState().me;
+
+        if (!me) {
+          throw new Error("assignStateValues: Me is not set in lobby store");
+        }
+
+        const players = useLobbyStore.getState().players;
+
+        if (players.length < 1) {
+          throw new Error(
+            "assignStateValues: 2 players are required to play the game",
+          );
+        }
+
+        const opponent = players.find((p) => p.id !== me.id);
+
+        if (!opponent) {
+          throw new Error(
+            "assignStateValues: Opponent is not found in players",
+          );
+        }
+
+        set({
+          me: {
+            ...me,
+            hiding: false,
+            foundObject: false,
+            playerPosition: null,
+            playerProximity: null,
+            objectPosition: null,
+            objectMatrix: null,
+            roomLayout: null,
+          },
+          opponent: {
+            ...opponent,
+            hiding: false,
+            foundObject: false,
+            playerPosition: null,
+            playerProximity: null,
+            objectPosition: null,
+            objectMatrix: null,
+            roomLayout: null,
+          },
+        });
+      },
+      addGameEvents: () => {
+        // const { channel } = useLobbyStore.getState();
+        const channel = useHotnCold.getState().getGameChannel();
+
+        if (!channel) {
+          throw new Error("initGameEvents: Presence Channel is not set");
+        }
+
+        // const { addEventsToPresenceChannel } = useLobbyStore.getState();
+
+        type HotnColdEvents =
+          | "client-status-change"
+          | "client-in-game"
+          | "client-hiding"
+          | "client-done-hiding"
+          | "client-seeking"
+          | "client-set-object"
+          | "client-found-object";
+
+        type HotnColdEventCallbacks =
+          | (() => void)
+          | (({ status }: { status: HotnColdGameStatus }) => void)
+          | (({ objectPosition }: { objectPosition: THREE.Vector3 }) => void);
+
+        type HotnColdEventMap = Record<HotnColdEvents, HotnColdEventCallbacks>;
+
+        const eventMap: HotnColdEventMap = {
+          "client-status-change": ({
+            status,
+          }: {
+            status: HotnColdGameStatus;
+          }) => {
+            console.log("client-status-change to ", status);
+
+            set({ status });
+          },
+          "client-in-game": () => {
+            console.log("client-in-game");
+            const { opponent } = get();
+
+            if (!opponent) {
+              throw new Error("client-in-game: Opponent is not set");
+            }
+
+            set({
+              opponent: { ...opponent, inGame: true },
+            });
+          },
+          "client-hiding": () => {
+            console.log("client-hiding");
+          },
+          "client-done-hiding": () => {
+            console.log("client-done-hiding");
+            const { opponent, me } = get();
+            const { setGameStatus } = useHotnCold.getState();
+            const { channel } = useLobbyStore.getState();
+
+            if (!opponent) {
+              throw new Error("client-done-hiding: Opponent is not set");
+            }
+
+            if (!me) {
+              throw new Error("client-done-hiding: Me is not set");
+            }
+
+            if (!channel) {
+              throw new Error(
+                "client-done-hiding: Presence Channel is not set",
+              );
+            }
+
+            if (me.hiding) {
+              console.log("I am still hiding, but my opponent is not");
+              setGameStatus(HotnColdGameStatus.ONEHIDING);
+              set({
+                opponent: { ...opponent, hiding: false },
+              });
+              channel.trigger("client-status-change", {
+                status: HotnColdGameStatus.ONEHIDING,
+              });
+            } else {
+              console.log("I am not hiding, and my opponent is not");
+              setGameStatus(HotnColdGameStatus.SEEKING);
+              set({
+                opponent: { ...opponent, hiding: false },
+                me: { ...me, hiding: false },
+              });
+              channel.trigger("client-status-change", {
+                status: HotnColdGameStatus.SEEKING,
+              });
+            }
+          },
+          "client-seeking": () => {
+            console.log("client-seeking");
+          },
+          "client-set-object": ({
+            objectPosition,
+          }: {
+            objectPosition: THREE.Vector3;
+          }) => {
+            console.log("client-set-object", objectPosition);
+
+            const { opponent } = get();
+
+            if (!opponent) {
+              throw new Error("client-set-object: Opponent is not set");
+            }
+
+            set({
+              opponent: { ...opponent, objectPosition },
+            });
+          },
+          "client-found-object": ({
+            objectPosition,
+          }: {
+            objectPosition: THREE.Vector3;
+          }) => {
+            console.log("client-found-object", objectPosition);
+
+            const { opponent } = get();
+            const { setGameStatus } = useHotnCold.getState();
+
+            if (!opponent) {
+              throw new Error("client-found-object: Opponent is not set");
+            }
+
+            set({
+              opponent: { ...opponent, objectPosition, foundObject: true },
+            });
+
+            setGameStatus(HotnColdGameStatus.GAMEOVER);
+          },
+        };
+
+        Object.entries(eventMap).forEach(([eventName, handler]) => {
+          channel.bind(eventName, handler);
+        });
+      },
       setGameStatus: (status: HotnColdGameStatus) => {
         const { me, opponent, status: currentStatus } = get();
 
@@ -733,6 +917,15 @@ export const useHotnCold = create(
             };
           });
         }
+      },
+      getGameChannel: () => {
+        const channel = useLobbyStore.getState().channel;
+
+        if (!channel) {
+          throw new Error("getGameChannel: Channel is not set");
+        }
+
+        return channel;
       },
     };
   }),

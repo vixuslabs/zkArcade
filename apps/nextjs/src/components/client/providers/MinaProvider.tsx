@@ -45,7 +45,6 @@ interface MinaContextValues {
 const MinaContext = createContext<MinaContextValues>({
   mina: null,
   setMina: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   initiateMina: async () => await Promise.resolve(null),
   zkappWorkerClient: null,
   zkAppPublicKey: null,
@@ -157,4 +156,4 @@ function MinaProvider({
   return <MinaContext.Provider value={value}>{children}</MinaContext.Provider>;
 }
 
-export default MinaProvider;
+export default React.memo(MinaProvider);

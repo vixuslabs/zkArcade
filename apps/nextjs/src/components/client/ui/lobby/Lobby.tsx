@@ -1,13 +1,15 @@
 "use client";
 
-import React, { Fragment, useCallback, useEffect, useMemo } from "react";
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import {
-  //   useHotnCold,
-  useLobbyStore,
-  usePusher,
-} from "@/components/client/stores";
+import { useLobbyStore, usePusher } from "@/components/client/stores";
 import {
   HotnColdInstructions,
   LobbySettings,
@@ -20,13 +22,6 @@ import { useUser } from "@clerk/nextjs";
 import { Transition } from "@headlessui/react";
 import type { PresenceChannel } from "pusher-js";
 import { shallow } from "zustand/shallow";
-
-const MinaProvider = dynamic(
-  () => import("@/components/client/providers/MinaProvider"),
-  {
-    ssr: false,
-  },
-);
 
 const MinaStartButton = dynamic(
   () => import("@/components/client/mina/MinaStartButton"),
@@ -42,10 +37,34 @@ function Lobby() {
   }: { username: string; lobbyId: string } = useParams();
   const [toXR, setToXR] = React.useState<boolean>(false);
   const [launchXR, setLaunchXR] = React.useState<boolean>(false);
+  const [xrLoaded, setXrLoaded] = React.useState<boolean>(false);
   const [showInstructions, setShowInstructions] =
     React.useState<boolean>(false);
+  const [xrSupported, setXRSupported] = useState<boolean>(false);
 
   const { user, isSignedIn } = useUser();
+
+  const HotnColdGame = dynamic(
+    () => import("@/components/client/xr/HotnColdGame"),
+    {
+      ssr: true,
+      loading: ({ isLoading, error }) => {
+        if (isLoading) {
+          console.log("loading xr");
+        }
+
+        console.log("loading xr");
+
+        isLoading ? setXrLoaded(false) : setXrLoaded(true);
+
+        if (error) {
+          console.log("error loading xr");
+        }
+
+        return null;
+      },
+    },
+  );
 
   const {
     subscribeToChannel,
@@ -106,6 +125,7 @@ function Lobby() {
         console.log("client game started");
         console.log("lobbyMe", lobbyMe);
         setStarting(true);
+        setToXR(true);
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,6 +222,7 @@ function Lobby() {
 
   return (
     <>
+      {/* Lobby UI */}
       <Transition
         // appear={true}
         show={!toXR && mounted}
@@ -229,6 +250,7 @@ function Lobby() {
         </Transition.Child>
       </Transition>
 
+      {/* Game Instructions */}
       <Transition show={showInstructions}>
         <Transition.Child
           as={Card}
@@ -243,6 +265,16 @@ function Lobby() {
         </Transition.Child>
       </Transition>
 
+      {/* Game */}
+      {xrLoaded && (
+        <HotnColdGame
+          launchXR={launchXR}
+          xrSupported={xrSupported}
+          setXRSupported={setXRSupported}
+        />
+      )}
+
+      {/* Start and Settings Buttons, always anchored at the bottom */}
       <div className="absolute bottom-16 flex items-center gap-x-12">
         {!starting ? (
           <>
@@ -276,28 +308,26 @@ function Lobby() {
             />
           </>
         ) : isMinaOn ? (
-          <MinaProvider>
-            <MinaStartButton
-              setToXR={setToXR}
-              publicKey={lobbyMe?.publicKey}
-              privateKey={lobbyMe?.privateKey}
+          <MinaStartButton
+            setToXR={setToXR}
+            publicKey={lobbyMe?.publicKey}
+            privateKey={lobbyMe?.privateKey}
+          >
+            <Button
+              variant={"default"}
+              onPointerDown={() => setLaunchXR(true)}
+              disabled={launchXR || !xrLoaded || !xrSupported}
             >
-              <Button
-                variant={"default"}
-                onPointerDown={() => setLaunchXR(true)}
-                disabled={launchXR}
-              >
-                Launch XR
-              </Button>
-            </MinaStartButton>
-          </MinaProvider>
+              {!xrSupported ? "XR Not Supported" : "Launch XR"}
+            </Button>
+          </MinaStartButton>
         ) : (
           <Button
             variant={"default"}
             onPointerDown={() => setLaunchXR(true)}
-            disabled={launchXR}
+            disabled={launchXR || !xrLoaded || !xrSupported}
           >
-            Launch XR
+            {!xrSupported ? "XR Not Supported" : "Launch XR"}
           </Button>
         )}
       </div>
