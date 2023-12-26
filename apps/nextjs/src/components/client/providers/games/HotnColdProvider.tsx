@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import {
   createContext,
   useCallback,
@@ -7,12 +9,11 @@ import {
   //   useState,
 } from "react";
 import { HotnColdGameStatus } from "@/lib/types";
-import type { HotnColdPlayer } from "@/lib/types";
+import type { HotnColdPlayer, LobbyEventMap } from "@/lib/types";
 import type { PresenceChannel } from "pusher-js";
 import { useParams } from "next/navigation";
 
-import type { LobbyEventMap } from "../../stores";
-import { useLobbyStore } from "../../stores";
+import { useLobbyStore } from "@/components/client/stores";
 
 interface HotnColdContextValues {
   status: HotnColdGameStatus;
