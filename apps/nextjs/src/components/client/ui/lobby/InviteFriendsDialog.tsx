@@ -75,7 +75,13 @@ function DialogCloseButton() {
                   <div className="flex min-w-0 gap-x-4">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={imageUrl ?? undefined}
+                        src={
+                          imageUrl
+                            ? `/api/imageProxy?url=${encodeURIComponent(
+                                imageUrl,
+                              )}`
+                            : undefined
+                        }
                         alt="Profile Picture"
                       />
                       <AvatarFallback>SC</AvatarFallback>

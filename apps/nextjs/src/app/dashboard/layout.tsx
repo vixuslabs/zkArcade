@@ -12,7 +12,8 @@ import {
 } from "@/components/client/providers";
 import UserAvatar from "@/components/client/ui/Avatar";
 import { api } from "@/trpc/server";
-import { currentUser } from "@clerk/nextjs";
+
+// import { currentUser } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -29,7 +30,9 @@ const fetchDashboardData = cache(async () => {
   const cleanedUserFriends = usersFriends.map((friend) => {
     return {
       username: friend.username,
-      imageUrl: friend.imageUrl,
+      imageUrl: friend.imageUrl
+        ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
+        : "",
       id: friend.id,
     };
   });
@@ -50,6 +53,24 @@ const fetchDashboardData = cache(async () => {
   };
 });
 
+const fetchUserData = cache(async () => {
+  const me = await api.users.getCurrentUser.query();
+
+  if (!me) {
+    redirect("/");
+  }
+
+  if (me.image_url === null) {
+    throw new Error("No image url found");
+  }
+
+  return {
+    id: me.id,
+    username: me.username,
+    imageUrl: `/api/imageProxy?url=${encodeURIComponent(me.image_url)}`,
+  };
+});
+
 export const revalidate = 300;
 
 export default async function DashboardLayout({
@@ -60,17 +81,8 @@ export default async function DashboardLayout({
   leaderboard,
   settings,
 }: DashboardLayoutProps) {
-  const user = await currentUser();
-
-  if (!user) {
-    redirect("/");
-  }
-
-  if (!user.username) {
-    throw new Error("No username found");
-  }
-
   const friendsData = await fetchDashboardData();
+  const user = await fetchUserData();
 
   return (
     <>

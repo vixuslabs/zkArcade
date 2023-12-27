@@ -2,10 +2,10 @@
 
 /* eslint-disable */
 // ---------------------------------------------------------------------------------------
+import { fetchAccount, Field, Mina, PublicKey } from "o1js";
 
 import type { HotnCold } from "@zkarcade/mina/src";
 import { Box, Object3D, Room } from "@zkarcade/mina/src/structs";
-import { fetchAccount, Field, Mina, PublicKey } from "o1js";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
@@ -19,6 +19,10 @@ const state = {
 
 const functions = {
   setActiveInstanceToBerkeley: async (args: {}) => {
+    /**
+     * TODO: Getting a CORs error for both of these endpoints
+     * Add proper error handling and logging
+     */
     const Berkeley = Mina.Network(
       "https://api.minascan.io/node/berkeley/v1/graphql",
     );
