@@ -1,14 +1,14 @@
 "use client";
-/* eslint-disable */
 
-import { fetchAccount, PublicKey, Field } from "o1js";
+/* eslint-disable */
+import { Object3D } from "@zkarcade/mina/src/structs";
+import { fetchAccount, Field, PublicKey } from "o1js";
 
 import type {
-  ZkappWorkerRequest,
-  ZkappWorkerReponse,
   WorkerFunctions,
+  ZkappWorkerReponse,
+  ZkappWorkerRequest,
 } from "./zkAppWorker";
-import { Object3D } from "@hot-n-cold/mina/src/structs";
 
 export default class ZkappWorkerClient {
   // ---------------------------------------------------------------------------------------
@@ -54,9 +54,9 @@ export default class ZkappWorkerClient {
   }
 
   createValidateRoomTransaction(room: string, object: string) {
-    return this._call('createValidateRoomTransaction', {
+    return this._call("createValidateRoomTransaction", {
       room: room,
-      object: object
+      object: object,
     });
   }
 

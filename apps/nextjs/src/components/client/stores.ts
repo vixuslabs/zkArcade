@@ -385,6 +385,9 @@ export const useLobbyStore = createWithEqualityFn(
                   set({
                     me: {
                       ...info,
+                      imageUrl: `/api/imageProxy?url=${encodeURIComponent(
+                        info.imageUrl,
+                      )}`,
                       id,
                       ready: false,
                       host: id === me.id && isHost,
@@ -399,6 +402,9 @@ export const useLobbyStore = createWithEqualityFn(
                   ...prevPlayers,
                   {
                     ...info,
+                    imageUrl: `/api/imageProxy?url=${encodeURIComponent(
+                      info.imageUrl,
+                    )}`,
                     id,
                     ready: false,
                     host: id === me.id && isHost,
@@ -458,6 +464,9 @@ export const useLobbyStore = createWithEqualityFn(
                 ...prevPlayers,
                 {
                   ...member.info,
+                  imageUrl: `/api/imageProxy?url=${encodeURIComponent(
+                    member.info.imageUrl,
+                  )}`,
                   id: member.id,
                   ready: false,
                   host: false,

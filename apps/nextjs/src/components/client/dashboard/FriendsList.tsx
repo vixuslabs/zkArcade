@@ -33,7 +33,10 @@ function FriendsList() {
                   <li className="flex items-center justify-between gap-x-6 py-5">
                     <div className="flex min-w-0 gap-x-4">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={imageUrl} alt="Profile Picture" />
+                        <AvatarImage
+                          src={imageUrl ?? undefined}
+                          alt="Profile Picture"
+                        />
                         <AvatarFallback>SC</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-auto">
