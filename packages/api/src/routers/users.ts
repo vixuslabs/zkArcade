@@ -2,7 +2,7 @@ import { clerkClient } from "@clerk/nextjs";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { users } from "@hot-n-cold/db/schema/users";
+import { users } from "@zkarcade/db/schema/users";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 

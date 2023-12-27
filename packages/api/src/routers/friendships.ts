@@ -2,8 +2,8 @@ import { clerkClient } from "@clerk/nextjs";
 import { and, desc, eq, or } from "drizzle-orm";
 import { z } from "zod";
 
-import type { db as Drizzle } from "@hot-n-cold/db";
-import { friendRequests, friendships } from "@hot-n-cold/db/schema/friendships";
+import type { db as Drizzle } from "@zkarcade/db";
+import { friendRequests, friendships } from "@zkarcade/db/schema/friendships";
 
 import { pusher } from "../pusher/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";

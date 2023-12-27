@@ -1,5 +1,5 @@
 {
-  "name": "@hot-n-cold/db",
+  "name": "@zkarcade/db",
   "version": "0.1.0",
   "private": true,
   "main": "./index.ts",
@@ -19,9 +19,9 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "@hot-n-cold/eslint-config": "workspace:^0.2.0",
-    "@hot-n-cold/prettier-config": "workspace:^0.1.0",
-    "@hot-n-cold/tsconfig": "workspace:^0.1.0",
+    "@zkarcade/eslint-config": "workspace:^0.2.0",
+    "@zkarcade/prettier-config": "workspace:^0.1.0",
+    "@zkarcade/tsconfig": "workspace:^0.1.0",
     "drizzle-kit": "^0.20.7",
     "mysql2": "3.6.5",
     "eslint": "^8.53.0",
@@ -31,8 +31,8 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@hot-n-cold/eslint-config/base"
+      "@zkarcade/eslint-config/base"
     ]
   },
-  "prettier": "@hot-n-cold/prettier-config"
+  "prettier": "@zkarcade/prettier-config"
 }

@@ -1,7 +1,6 @@
-import type {  inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "@zkarcade/api";
 import superjson from "superjson";
-
-import type { AppRouter } from "@hot-n-cold/api";
 
 export const transformer = superjson;
 

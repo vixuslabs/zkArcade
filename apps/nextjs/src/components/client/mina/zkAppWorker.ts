@@ -1,12 +1,11 @@
 "use client";
 
 /* eslint-disable */
-import { fetchAccount, Field, Mina, PublicKey } from "o1js";
-
 // ---------------------------------------------------------------------------------------
 
-import type { HotnCold } from "@hot-n-cold/mina/src";
-import { Box, Object3D, Room } from "@hot-n-cold/mina/src/structs";
+import type { HotnCold } from "@zkarcade/mina/src";
+import { Box, Object3D, Room } from "@zkarcade/mina/src/structs";
+import { fetchAccount, Field, Mina, PublicKey } from "o1js";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
@@ -28,7 +27,7 @@ const functions = {
     Mina.setActiveInstance(Berkeley);
   },
   loadContract: async (args: {}) => {
-    const { HotnCold } = await import("@hot-n-cold/mina");
+    const { HotnCold } = await import("@zkarcade/mina");
     state.HotnCold = HotnCold;
   },
   compileContract: async (args: {}) => {

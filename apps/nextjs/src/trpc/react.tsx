@@ -1,11 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import { useState } from "react";
+import type { AppRouter } from "@zkarcade/api";
 
-import type { AppRouter } from "@hot-n-cold/api";
 import { getUrl, transformer } from "./shared";
 
 export const api = createTRPCReact<AppRouter>();

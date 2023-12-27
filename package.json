@@ -1,5 +1,5 @@
 {
-  "name": "hot-n-cold--root",
+  "name": "zkarcade--root",
   "private": true,
   "license": "Apache-2.0",
   "engines": {
@@ -22,12 +22,12 @@
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
-    "@hot-n-cold/prettier-config": "workspace:^0.1.0",
+    "@zkarcade/prettier-config": "workspace:^0.1.0",
     "@types/node": "^20.10.0",
     "turbo": "^1.10.16",
     "@turbo/gen": "^1.10.16",
     "prettier": "^3.1.0",
     "typescript": "^5.2.2"
   },
-  "prettier": "@hot-n-cold/prettier-config"
+  "prettier": "@zkarcade/prettier-config"
 }

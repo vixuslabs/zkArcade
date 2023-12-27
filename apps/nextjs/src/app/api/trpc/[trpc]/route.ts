@@ -1,10 +1,7 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
-
 import { env } from "@/env.mjs";
-import { appRouter } from "@hot-n-cold/api";
-import { createTRPCContext } from "@hot-n-cold/api";
-
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { appRouter, createTRPCContext } from "@zkarcade/api";
 
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
