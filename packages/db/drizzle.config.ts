@@ -15,5 +15,5 @@ export default {
   dbCredentials: {
     uri: process.env.DATABASE_URL,
   },
-  tablesFilter: ["hot-n-cold_*"],
+  tablesFilter: ["zkarcade_*"],
 } satisfies Config;

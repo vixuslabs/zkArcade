@@ -1,5 +1,5 @@
 {
-    "name": "@hot-n-cold/tsconfig",
+    "name": "@zkarcade/tsconfig",
     "private": true,
     "version": "0.1.0",
     "files": [

@@ -6,12 +6,9 @@
 
 import "./src/env.mjs";
 
-// import "@hot-n-cold/auth/env.mjs";
-
 /** @type {import("next").NextConfig} */
 const config = {
-  // should also add "@hot-n-cold/auth" in the future
-  transpilePackages: ["three", "@hot-n-cold/db", "@hot-n-cold/api"],
+  transpilePackages: ["three", "@zkarcade/db", "@zkarcade/api"],
   reactStrictMode: true,
   /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },

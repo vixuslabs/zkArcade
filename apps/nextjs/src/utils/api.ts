@@ -1,7 +1,6 @@
 import { createTRPCReact } from "@trpc/react-query";
-
-import type { AppRouter } from "@hot-n-cold/api";
+import type { AppRouter } from "@zkarcade/api";
 
 export const api = createTRPCReact<AppRouter>();
 
-export { type RouterInputs, type RouterOutputs } from "@hot-n-cold/api";
+export { type RouterInputs, type RouterOutputs } from "@zkarcade/api";

@@ -1,5 +1,5 @@
 {
-  "name": "@hot-n-cold/nextjs",
+  "name": "@zkarcade/nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -22,9 +22,9 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.2",
-    "@hot-n-cold/api": "workspace:^0.1.0",
-    "@hot-n-cold/db": "workspace:^0.1.0",
-    "@hot-n-cold/mina": "workspace:^0.1.0",
+    "@zkarcade/api": "workspace:^0.1.0",
+    "@zkarcade/db": "workspace:^0.1.0",
+    "@zkarcade/mina": "workspace:^0.1.0",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -71,10 +71,10 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@hot-n-cold/eslint-config": "workspace:^0.2.0",
-    "@hot-n-cold/prettier-config": "workspace:^0.1.0",
-    "@hot-n-cold/tailwind-config": "workspace:^0.1.0",
-    "@hot-n-cold/tsconfig": "workspace:^0.1.0",
+    "@zkarcade/eslint-config": "workspace:^0.2.0",
+    "@zkarcade/prettier-config": "workspace:^0.1.0",
+    "@zkarcade/tailwind-config": "workspace:^0.1.0",
+    "@zkarcade/tsconfig": "workspace:^0.1.0",
     "@types/lodash": "^4.14.200",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.20",
@@ -90,10 +90,10 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@hot-n-cold/eslint-config/base",
-      "@hot-n-cold/eslint-config/nextjs",
-      "@hot-n-cold/eslint-config/react"
+      "@zkarcade/eslint-config/base",
+      "@zkarcade/eslint-config/nextjs",
+      "@zkarcade/eslint-config/react"
     ]
   },
-  "prettier": "@hot-n-cold/prettier-config"
+  "prettier": "@zkarcade/prettier-config"
 }

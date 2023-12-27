@@ -4,9 +4,8 @@ import {
   loggerLink,
   unstable_httpBatchStreamLink,
 } from "@trpc/client";
+import type { AppRouter } from "@zkarcade/api";
 import fetchPonyfill from "fetch-ponyfill";
-
-import type { AppRouter } from "@hot-n-cold/api";
 
 import { getUrl, transformer } from "./shared";
 

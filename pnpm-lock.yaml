@@ -8,15 +8,15 @@ importers:
 
   .:
     devDependencies:
-      '@hot-n-cold/prettier-config':
-        specifier: workspace:^0.1.0
-        version: link:tooling/prettier
       '@turbo/gen':
         specifier: ^1.10.16
         version: 1.10.16(@types/node@20.10.1)(typescript@5.3.2)
       '@types/node':
         specifier: ^20.10.0
         version: 20.10.1
+      '@zkarcade/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:tooling/prettier
       prettier:
         specifier: ^3.1.0
         version: 3.1.0
@@ -56,15 +56,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.3.2
         version: 3.3.2(react-hook-form@7.48.2)
-      '@hot-n-cold/api':
-        specifier: workspace:^0.1.0
-        version: link:../../packages/api
-      '@hot-n-cold/db':
-        specifier: workspace:^0.1.0
-        version: link:../../packages/db
-      '@hot-n-cold/mina':
-        specifier: workspace:^0.1.0
-        version: link:../../packages/mina
       '@radix-ui/react-avatar':
         specifier: ^1.0.4
         version: 1.0.4(@types/react-dom@18.2.17)(@types/react@18.2.39)(react-dom@18.2.0)(react@18.2.0)
@@ -131,6 +122,15 @@ importers:
       '@trpc/server':
         specifier: ^10.44.1
         version: 10.44.1
+      '@zkarcade/api':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/api
+      '@zkarcade/db':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/db
+      '@zkarcade/mina':
+        specifier: workspace:^0.1.0
+        version: link:../../packages/mina
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -198,18 +198,6 @@ importers:
         specifier: ^4.4.7
         version: 4.4.7(@types/react@18.2.39)(react@18.2.0)
     devDependencies:
-      '@hot-n-cold/eslint-config':
-        specifier: workspace:^0.2.0
-        version: link:../../tooling/eslint
-      '@hot-n-cold/prettier-config':
-        specifier: workspace:^0.1.0
-        version: link:../../tooling/prettier
-      '@hot-n-cold/tailwind-config':
-        specifier: workspace:^0.1.0
-        version: link:../../tooling/tailwind
-      '@hot-n-cold/tsconfig':
-        specifier: workspace:^0.1.0
-        version: link:../../tooling/typescript
       '@types/lodash':
         specifier: ^4.14.200
         version: 4.14.202
@@ -225,6 +213,18 @@ importers:
       '@types/three':
         specifier: ^0.158.3
         version: 0.158.3
+      '@zkarcade/eslint-config':
+        specifier: workspace:^0.2.0
+        version: link:../../tooling/eslint
+      '@zkarcade/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/prettier
+      '@zkarcade/tailwind-config':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/tailwind
+      '@zkarcade/tsconfig':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/typescript
       dotenv-cli:
         specifier: ^7.3.0
         version: 7.3.0
@@ -249,15 +249,15 @@ importers:
       '@clerk/nextjs':
         specifier: ^4.27.0
         version: 4.27.2(next@13.5.6)(react-dom@18.2.0)(react@18.2.0)
-      '@hot-n-cold/db':
-        specifier: workspace:^0.1.0
-        version: link:../db
       '@trpc/client':
         specifier: ^10.44.1
         version: 10.44.1(@trpc/server@10.44.1)
       '@trpc/server':
         specifier: ^10.44.1
         version: 10.44.1
+      '@zkarcade/db':
+        specifier: workspace:^0.1.0
+        version: link:../db
       drizzle-orm:
         specifier: 0.29.1
         version: 0.29.1(@planetscale/database@1.11.0)(mysql2@3.6.5)
@@ -271,13 +271,13 @@ importers:
         specifier: ^3.22.4
         version: 3.22.4
     devDependencies:
-      '@hot-n-cold/eslint-config':
+      '@zkarcade/eslint-config':
         specifier: workspace:^0.2.0
         version: link:../../tooling/eslint
-      '@hot-n-cold/prettier-config':
+      '@zkarcade/prettier-config':
         specifier: workspace:^0.1.0
         version: link:../../tooling/prettier
-      '@hot-n-cold/tsconfig':
+      '@zkarcade/tsconfig':
         specifier: workspace:^0.1.0
         version: link:../../tooling/typescript
       eslint:
@@ -302,13 +302,13 @@ importers:
         specifier: 0.29.1
         version: 0.29.1(@planetscale/database@1.11.0)(mysql2@3.6.5)
     devDependencies:
-      '@hot-n-cold/eslint-config':
+      '@zkarcade/eslint-config':
         specifier: workspace:^0.2.0
         version: link:../../tooling/eslint
-      '@hot-n-cold/prettier-config':
+      '@zkarcade/prettier-config':
         specifier: workspace:^0.1.0
         version: link:../../tooling/prettier
-      '@hot-n-cold/tsconfig':
+      '@zkarcade/tsconfig':
         specifier: workspace:^0.1.0
         version: link:../../tooling/typescript
       drizzle-kit:
@@ -339,18 +339,18 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.16.0
         version: 7.23.3(@babel/core@7.23.5)
-      '@hot-n-cold/eslint-config':
-        specifier: workspace:^0.2.0
-        version: link:../../tooling/eslint
-      '@hot-n-cold/prettier-config':
-        specifier: workspace:^0.1.0
-        version: link:../../tooling/prettier
-      '@hot-n-cold/tsconfig':
-        specifier: workspace:^0.1.0
-        version: link:../../tooling/typescript
       '@types/three':
         specifier: ^0.158.3
         version: 0.158.3
+      '@zkarcade/eslint-config':
+        specifier: workspace:^0.2.0
+        version: link:../../tooling/eslint
+      '@zkarcade/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/prettier
+      '@zkarcade/tsconfig':
+        specifier: workspace:^0.1.0
+        version: link:../../tooling/typescript
       eslint:
         specifier: ^8.53.0
         version: 8.54.0
@@ -397,12 +397,6 @@ importers:
         specifier: ^4.6.0
         version: 4.6.0(eslint@8.54.0)
     devDependencies:
-      '@hot-n-cold/prettier-config':
-        specifier: workspace:^0.1.0
-        version: link:../prettier
-      '@hot-n-cold/tsconfig':
-        specifier: workspace:^0.1.0
-        version: link:../typescript
       '@types/eslint':
         specifier: ^8.44.7
         version: 8.44.7
@@ -412,6 +406,12 @@ importers:
       '@types/three':
         specifier: ^0.158.3
         version: 0.158.3
+      '@zkarcade/prettier-config':
+        specifier: workspace:^0.1.0
+        version: link:../prettier
+      '@zkarcade/tsconfig':
+        specifier: workspace:^0.1.0
+        version: link:../typescript
       eslint:
         specifier: ^8.53.0
         version: 8.54.0
@@ -433,7 +433,7 @@ importers:
         specifier: ^0.5.7
         version: 0.5.7(@ianvs/prettier-plugin-sort-imports@4.1.1)(prettier@3.1.0)
     devDependencies:
-      '@hot-n-cold/tsconfig':
+      '@zkarcade/tsconfig':
         specifier: workspace:^0.1.0
         version: link:../typescript
       typescript:
@@ -449,13 +449,13 @@ importers:
         specifier: 3.3.5
         version: 3.3.5
     devDependencies:
-      '@hot-n-cold/eslint-config':
+      '@zkarcade/eslint-config':
         specifier: workspace:^0.2.0
         version: link:../eslint
-      '@hot-n-cold/prettier-config':
+      '@zkarcade/prettier-config':
         specifier: workspace:^0.1.0
         version: link:../prettier
-      '@hot-n-cold/tsconfig':
+      '@zkarcade/tsconfig':
         specifier: workspace:^0.1.0
         version: link:../typescript
       eslint:

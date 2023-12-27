@@ -18,7 +18,7 @@ const config = {
     "^(next/(.*)$)|^(next$)",
     "<THIRD_PARTY_MODULES>",
     "",
-    "^@hot-n-cold/(.*)$",
+    "^@zkarcade/(.*)$",
     "",
     "^~/",
     "^[../]",

@@ -1,5 +1,5 @@
 {
-  "name": "@hot-n-cold/mina",
+  "name": "@zkarcade/mina",
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
@@ -26,9 +26,9 @@
     "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
-    "@hot-n-cold/eslint-config": "workspace:^0.2.0",
-    "@hot-n-cold/prettier-config": "workspace:^0.1.0",
-    "@hot-n-cold/tsconfig": "workspace:^0.1.0",
+    "@zkarcade/eslint-config": "workspace:^0.2.0",
+    "@zkarcade/prettier-config": "workspace:^0.1.0",
+    "@zkarcade/tsconfig": "workspace:^0.1.0",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@types/three": "^0.158.3",
@@ -42,8 +42,8 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@hot-n-cold/eslint-config/mina"
+      "@zkarcade/eslint-config/mina"
     ]
   },
-  "prettier": "@hot-n-cold/prettier-config"
+  "prettier": "@zkarcade/prettier-config"
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "@hot-n-cold/tsconfig/base.json",
+  "extends": "@zkarcade/tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
