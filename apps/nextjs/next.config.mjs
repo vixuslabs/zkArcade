@@ -8,9 +8,13 @@ import "./src/env.mjs";
 
 /** @type {import("next").NextConfig} */
 const config = {
-  transpilePackages: ["three", "@zkarcade/db", "@zkarcade/api"],
+  transpilePackages: [
+    "three",
+    "@zkarcade/db",
+    "@zkarcade/api",
+    "@zkarcade/mina",
+  ],
   reactStrictMode: true,
-  /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   webpack: (config, options) => {

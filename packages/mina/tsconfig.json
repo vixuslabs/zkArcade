@@ -1,4 +1,5 @@
 {
+  "extends": "@zkarcade/tsconfig/base.json",
   "compilerOptions": {
     "target": "es2020",
     "module": "es2022",

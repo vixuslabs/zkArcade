@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
@@ -24,119 +25,6 @@ interface DashboardLayoutProps {
   settings: React.ReactNode;
 }
 
-interface DashboardData {
-  usersFriends: {
-    createdAt: Date;
-    id: string;
-    username: string;
-    email: string;
-    imageUrl: string | null;
-    updatedAt: Date | null;
-  }[];
-  pendingFriendRequests: {
-    requestId: number;
-    sender: {
-      id: string;
-      username: string;
-      imageUrl: string;
-    };
-  }[];
-  pendingGameInvites: {
-    gameId: string;
-    receiver: {
-      id: string;
-      username: string;
-      imageUrl: string;
-    };
-    sender: {
-      id: string;
-      username: string;
-      imageUrl: string;
-    };
-  }[];
-}
-
-// const fetchDashboardData: () => Promise<DashboardData> = cache(async () => {
-//   const usersFriends = await api.friendships.getUsersFriends.query();
-
-//   const cleanedUserFriends = usersFriends.map((friend) => {
-//     return {
-//       username: friend.username,
-//       imageUrl: friend.imageUrl
-//         ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
-//         : "",
-//       id: friend.id,
-//     };
-//   });
-
-//   const pendingFriendRequests = await api.friendships.getFriendRequests.query({
-//     role: "receiver",
-//     status: "pending",
-//   });
-//   const pendingGameInvites = await api.games.getGameInvites.query({
-//     role: "receiver",
-//     status: "pending",
-//   });
-
-//   return new Promise((resolve) => {
-//     resolve({
-//       usersFriends: cleanedUserFriends,
-//       pendingFriendRequests,
-//       pendingGameInvites,
-//     });
-//   });
-// });
-
-const fetchDashboardData: () => Promise<DashboardData> = cache(async () => {
-  "use server";
-  const usersFriends = await api.friendships.getUsersFriends.query();
-
-  // const cleanedUserFriends = usersFriends.map((friend) => {
-  //   return {
-  //     username: friend.username,
-  //     imageUrl: friend.imageUrl
-  //       ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
-  //       : "",
-  //     id: friend.id,
-  //   };
-  // });
-
-  const pendingFriendRequests = await api.friendships.getFriendRequests.query({
-    role: "receiver",
-    status: "pending",
-  });
-  const pendingGameInvites = await api.games.getGameInvites.query({
-    role: "receiver",
-    status: "pending",
-  });
-
-  return new Promise((resolve) => {
-    resolve({
-      usersFriends: usersFriends,
-      pendingFriendRequests: pendingFriendRequests,
-      pendingGameInvites: pendingGameInvites,
-    });
-  });
-});
-
-const fetchUserData = cache(async () => {
-  const me = await api.users.getCurrentUser.query();
-
-  if (!me) {
-    redirect("/");
-  }
-
-  if (me.image_url === null) {
-    throw new Error("No image url found");
-  }
-
-  return {
-    id: me.id,
-    username: me.username,
-    imageUrl: `/api/imageProxy?url=${encodeURIComponent(me.image_url)}`,
-  };
-});
-
 export const revalidate = 300;
 
 export default async function DashboardLayout({
@@ -147,17 +35,60 @@ export default async function DashboardLayout({
   leaderboard,
   settings,
 }: DashboardLayoutProps) {
-  const friendsData = await fetchDashboardData();
+  revalidatePath("/dashboard", "layout");
 
-  const cleanedUserFriends = friendsData.usersFriends.map((friend) => {
+  const fetchDashboardData = cache(async () => {
+    "use server";
+    const usersFriends = await api.friendships.getUsersFriends.query();
+
+    const cleanedUserFriends = usersFriends.map((friend) => {
+      return {
+        username: friend.username,
+        imageUrl: friend.imageUrl
+          ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
+          : "",
+        id: friend.id,
+      };
+    });
+
+    const pendingFriendRequests = await api.friendships.getFriendRequests.query(
+      {
+        role: "receiver",
+        status: "pending",
+      },
+    );
+    const pendingGameInvites = await api.games.getGameInvites.query({
+      role: "receiver",
+      status: "pending",
+    });
+
     return {
-      username: friend.username,
-      imageUrl: friend.imageUrl
-        ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
-        : "",
-      id: friend.id,
+      usersFriends: cleanedUserFriends,
+      pendingFriendRequests,
+      pendingGameInvites,
     };
   });
+
+  const fetchUserData = cache(async () => {
+    "use server";
+    const me = await api.users.getCurrentUser.query();
+
+    if (!me) {
+      redirect("/");
+    }
+
+    if (me.image_url === null) {
+      throw new Error("No image url found");
+    }
+
+    return {
+      id: me.id,
+      username: me.username,
+      imageUrl: `/api/imageProxy?url=${encodeURIComponent(me.image_url)}`,
+    };
+  });
+
+  const friendsData = await fetchDashboardData();
 
   const user = await fetchUserData();
 
@@ -165,7 +96,7 @@ export default async function DashboardLayout({
     <>
       <FriendsChannelProvider
         // initFriendsInfo={friendsData.usersFriends}
-        initFriendsInfo={cleanedUserFriends}
+        initFriendsInfo={friendsData.usersFriends}
         initFriendRequests={friendsData.pendingFriendRequests}
         initGameInvites={friendsData.pendingGameInvites}
       >
