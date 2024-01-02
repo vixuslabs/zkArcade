@@ -1,4 +1,6 @@
-import { Client } from "@planetscale/database";
+import "dotenv/config";
+
+import { connect } from "@planetscale/database";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
 
 import * as friendships from "./schema/friendships";
@@ -8,9 +10,33 @@ import * as users from "./schema/users";
 export * from "drizzle-orm";
 export const schema = { ...friendships, ...users, ...games };
 
-export const db = drizzle(
-  new Client({
-    url: process.env.DATABASE_URL,
-  }).connection(),
-  { schema },
-);
+const env =
+  process.env.NODE_ENV === "production" ? "production" : "development";
+
+const host =
+  env === "production" ? process.env.DB_MAIN_HOST : process.env.DB_DEV_HOST;
+const username =
+  env === "production"
+    ? process.env.DB_MAIN_USERNAME
+    : process.env.DB_DEV_USERNAME;
+const password =
+  env === "production" ? process.env.DB_MAIN_PW : process.env.DB_DEV_PW;
+
+if (!host || !username || !password) {
+  throw new Error("Missing database credentials");
+}
+
+const connection = connect({
+  host,
+  username,
+  password,
+});
+
+// export const db = drizzle(
+//   new Client({
+//     url: process.env.DATABASE_URL,
+//   }).connection(),
+//   { schema },
+// );
+
+export const db = drizzle(connection, { schema });
