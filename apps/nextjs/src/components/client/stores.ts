@@ -378,9 +378,6 @@ export const useLobbyStore = createWithEqualityFn(
                   puKey = env.NEXT_PUBLIC_PUB_KEY2;
                 }
 
-                console.log("prKey", prKey);
-                console.log("puKey", puKey);
-
                 if (id === me.id) {
                   set({
                     me: {
@@ -455,9 +452,6 @@ export const useLobbyStore = createWithEqualityFn(
               prKey = env.NEXT_PUBLIC_PRIV_KEY2;
               puKey = env.NEXT_PUBLIC_PUB_KEY2;
             }
-
-            console.log("prKey", prKey);
-            console.log("puKey", puKey);
 
             set({
               players: [

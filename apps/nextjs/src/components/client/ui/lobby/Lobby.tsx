@@ -191,6 +191,16 @@ function Lobby() {
     if (mounted) {
       return;
     }
+    // if (useLobbyStore.getState().players.length === 0) {
+    //   console.log("no players in lobby");
+    //   updatePlayer({
+    //     ...fetchedMe,
+    //     host: fetchedMe.username === hostUsername,
+    //     ready: false,
+    //     inGame: false,
+    //   });
+    // }
+
     setMounted(true);
   }, [mounted]);
 

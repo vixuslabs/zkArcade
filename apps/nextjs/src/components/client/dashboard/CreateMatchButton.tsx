@@ -24,7 +24,7 @@ function CreateMatchButton() {
         asChild
       >
         {user.user && (
-          <Link href={`/play/${user.user.username}/${id}`} prefetch={false}>
+          <Link href={`/play/${user.user.username}/${id}`} prefetch={true}>
             Create Match
           </Link>
         )}

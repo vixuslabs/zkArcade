@@ -21,12 +21,7 @@ function MinaStartButton({
   publicKey?: string;
   privateKey?: string;
 }) {
-  console.log("InitiateMina publicKey", publicKey);
-  console.log("InitiateMina privateKey", privateKey);
-
   const { initiateMina, initialized } = useMinaContext();
-  // const [initialized, setInitialized] = React.useState<boolean>(false);
-
   const [gameReady, setGameReady] = React.useState<boolean>(false);
 
   const handleLoadContract = useCallback(
