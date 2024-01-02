@@ -11,7 +11,7 @@ export * from "drizzle-orm";
 export const schema = { ...friendships, ...users, ...games };
 
 const env =
-  process.env.NODE_ENV === "production" ? "production" : "development";
+  process.env.NODE_ENV !== "production" ? "development" : "production";
 
 const host =
   env === "production" ? process.env.DB_MAIN_HOST : process.env.DB_DEV_HOST;
