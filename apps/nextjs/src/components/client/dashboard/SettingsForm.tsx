@@ -91,18 +91,6 @@ const settingsFormScheme = z.object({
     },
   ),
 });
-// .refine(
-//   (data) => {
-//     const isCurrentPasswordFilled = data.currentPassword;
-//     const isNewPasswordFilled = data.newPassword;
-//     return !(isCurrentPasswordFilled !== isNewPasswordFilled);
-//   },
-//   {
-//     message:
-//       "Both current and new passwords are required if either is filled.",
-//     path: ["currentPassword", "newPassword"],
-//   },
-// );
 
 type SettingsFormScheme = z.infer<typeof settingsFormScheme>;
 
@@ -196,17 +184,15 @@ function SettingsForm() {
             onClick={() => console.log("clicked profile picture")}
           >
             <Avatar
-              // onPointerOver={() => setOverProfilePicture(true)}
-              // onPointerLeave={() => setOverProfilePicture(false)}
               className={cn(
                 "my-2 h-24 w-24 transition-all duration-300 ease-in-out hover:cursor-pointer group-hover:blur-sm",
-                // overProfilePicture && "opacity-50 backdrop-blur-md",
-                "",
               )}
             >
               <AvatarImage
                 className="transform"
-                src={user?.imageUrl}
+                src={`/api/imageProxy?url=${encodeURIComponent(
+                  user?.imageUrl ?? "",
+                )}`}
                 alt="Profile Picture"
               />
               <AvatarFallback>SC</AvatarFallback>

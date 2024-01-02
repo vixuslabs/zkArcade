@@ -4,8 +4,10 @@ import {
   loggerLink,
   unstable_httpBatchStreamLink,
 } from "@trpc/client";
+
 import type { AppRouter } from "@zkarcade/api";
-import fetchPonyfill from "fetch-ponyfill";
+
+// import fetchPonyfill from "fetch-ponyfill";
 
 import { getUrl, transformer } from "./shared";
 
@@ -19,7 +21,8 @@ export const api = createTRPCProxyClient<AppRouter>({
     }),
     unstable_httpBatchStreamLink({
       url: getUrl(),
-      fetch: fetchPonyfill().fetch, // this line fixes UND_ERR_REQ_CONTENT_LENGTH_MISMATCH error
+      fetch: fetch,
+      // fetch: fetchPonyfill().fetch, // this line fixes UND_ERR_REQ_CONTENT_LENGTH_MISMATCH error
       headers() {
         const heads = new Map(headers());
         heads.set("x-trpc-source", "rsc");
