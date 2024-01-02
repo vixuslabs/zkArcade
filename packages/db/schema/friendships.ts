@@ -12,7 +12,7 @@ import {
 
 import { users } from "./users";
 
-export const mysqlTable = mysqlTableCreator((name) => `hot-n-cold_${name}`);
+export const mysqlTable = mysqlTableCreator((name) => `zkarcade_${name}`);
 
 export const friendships = mysqlTable(
   "friendships",

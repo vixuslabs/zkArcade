@@ -137,7 +137,11 @@ function AddFriend() {
               <div className="my-2 flex min-w-0 gap-x-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
-                    src={retrievedUser.image_url ?? undefined}
+                    src={
+                      `/api/imageProxy?url=${encodeURIComponent(
+                        retrievedUser.image_url!,
+                      )}` ?? undefined
+                    }
                     alt="Profile Picture"
                   />
                   <AvatarFallback>SC</AvatarFallback>

@@ -16,7 +16,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         type: "input",
         name: "name",
         message:
-          "What is the name of the package? (You can skip the `@hot-n-cold/` prefix)",
+          "What is the name of the package? (You can skip the `@zkarcade/` prefix)",
       },
       {
         type: "input",
@@ -28,8 +28,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
     actions: [
       (answers) => {
         if ("name" in answers && typeof answers.name === "string") {
-          if (answers.name.startsWith("@hot-n-cold/")) {
-            answers.name = answers.name.replace("@hot-n-cold/", "");
+          if (answers.name.startsWith("@zkarcade/")) {
+            answers.name = answers.name.replace("@zkarcade/", "");
           }
         }
         return "Config sanitized";

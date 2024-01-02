@@ -9,7 +9,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
-export const mysqlTable = mysqlTableCreator((name) => `hot-n-cold_${name}`);
+export const mysqlTable = mysqlTableCreator((name) => `zkarcade_${name}`);
 
 export const games = mysqlTable(
   "game",
