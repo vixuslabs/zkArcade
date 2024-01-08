@@ -1,30 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { XRCanvas, Hands } from "@coconut-xr/natuerlich/defaults";
+import { ControllerStateProvider } from "@/components/client/providers";
+import { BuildRoom } from "@/components/client/xr";
+import { SandboxControllers } from "@/components/client/xr/inputDevices";
+import { Button } from "@/components/ui/button";
+import type { RoomCaptureProps } from "@/lib/types";
+// import { clippingEvents } from "@coconut-xr/koestlich";
+import { getInputSourceId } from "@coconut-xr/natuerlich";
+import { XRCanvas } from "@coconut-xr/natuerlich/defaults";
 import {
-  useEnterXR,
-  NonImmersiveCamera,
+  FocusStateGuard,
   ImmersiveSessionOrigin,
+  NonImmersiveCamera,
+  useEnterXR,
   useHeighestAvailableFrameRate,
-  useNativeFramebufferScaling,
   useInputSources,
+  useNativeFramebufferScaling,
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
-import { clippingEvents } from "@coconut-xr/koestlich";
-import { SandboxControllers } from "@/components/client/xr/inputDevices";
-import { getInputSourceId } from "@coconut-xr/natuerlich";
-import { Button } from "@/components/ui/button";
-import { BuildRoom } from "@/components/client/xr";
-import { ControllerStateProvider } from "@/components/client/providers";
-import GameSphere from "./objects/GameSphere";
-import { Physics } from "@react-three/rapier";
+// import { Physics } from "@react-three/rapier";
+import {
+  BuildPhysicalMeshes,
+  BuildPhysicalPlanes,
+  PhysHand,
+  XRPhysics,
+} from "@vixuslabs/newtonxr";
 
-import type { RoomCaptureProps } from "@/lib/types";
+import GameSphere from "./objects/GameSphere";
 
 const sessionOptions: XRSessionInit = {
-  requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
+  requiredFeatures: [
+    "local-floor",
+    "mesh-detection",
+    "plane-detection",
+    "hand-tracking",
+  ],
 };
 
 function Sandbox({ user }: RoomCaptureProps) {
@@ -73,49 +85,65 @@ function Sandbox({ user }: RoomCaptureProps) {
         frameBufferScaling={frameBufferScaling}
         frameRate={frameRate}
         dpr={[1, 2]}
-        // @ts-expect-error - import error
-        events={clippingEvents}
+        // // @ts-expect-error - import error
+        // events={clippingEvents}
         gl={{ localClippingEnabled: true }}
       >
-        <ControllerStateProvider>
-          <Physics
-            colliders={false}
-            gravity={[0, -5, 0]}
-            interpolate={false}
-            timeStep={"vary"}
-          >
-            <NonImmersiveCamera />
+        <ambientLight intensity={1} />
 
-            {startSync && (
-              <>
-                <GameSphere
-                  inGame={false}
-                  color="blue"
-                  position={[0, 2, -0.3]}
-                />
-                <GameSphere inGame={false} position={[0, 1, -0.3]} />
-              </>
-            )}
+        <FocusStateGuard>
+          <ControllerStateProvider>
+            <XRPhysics
+              // debug
+              // colliders={false}
+              gravity={[0, -5, 0]}
+              // interpolate={false}
+              timeStep={"vary"}
+            >
+              <NonImmersiveCamera />
 
-            <ImmersiveSessionOrigin>
               {startSync && (
                 <>
-                  <BuildRoom inGame={false} />
+                  <GameSphere
+                    inGame={false}
+                    color="blue"
+                    position={[0, 2, -0.3]}
+                  />
+                  <GameSphere inGame={false} position={[0, 1, -0.3]} />
                 </>
               )}
 
-              {inputSources.map((inputSource: XRInputSource) => (
-                <SandboxControllers
-                  key={getInputSourceId(inputSource)}
-                  id={getInputSourceId(inputSource)}
-                  inputSource={inputSource}
-                />
-              ))}
-
-              <Hands />
-            </ImmersiveSessionOrigin>
-          </Physics>
-        </ControllerStateProvider>
+              <ImmersiveSessionOrigin>
+                {startSync && (
+                  <>
+                    <BuildRoom inGame={false} />
+                    {/* <BuildPhysicalMeshes excludeGlobalMesh debug />
+                    <BuildPhysicalPlanes debug /> */}
+                  </>
+                )}
+                <BuildPhysicalMeshes debug />
+                <BuildPhysicalPlanes debug />
+                {inputSources?.map((inputSource) =>
+                  inputSource.hand ? (
+                    <PhysHand
+                      key={getInputSourceId(inputSource)}
+                      inputSource={inputSource}
+                      id={getInputSourceId(inputSource)}
+                      hand={inputSource.hand}
+                      withDigitalHand
+                    />
+                  ) : (
+                    <SandboxControllers
+                      key={getInputSourceId(inputSource)}
+                      id={getInputSourceId(inputSource)}
+                      inputSource={inputSource}
+                    />
+                  ),
+                )}
+              </ImmersiveSessionOrigin>
+            </XRPhysics>
+          </ControllerStateProvider>
+        </FocusStateGuard>
       </XRCanvas>
     </>
   );

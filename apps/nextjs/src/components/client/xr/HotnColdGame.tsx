@@ -25,7 +25,7 @@ import {
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
-import { Physics } from "@react-three/rapier";
+import { XRPhysics } from "@vixuslabs/newtonxr";
 import { Vector3 } from "three";
 
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
@@ -130,7 +130,7 @@ function HotnColdGame({
       >
         <ControllerStateProvider>
           {/* {startSync && ( */}
-          <Physics
+          <XRPhysics
             colliders={false}
             gravity={[0, -5, 0]}
             interpolate={false}
@@ -213,7 +213,7 @@ function HotnColdGame({
                   ))}
               <Hands />
             </ImmersiveSessionOrigin>
-          </Physics>
+          </XRPhysics>
         </ControllerStateProvider>
       </XRCanvas>
     </>
