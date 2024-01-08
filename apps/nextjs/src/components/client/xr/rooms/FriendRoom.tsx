@@ -18,6 +18,7 @@ function FriendRoom() {
               positionData={geometry.position}
               indexData={geometry.index!}
               matrixData={matrix}
+              name={name}
             />
           ),
         )}
@@ -32,6 +33,7 @@ function FriendRoom() {
               positionData={geometry.position}
               indexData={geometry.index!}
               matrixData={matrix}
+              name={name}
             />
           ),
         )}

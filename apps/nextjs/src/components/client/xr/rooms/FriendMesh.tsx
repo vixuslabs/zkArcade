@@ -2,9 +2,9 @@ import {
   BufferGeometry,
   Float32BufferAttribute,
   Matrix4,
-  Uint16BufferAttribute,
   Mesh,
   MeshStandardMaterial,
+  Uint16BufferAttribute,
 } from "three";
 
 function FriendMesh({
@@ -15,6 +15,7 @@ function FriendMesh({
   positionData: { itemSize: number; array: number[] };
   indexData: { itemSize: number; array: number[] };
   matrixData: { elements: number[] };
+  name?: string;
 }) {
   const positionAttribute = new Float32BufferAttribute(
     positionData.array,
@@ -31,7 +32,7 @@ function FriendMesh({
   geometry.setIndex(indexAttribute);
 
   const material = new MeshStandardMaterial({
-    color: "orange",
+    color: "#CC4F4F", // soft red for all furniture (global mesh not included)
   });
 
   const mesh = new Mesh(geometry, material);
