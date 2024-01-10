@@ -1,10 +1,11 @@
-import { clerkClient } from "@clerk/nextjs";
+// import { clerkClient } from "@clerk/nextjs";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { users } from "@zkarcade/db/schema/users";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { getUser } from "./friendships";
 
 export const userRouter = createTRPCRouter({
   getUser: protectedProcedure
@@ -31,22 +32,23 @@ export const userRouter = createTRPCRouter({
     }),
 
   getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
-    const userClerk = await clerkClient.users.getUser(ctx.auth.userId);
+    // const userClerk = await clerkClient.users.getUser(ctx.auth.userId);
+    const user = await getUser(ctx.auth.userId, ctx.db);
 
-    const query = ctx.db.query.users
-      .findFirst({
-        where: eq(users.id, userClerk.id),
-      })
-      .prepare();
+    // const query = ctx.db.query.users
+    //   .findFirst({
+    //     where: eq(users.id, user.id),
+    //   })
+    //   .prepare();
 
-    const userDB = await query.execute();
+    // const userDB = await query.execute();
 
-    if (!userDB) return null;
+    // if (!userDB) return null;
 
     return {
-      id: userClerk.id,
-      username: userDB.username,
-      image_url: userDB.imageUrl,
+      id: user.id,
+      username: user.username,
+      image_url: user.imageUrl,
     };
   }),
 

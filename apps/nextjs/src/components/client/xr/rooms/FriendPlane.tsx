@@ -3,21 +3,24 @@
 import {
   BufferGeometry,
   Float32BufferAttribute,
-  Mesh,
   Matrix4,
+  Mesh,
+  MeshLambertMaterial,
+  // MeshPhongMaterial,
   Uint16BufferAttribute,
-  MeshPhongMaterial,
 } from "three";
 
 function FriendPlane({
   positionData,
   indexData,
   matrixData,
+  name,
 }: {
   positionData: { itemSize: number; array: number[] };
   indexData: { itemSize: number; array: number[] };
   matrixData: { elements: number[] };
   worldMatrixData?: { elements: number[] };
+  name?: string;
 }) {
   // Use Three.js constructors to convert raw data to Three.js data types
   const positionAttribute = new Float32BufferAttribute(
@@ -34,8 +37,24 @@ function FriendPlane({
   geometry.setAttribute("position", positionAttribute);
   geometry.setIndex(indexAttribute);
 
-  const material = new MeshPhongMaterial({
-    color: "blue",
+  // let material = new MeshLambertMaterial({
+  //   color: "blue",
+  //   side: 2,
+  // });
+
+  let color = "#FAF9F6"; // off-white default
+
+  switch (name) {
+    case "floor":
+      color = "#C0C0C0"; // silverish
+      break;
+    case "ceiling":
+      color = "#F5F5F5"; // very lightlight grey
+      break;
+  }
+
+  const material = new MeshLambertMaterial({
+    color,
     side: 2,
   });
 

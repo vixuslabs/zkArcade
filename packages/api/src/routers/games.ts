@@ -1,4 +1,4 @@
-import { clerkClient } from "@clerk/nextjs";
+// import { clerkClient } from "@clerk/nextjs";
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 
@@ -12,14 +12,14 @@ export const gameRouter = createTRPCRouter({
   sendGameInvite: protectedProcedure
     .input(
       z.object({
+        senderUsername: z.string().min(1),
         receiverId: z.string().min(1),
         lobbyId: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.auth.userId;
-
-      const user = await clerkClient.users.getUser(userId);
+      // const user = await clerkClient.users.getUser(userId);
 
       const receiver = await ctx.db.query.users.findFirst({
         where: eq(users.id, input.receiverId),
@@ -31,7 +31,7 @@ export const gameRouter = createTRPCRouter({
 
       await ctx.db.insert(gameInvites).values({
         lobbyId: input.lobbyId,
-        senderId: user.id,
+        senderId: userId,
         receiverId: input.receiverId,
       });
 
@@ -39,8 +39,8 @@ export const gameRouter = createTRPCRouter({
 
       await pusher.trigger(`user-${cutId}-friends`, `invite-sent`, {
         gameId: input.lobbyId,
-        senderId: user.id,
-        username: user.username,
+        id: userId,
+        username: input.senderUsername,
       });
     }),
 
@@ -109,33 +109,37 @@ export const gameRouter = createTRPCRouter({
 
       const invites = await ctx.db.query.gameInvites.findMany({
         where: whereClause,
+        with: {
+          sender: true,
+          receiver: true,
+        },
       });
 
       const invitesWithUsers = await Promise.all(
-        invites.map(async (invite) => {
-          const sender = await clerkClient.users.getUser(invite.senderId);
+        invites.map((invite) => {
+          // const sender = await clerkClient.users.getUser(invite.senderId);
 
-          const receiver = await clerkClient.users.getUser(invite.receiverId);
+          // const receiver = await clerkClient.users.getUser(invite.receiverId);
 
-          if (!sender.username) {
-            throw new Error(`Username for id: ${sender.id} not found`);
+          if (!invite.sender.username) {
+            throw new Error(`Username for id: ${invite.sender.id} not found`);
           }
 
-          if (!receiver.username) {
-            throw new Error(`Username for id: ${receiver.id} not found`);
+          if (!invite.receiver.username) {
+            throw new Error(`Username for id: ${invite.receiver.id} not found`);
           }
 
           return {
             gameId: invite.lobbyId,
             receiver: {
               id: invite.receiverId,
-              username: receiver.username,
-              imageUrl: receiver.imageUrl,
+              username: invite.receiver.username,
+              imageUrl: invite.receiver.imageUrl,
             },
             sender: {
-              id: sender.id,
-              username: sender.username,
-              imageUrl: sender.imageUrl,
+              id: invite.sender.id,
+              username: invite.sender.username,
+              imageUrl: invite.sender.imageUrl,
             },
           };
         }),

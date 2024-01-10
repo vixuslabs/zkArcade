@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Fragment } from "react";
+import { revalidatePath } from "next/cache";
 import { useRouter } from "next/navigation";
 import { useFriendsProvider } from "@/components/client/providers/FriendsChannelProvider";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { useUser } from "@clerk/nextjs";
 import { BellIcon } from "@heroicons/react/24/outline";
 
 function NotificationButton() {
+  // revalidatePath("/dashboard", "layout");
   const { allNotifications } = useFriendsProvider();
   const { user } = useUser();
 
@@ -45,6 +47,8 @@ function NotificationButton() {
       description: description,
       duration: 5000,
     });
+
+    revalidatePath("/dashboard");
   };
 
   const handleDeclineFriendRequest = (requestId: number) => {
@@ -57,6 +61,8 @@ function NotificationButton() {
       description: "You have declined a friend request.",
       duration: 5000,
     });
+
+    revalidatePath("/dashboard");
   };
 
   const handleAcceptGameInvite = (gameId: string, url: string) => {
@@ -64,6 +70,7 @@ function NotificationButton() {
       lobbyId: gameId,
     });
     router.push(url);
+    // revalidatePath("/dashboard", "layout");
   };
 
   return (

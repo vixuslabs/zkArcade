@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useRef } from "react";
-
-import { RigidBody, vec3 } from "@react-three/rapier";
-
-import type { RapierRigidBody } from "@react-three/rapier";
-import type { ThreeEvent } from "@react-three/fiber";
-
-import type { Mesh, Vector3 } from "three";
 import { GrabPhysics } from "@/components/client/xr/physics";
+import type { ThreeEvent } from "@react-three/fiber";
+import { RigidBody, vec3 } from "@react-three/rapier";
+import type { RapierRigidBody } from "@react-three/rapier";
+import type { Mesh, Vector3 } from "three";
+
 import { useControllerStateContext } from "../../providers/ControllerStateProvider";
 
 function GameSphere({
@@ -57,7 +55,7 @@ function GameSphere({
     <RigidBody
       name={"GameSphere-physics"}
       ref={rigidRef}
-      colliders={"cuboid"}
+      colliders={"ball"}
       type={name === "hiddenObject" ? "fixed" : "dynamic"}
       position={
         name === "hiddenObject"

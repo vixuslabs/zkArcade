@@ -122,6 +122,9 @@ importers:
       '@trpc/server':
         specifier: ^10.44.1
         version: 10.44.1
+      '@vixuslabs/newtonxr':
+        specifier: ^0.2.0
+        version: 0.2.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
       '@zkarcade/api':
         specifier: workspace:^0.1.0
         version: link:../../packages/api
@@ -1927,6 +1930,32 @@ packages:
 
   /@coconut-xr/natuerlich@0.0.47(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
     resolution: {integrity: sha512-MchCMkvKhgSrKqNTeLRwhvI562b0UTc8P+1bRzGeih2/MfoVEogkcDaKXFq7Xn3qXIgGJMyb+/OgS7R2CIOfSA==}
+    peerDependencies:
+      '@coconut-xr/koestlich': '*'
+      '@react-three/fiber': '*'
+      react: '*'
+      three: '*'
+    peerDependenciesMeta:
+      '@coconut-xr/koestlich':
+        optional: true
+    dependencies:
+      '@coconut-xr/koestlich': 0.3.12(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
+      '@coconut-xr/xinteraction': 0.1.12(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
+      '@coconut-xr/xmaterials': 0.0.3(three@0.158.0)
+      '@react-three/fiber': 8.15.11(react-dom@18.2.0)(react@18.2.0)(three@0.158.0)
+      '@webxr-input-profiles/motion-controllers': 1.0.0
+      meshline: 3.1.6(three@0.158.0)
+      react: 18.2.0
+      suspend-react: 0.0.9(react@18.2.0)
+      three: 0.158.0
+      zustand: 4.4.7(@types/react@18.2.39)(react@18.2.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+    dev: false
+
+  /@coconut-xr/natuerlich@0.0.48(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
+    resolution: {integrity: sha512-D0c2QrmnjC5j0yBx3SItMWFI7bc661VzLIUVFiWXUn5lI4eXVFHcSRf0p5uWKv7lNG6AM9wxuhkBu64S/oT6lw==}
     peerDependencies:
       '@coconut-xr/koestlich': '*'
       '@react-three/fiber': '*'
@@ -4476,6 +4505,25 @@ packages:
     dependencies:
       '@use-gesture/core': 10.3.0
       react: 18.2.0
+    dev: false
+
+  /@vixuslabs/newtonxr@0.2.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
+    resolution: {integrity: sha512-jnHz8zN+ciEbGwBlDtJaph6wqhyY1DXw4+dz+1g0ufCnzZj7kwysPzsCDZWyovuZEz1ZnolY1DI0d6jNU6KkGg==}
+    peerDependencies:
+      '@react-three/fiber': '*'
+      react: '*'
+      three: '*'
+    dependencies:
+      '@coconut-xr/natuerlich': 0.0.48(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
+      '@react-three/fiber': 8.15.11(react-dom@18.2.0)(react@18.2.0)(three@0.158.0)
+      '@react-three/rapier': 1.1.1(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
+      react: 18.2.0
+      three: 0.158.0
+      zustand: 4.4.7(@types/react@18.2.39)(react@18.2.0)
+    transitivePeerDependencies:
+      - '@coconut-xr/koestlich'
+      - '@types/react'
+      - immer
     dev: false
 
   /@webxr-input-profiles/motion-controllers@1.0.0:

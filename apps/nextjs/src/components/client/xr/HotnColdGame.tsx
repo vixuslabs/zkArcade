@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ControllerStateProvider } from "@/components/client/providers";
-import { useHotnCold } from "@/components/client/stores";
+import { useHotnCold, useLobbyStore } from "@/components/client/stores";
 import { BuildRoom } from "@/components/client/xr";
 import { GameControllers } from "@/components/client/xr/inputDevices";
 import GameSphere from "@/components/client/xr/objects/GameSphere";
@@ -25,7 +25,7 @@ import {
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
-import { Physics } from "@react-three/rapier";
+import { XRPhysics } from "@vixuslabs/newtonxr";
 import { Vector3 } from "three";
 
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
@@ -44,6 +44,7 @@ function HotnColdGame({
   setXRSupported: (isXRSupported: boolean) => void;
 }) {
   const hotNColdStore = useHotnCold();
+  const lobbyStore = useLobbyStore();
 
   // teleport not working right now
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,6 +103,24 @@ function HotnColdGame({
             console.log("storeMe: ", storeMe);
 
             hotNColdStore.setMe({ ...storeMe, inGame: true });
+          } else {
+            const me = lobbyStore.me;
+
+            if (!me) {
+              throw new Error("no me in lobby - lobbyStore.me");
+            }
+
+            hotNColdStore.setMe({
+              ...me,
+              inGame: false,
+              playerPosition: null,
+              playerProximity: null,
+              objectMatrix: null,
+              objectPosition: null,
+              roomLayout: null,
+              hiding: false,
+              foundObject: false,
+            });
           }
         })
         .catch((err) => {
@@ -130,7 +149,7 @@ function HotnColdGame({
       >
         <ControllerStateProvider>
           {/* {startSync && ( */}
-          <Physics
+          <XRPhysics
             colliders={false}
             gravity={[0, -5, 0]}
             interpolate={false}
@@ -213,7 +232,7 @@ function HotnColdGame({
                   ))}
               <Hands />
             </ImmersiveSessionOrigin>
-          </Physics>
+          </XRPhysics>
         </ControllerStateProvider>
       </XRCanvas>
     </>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
 import { usePusher } from "@/components/client/stores";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,7 +26,7 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
   const { pusher, removePusher } = usePusher();
   const { setActiveTab } = useDashboardTabContext();
   const { signOut } = useClerk();
-  const router = useRouter();
+  // const router = useRouter();
 
   return (
     <DropdownMenu>
@@ -53,11 +53,12 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onPointerDown={() => {
-            if (pusher) {
-              removePusher();
-            }
-
-            void signOut(() => router.push("/"));
+            void signOut(() => {
+              if (pusher) {
+                removePusher();
+              }
+            });
+            // router.push("/");
           }}
         >
           Log out

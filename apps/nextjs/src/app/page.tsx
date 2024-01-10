@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { HomeAuth } from "@/components/client/HomeAuth";
 import {
   ClerkLoaded,
   ClerkLoading,
@@ -7,7 +9,7 @@ import {
   SignUpButton,
 } from "@clerk/nextjs";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const user = await currentUser();
@@ -46,7 +48,9 @@ export default async function Home() {
                 </Link>
               ) : (
                 <>
-                  <ClerkLoading>
+                  <Suspense>
+                    <HomeAuth />
+                    {/* <ClerkLoading>
                     <div className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm">
                       Sign in
                     </div>
@@ -59,15 +63,16 @@ export default async function Home() {
                       // @ts-expect-error SignInButton can take className
                       className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
                       mode="modal"
-                      redirectUrl="/dashboard"
+                      // redirectUrl="/dashboard"
                     />
                     <SignUpButton
                       // @ts-expect-error SignUpButton can take className
                       className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
                       mode="modal"
-                      redirectUrl="/dashboard"
+                      // redirectUrl="/dashboard"
                     />
-                  </ClerkLoaded>
+                  </ClerkLoaded> */}
+                  </Suspense>
                 </>
               )}
             </div>

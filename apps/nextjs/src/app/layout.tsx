@@ -2,13 +2,12 @@ import "@/styles/globals.css";
 
 import { Jura } from "next/font/google";
 import { headers } from "next/headers";
-
-import { TRPCReactProvider } from "@/trpc/react";
-import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/client/providers";
-import { PusherClientProvider } from "@/pusher/client";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { PusherClientProvider } from "@/pusher/client";
+import { TRPCReactProvider } from "@/trpc/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const jura = Jura({
   subsets: ["latin"],
@@ -18,8 +17,8 @@ const jura = Jura({
 });
 
 export const metadata = {
-  title: "Hot 'n Cold",
-  description: "Hide and seek with a twist",
+  title: "zkArcade",
+  description: "Hub for all zero knowledge games, built on Mina Protocol",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

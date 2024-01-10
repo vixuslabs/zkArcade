@@ -2,11 +2,7 @@ import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 export default authMiddleware({
   // debug: true,
-  // beforeAuth: (req) => {
-  //   // Execute next-intl middleware before Clerk's auth middleware
-  //   return intlMiddleware(req);
-  // },
-  publicRoutes: ["/", "/dashboard"],
+  publicRoutes: ["/"],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
     if (!auth.userId && !auth.isPublicRoute) {
