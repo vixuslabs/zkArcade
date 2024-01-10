@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   bigint,
   index,
@@ -8,6 +8,8 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
+
+import { users } from "./users";
 
 export const mysqlTable = mysqlTableCreator((name) => `zkarcade_${name}`);
 
@@ -56,7 +58,20 @@ export const gameInvites = mysqlTable(
   (invite) => ({
     inviteIndex: index("invite_idx").on(invite.inviteId),
     lobbyIndex: uniqueIndex("lobby_idx").on(invite.lobbyId),
-    receiverIndex: index("receiver_idx").on(invite.receiverId),
+    // receiverIndex: index("receiver_idx").on(invite.receiverId),
     statusIndex: index("status_idx").on(invite.status),
   }),
 );
+
+export const gameInvitesRelations = relations(gameInvites, ({ one }) => ({
+  sender: one(users, {
+    relationName: "senderGameInvite",
+    fields: [gameInvites.senderId],
+    references: [users.id],
+  }),
+  receiver: one(users, {
+    relationName: "receiverGameInvite",
+    fields: [gameInvites.receiverId],
+    references: [users.id],
+  }),
+}));
