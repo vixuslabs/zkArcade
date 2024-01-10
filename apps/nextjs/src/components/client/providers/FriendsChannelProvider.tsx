@@ -72,6 +72,12 @@ function FriendsChannelProvider({
           },
         ];
       });
+      toast({
+        title: "New Friend!",
+        description: `${data.username} has been added to your friends list.`,
+        variant: "default",
+        duration: 5000,
+      });
     },
     "friend-deleted": (data) => {
       console.log("friend deleted", data);
@@ -124,6 +130,13 @@ function FriendsChannelProvider({
     "invite-sent": (data) => {
       if (!data.gameId) {
         throw new Error("No game id found");
+      }
+      if (!data.id) {
+        throw new Error("No id found");
+      }
+
+      if (data.username === "") {
+        console.log("username is empty");
       }
 
       console.log("invite sent", data);

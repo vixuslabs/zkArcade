@@ -28,6 +28,7 @@ function DialogCloseButton() {
     if (!lobbyId) throw new Error("No lobbyId found");
 
     invite.mutate({
+      senderUsername: username,
       receiverId: id,
       lobbyId,
     });
@@ -38,6 +39,8 @@ function DialogCloseButton() {
       variant: "default",
       duration: 3000,
     });
+
+    // revalidatePath("/dashboard");
   };
 
   return (
