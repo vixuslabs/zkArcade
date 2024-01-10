@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { revalidatePath } from "next/cache";
+// import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import {
@@ -13,8 +13,7 @@ import {
 } from "@/components/client/providers";
 import UserAvatar from "@/components/client/ui/Avatar";
 import { api } from "@/trpc/server";
-
-// import { currentUser } from "@clerk/nextjs";
+import { currentUser, RedirectToSignIn, SignedOut } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -26,6 +25,25 @@ interface DashboardLayoutProps {
 }
 
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
+
+// async function proxyImage(imageUrl: string) {
+//   "use server";
+//   console.log("imageUrl", imageUrl);
+//   const res = await fetch(imageUrl);
+//   console.log(res);
+//   // const blob = await res.blob();
+//   // const response = await fetch(imageUrl);
+
+//   // if (!response.ok) {
+//   //   return Response.json({ error: "Image not found", status: 500 });
+//   // }
+
+//   const arrayBuffer = await res.arrayBuffer();
+//   const buffer = Buffer.from(arrayBuffer);
+//   // const blobUrl = URL.createObjectURL(blob);
+//   return buffer;
+// }
 
 export default async function DashboardLayout({
   primary, // top right container content
@@ -35,21 +53,35 @@ export default async function DashboardLayout({
   leaderboard,
   settings,
 }: DashboardLayoutProps) {
-  revalidatePath("/dashboard", "layout");
+  // revalidatePath("/dashboard", "layout");
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) {
+    redirect("/");
+  }
 
   const fetchDashboardData = cache(async () => {
-    "use server";
     const usersFriends = await api.friendships.getUsersFriends.query();
 
+    // const img = await proxyImage(me.image_url);
+
     const cleanedUserFriends = usersFriends.map((friend) => {
+      // console.log("friend", friend);
+      // const img = await proxyImage(friend.imageUrl ?? "");
+
+      // console.log("img", img);
+
       return {
         username: friend.username,
+        // imageUrl: img,
         imageUrl: friend.imageUrl
           ? `/api/imageProxy?url=${encodeURIComponent(friend.imageUrl)}`
           : "",
         id: friend.id,
       };
     });
+
+    // const finalUserFriends = await Promise.all(cleanedUserFriends);
 
     const pendingFriendRequests = await api.friendships.getFriendRequests.query(
       {
@@ -64,13 +96,13 @@ export default async function DashboardLayout({
 
     return {
       usersFriends: cleanedUserFriends,
+      // usersFriends: finalUserFriends,
       pendingFriendRequests,
       pendingGameInvites,
     };
   });
 
   const fetchUserData = cache(async () => {
-    "use server";
     const me = await api.users.getCurrentUser.query();
 
     if (!me) {
@@ -81,9 +113,12 @@ export default async function DashboardLayout({
       throw new Error("No image url found");
     }
 
+    // const img = await proxyImage(me.image_url);
+
     return {
       id: me.id,
       username: me.username,
+      // imageUrl: img,
       imageUrl: `/api/imageProxy?url=${encodeURIComponent(me.image_url)}`,
     };
   });
@@ -166,6 +201,9 @@ export default async function DashboardLayout({
           </aside>
         </DashboardTabProvider>
       </FriendsChannelProvider>
+      <SignedOut>
+        <RedirectToSignIn redirectUrl={"/"} />
+      </SignedOut>
     </>
   );
 }
