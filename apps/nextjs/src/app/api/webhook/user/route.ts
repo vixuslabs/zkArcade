@@ -11,7 +11,7 @@ import { Webhook } from "svix";
  */
 
 export async function POST(req: Request) {
-  const WEBHOOK_SECRET = env.WEBHOOK_SECRET;
+  const WEBHOOK_SECRET = env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
     throw new Error(
