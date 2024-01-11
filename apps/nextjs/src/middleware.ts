@@ -1,13 +1,27 @@
+import { NextResponse } from "next/server";
 import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 export default authMiddleware({
   // debug: true,
-  publicRoutes: ["/", "/dashboard"],
+  publicRoutes: ["/"],
+  apiRoutes: ["/api/(.*)"],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  beforeAuth(req, evt) {
+    // console.log("beforeAuth - req ", req);
+    // console.log("beforeAuth - evt ", evt);
+  },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
     if (!auth.userId && !auth.isPublicRoute) {
-      redirectToSignIn({ returnBackUrl: "/" });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return redirectToSignIn({ returnBackUrl: req.url });
     }
+
+    if (auth.userId && !auth.isPublicRoute) {
+      return NextResponse.next();
+    }
+
+    return NextResponse.next();
   },
   ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)"],
   authorizedParties: [
