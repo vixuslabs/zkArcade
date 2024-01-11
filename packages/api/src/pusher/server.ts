@@ -1,4 +1,3 @@
-
 import Pusher from "pusher";
 
 const PUSHER_APP_ID = process.env.PUSHER_APP_ID;
@@ -16,7 +15,6 @@ if (!PUSHER_KEY) {
 if (!PUSHER_SECRET) {
   throw new Error("PUSHER_SECRET is not set");
 }
-
 
 export const pusher = new Pusher({
   appId: PUSHER_APP_ID,

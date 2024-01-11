@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z
-      .enum(["development", "test", "production"])
+      .enum(["development", "preview", "production"])
       .default("development"),
     DATABASE_URL: z
       .string()
@@ -17,18 +17,18 @@ export const env = createEnv({
         (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
         "You forgot to change the default URL",
       ),
+    DB_USERNAME: z.string(),
+    DB_PW: z.string().startsWith("pscale_pw"),
+    DB_HOST: z.string(),
+    // Clerk
     CLERK_SECRET_KEY: z
       .string()
       .refine(
         (str) => !str.includes("YOUR_CLERK_SECRET_KEY_HERE"),
         "You forgot to change the default key",
       ),
-    WEBHOOK_SECRET: z
-      .string()
-      .refine(
-        (str) => !str.includes("YOUR_WEBHOOK_SECRET_HERE"),
-        "You forgot to change the default key",
-      ),
+    CLERK_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+
     PUSHER_APP_ID: z.string(),
     PUSHER_SECRET: z.string(),
   },
@@ -45,6 +45,10 @@ export const env = createEnv({
         (str) => !str.includes("YOUR_WEBHOOK_SECRET_HERE"),
         "You forgot to change the default key",
       ),
+    // NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string(),
+    // NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string(),
+    // NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string(),
+    // NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string(),
     NEXT_PUBLIC_PUSHER_KEY: z.string(),
     NEXT_PUBLIC_PRIV_KEY1: z.string(),
     NEXT_PUBLIC_PRIV_KEY2: z.string(),
@@ -59,12 +63,22 @@ export const env = createEnv({
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL: process.env.DATABASE_URL,
+    DB_USERNAME: process.env.DB_USERNAME,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-    WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+    DB_PW: process.env.DB_PW,
+    DB_HOST: process.env.DB_HOST,
     PUSHER_APP_ID: process.env.PUSHER_APP_ID,
     PUSHER_SECRET: process.env.PUSHER_SECRET,
+
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    // NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
+    // NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
+    // NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL:
+    //   process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
+    // NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:
+    //   process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
     NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
     NEXT_PUBLIC_PRIV_KEY1: process.env.NEXT_PUBLIC_PRIV_KEY1,
     NEXT_PUBLIC_PRIV_KEY2: process.env.NEXT_PUBLIC_PRIV_KEY2,
