@@ -15,7 +15,7 @@
     "@zkarcade/db": "workspace:^0.1.0",
     "@trpc/client": "^10.44.1",
     "@trpc/server": "^10.44.1",
-    "@clerk/nextjs": "^4.27.0",
+    "@clerk/nextjs": "^4.29.3",
     "superjson": "^2.2.0",
     "zod": "^3.22.4",
     "drizzle-orm": "0.29.1",

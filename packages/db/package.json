@@ -11,7 +11,11 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "push": "drizzle-kit push:mysql",
     "studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "studio:dev": "pnpm with-env:dev drizzle-kit studio",
+    "studio:prod": "pnpm with-env:prod drizzle-kit studio",
+    "typecheck": "tsc --noEmit",
+    "with-env:dev": "dotenv -e ../../.env.development --",
+    "with-env:prod": "dotenv -e ../../.env.production --"
   },
   "dependencies": {
     "@planetscale/database": "^1.11.0",
