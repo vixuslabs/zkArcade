@@ -13,14 +13,12 @@ import {
 } from "@/components/client/providers";
 import UserAvatar from "@/components/client/ui/Avatar";
 import { api } from "@/trpc/server";
-import { currentUser, RedirectToSignIn, SignedOut } from "@clerk/nextjs";
+import { RedirectToSignIn, SignedOut } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
   secondary: React.ReactNode;
-  home: React.ReactNode;
   friends: React.ReactNode;
-  leaderboard: React.ReactNode;
   settings: React.ReactNode;
 }
 
@@ -48,17 +46,35 @@ export const dynamic = "force-dynamic";
 export default async function DashboardLayout({
   primary, // top right container content
   secondary, // bottom right container content
-  home,
   friends,
-  leaderboard,
   settings,
 }: DashboardLayoutProps) {
   // revalidatePath("/dashboard", "layout");
-  const clerkUser = await currentUser();
+  // const clerkUser = await currentUser();
 
-  if (!clerkUser) {
-    redirect("/");
-  }
+  // if (!clerkUser) {
+  //   redirect("/");
+  // }
+
+  const fetchPendingGameInvites = cache(async () => {
+    const pendingGameInvites = await api.games.getGameInvites.query({
+      role: "receiver",
+      status: "pending",
+    });
+
+    return pendingGameInvites;
+  });
+
+  const fetchPendingFriendRequests = cache(async () => {
+    const pendingFriendRequests = await api.friendships.getFriendRequests.query(
+      {
+        role: "receiver",
+        status: "pending",
+      },
+    );
+
+    return pendingFriendRequests;
+  });
 
   const fetchDashboardData = cache(async () => {
     const usersFriends = await api.friendships.getUsersFriends.query();
@@ -83,16 +99,20 @@ export default async function DashboardLayout({
 
     // const finalUserFriends = await Promise.all(cleanedUserFriends);
 
-    const pendingFriendRequests = await api.friendships.getFriendRequests.query(
-      {
-        role: "receiver",
-        status: "pending",
-      },
-    );
-    const pendingGameInvites = await api.games.getGameInvites.query({
-      role: "receiver",
-      status: "pending",
-    });
+    const pendingFriendRequests = await fetchPendingFriendRequests();
+
+    const pendingGameInvites = await fetchPendingGameInvites();
+
+    // const pendingFriendRequests = await api.friendships.getFriendRequests.query(
+    //   {
+    //     role: "receiver",
+    //     status: "pending",
+    //   },
+    // );
+    // const pendingGameInvites = await api.games.getGameInvites.query({
+    //   role: "receiver",
+    //   status: "pending",
+    // });
 
     return {
       usersFriends: cleanedUserFriends,
@@ -190,13 +210,8 @@ export default async function DashboardLayout({
 
           <aside className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:block lg:px-8">
             {/* Secondary column (hidden on smaller screens) */}
-            <div className="h-full rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
-              <ActiveTabContent
-                home={home}
-                friends={friends}
-                leaderboard={leaderboard}
-                settings={settings}
-              />
+            <div className="h-full overflow-scroll rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
+              <ActiveTabContent friends={friends} settings={settings} />
             </div>
           </aside>
         </DashboardTabProvider>
