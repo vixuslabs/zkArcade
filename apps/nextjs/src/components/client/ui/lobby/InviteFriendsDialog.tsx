@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
 import { api } from "@/trpc/react";
+
+import { InvitePlayersSkeleton } from "../../skeletons";
 
 function DialogCloseButton() {
   const friends = api.friendships.getUsersFriends.useQuery();
@@ -50,24 +51,7 @@ function DialogCloseButton() {
         <DialogDescription>May the best player win!</DialogDescription>
       </DialogHeader>
 
-      {friends.isLoading && (
-        <>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-        </>
-      )}
+      {friends.isLoading && <InvitePlayersSkeleton rows={2} />}
 
       {friends.isSuccess && (
         <ScrollArea className="max-h-full">
@@ -90,7 +74,7 @@ function DialogCloseButton() {
                       <AvatarFallback>SC</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-auto">
-                      <p className="mt-1 truncate text-xs leading-5 text-gray-500">
+                      <p className="mt-1 truncate text-sm leading-5 ">
                         {username}
                       </p>
                     </div>
