@@ -37,7 +37,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
-    "@react-three/drei": "^9.88.7",
+    "@react-three/drei": "^9.93.0",
     "@react-three/fiber": "^8.15.8",
     "@react-three/postprocessing": "^2.15.10",
     "@react-three/rapier": "1.1.1",
@@ -73,7 +73,9 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.158.0",
     "zod": "^3.22.4",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "three-stdlib": "^2.29.1",
+    "@react-spring/three": "^9.7.3"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.200",
@@ -91,7 +93,8 @@
     "tailwindcss": "3.3.5",
     "typescript": "^5.2.2",
     "webpack-glsl-loader": "^1.0.1",
-    "embla-carousel": "8.0.0-rc19"
+    "embla-carousel": "8.0.0-rc19",
+    "r3f-perf": "^7.1.2"
   },
   "eslintConfig": {
     "root": true,
