@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-function FriendsList() {
+function FriendsCard() {
   const { activeFriends } = useFriendsProvider();
 
   return (
@@ -50,7 +50,7 @@ function FriendsList() {
                       Invite
                     </button>
                   </li>
-                  <Separator />
+                  {/* <Separator /> */}
                 </Fragment>
               ))}
             </ul>
@@ -66,4 +66,4 @@ function FriendsList() {
   );
 }
 
-export default FriendsList;
+export default FriendsCard;
