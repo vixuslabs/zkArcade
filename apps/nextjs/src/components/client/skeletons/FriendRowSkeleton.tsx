@@ -19,21 +19,15 @@ function FriendRowSkeleton({ rows = 1 }: { rows?: number }) {
 
 function FriendRowSkeletonItem() {
   return (
-    // <div className="flex items-center justify-between gap-x-6 py-5">
-    //   <div className="flex min-w-0 gap-x-4">
-    //     <Skeleton className="h-8 w-8 rounded-full" />
-    //     <div className="min-w-0 flex-auto">
-    //       <Skeleton className="mt-1 h-6 w-28 truncate leading-5" />
-    //     </div>
-    //   </div>
-    //   <Skeleton className="ml-16 h-5 w-12 justify-end rounded-full" />
-    // </div>
-    <div className="flex items-center space-x-4 rounded-md px-4 py-2">
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
+    <div className="flex items-center justify-between gap-x-4 py-5">
+      <div className="mr-2 flex min-w-0">
+        <Skeleton className="h-12 w-12 rounded-full" />
       </div>
+      <div className="min-w-0 flex-auto">
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </div>
+
+      <Skeleton className="h-1 w-2 rounded-full px-2.5 py-1" />
     </div>
   );
 }
