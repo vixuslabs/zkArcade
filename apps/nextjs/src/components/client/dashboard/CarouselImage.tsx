@@ -12,7 +12,15 @@ function CarouselImage({
   height?: number;
   width?: number;
 }) {
-  return <Image width={width} height={height} src={imageUrl} alt={altText} />;
+  return (
+    <Image
+      priority
+      width={width}
+      height={height}
+      src={imageUrl}
+      alt={altText}
+    />
+  );
 }
 
 export default CarouselImage;
