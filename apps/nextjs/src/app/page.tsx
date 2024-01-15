@@ -4,7 +4,7 @@ import Link from "next/link";
 import { HomeAuth } from "@/components/client/HomeAuth";
 import { currentUser } from "@clerk/nextjs";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default async function Home() {
   unstable_noStore();
@@ -32,13 +32,11 @@ export default async function Home() {
           </div>
           <div className="w-full max-w-sm space-y-2">
             <div className="flex justify-center space-x-4">
-              {/* <Button type="button">Sign Up</Button>
-              <Button type="button">Sign In</Button> */}
               {user ? (
                 <Link
                   className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
                   href="/dashboard"
-                  prefetch
+                  prefetch={false}
                 >
                   Dashboard
                 </Link>

@@ -25,16 +25,14 @@ export function HomeAuth() {
         <SignInButton
           // @ts-expect-error SignInButton can take className
           className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
-          mode="modal"
-          //   redirectUrl="/dashboard"
-          afterSignInUrl="/dashboard"
+          mode="redirect"
+          redirectUrl="/dashboard"
         />
         <SignUpButton
           // @ts-expect-error SignUpButton can take className
           className="rounded-md bg-secondary px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm"
-          mode="modal"
-          //   redirectUrl="/dashboard"
-          afterSignUpUrl="/dashboard"
+          mode="redirect"
+          redirectUrl="/dashboard"
         />
       </ClerkLoaded>
     </>

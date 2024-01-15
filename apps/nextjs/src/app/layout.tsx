@@ -42,11 +42,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <PusherClientProvider>
-              <TRPCReactProvider headers={headers()}>
-                {children}
-              </TRPCReactProvider>
-            </PusherClientProvider>
+            <TRPCReactProvider headers={headers()}>
+              <PusherClientProvider>{children}</PusherClientProvider>
+            </TRPCReactProvider>
           </ThemeProvider>
           <Toaster />
         </body>
