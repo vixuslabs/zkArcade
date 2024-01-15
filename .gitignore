@@ -38,8 +38,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# monorepo configuration
+# monorepo cookies
 .turbo
-
-# keeping temporarily for reference
-old_package.json

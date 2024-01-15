@@ -6,6 +6,16 @@
       "dependsOn": ["^topo"]
     },
     "build": {
+      "dependsOn": ["^lint", "^typecheck", "lint", "^build"],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts",
+        ".output/**",
+        ".vercel/output/**"
+      ]
+    },
+    "build:dev": {
       "dependsOn": ["^build", "^lint", "^typecheck"],
       "outputs": [
         ".next/**",
