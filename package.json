@@ -13,6 +13,8 @@
     "clean:workspaces": "turbo clean",
     "postinstall": "pnpm lint:ws",
     "db:push": "pnpm -F db push",
+    "db:push-dev": "pnpm -F db push:dev",
+    "db:push-prod": "pnpm -F db push:prod",
     "db:studio-dev": "pnpm -F db studio:dev",
     "db:studio-prod": "pnpm -F db studio:prod",
     "dev": "turbo dev --parallel",
