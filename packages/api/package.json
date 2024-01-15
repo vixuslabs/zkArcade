@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@zkarcade/db": "workspace:^0.1.0",
-    "@trpc/client": "^10.44.1",
-    "@trpc/server": "^10.44.1",
+    "@trpc/client": "^10.45.0",
+    "@trpc/server": "^10.45.0",
     "@clerk/nextjs": "^4.29.3",
     "superjson": "^2.2.0",
     "zod": "^3.22.4",
