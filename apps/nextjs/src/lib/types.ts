@@ -214,7 +214,10 @@ export interface PlaneInfo {
 
 // Game Types
 export enum GameType {
-  HotNCold = "HotNCold",
+  HotNCold = "Hot 'n Cold",
+  zkArcade = "zkArcade",
+  zkTicTacToe = "zkTicTacToe",
+  Sandbox = "Sandbox",
 }
 
 export enum GeneralGameStatus {

@@ -64,7 +64,9 @@ export const carouselGamesInfo: CarouselGameInfo[] = [
   },
 ];
 
-export const gameInfoMap = new Map<GameNames, CarouselGameInfo>();
+export const gameInfoMap = new Map<GameNames, CarouselGameInfo>(
+  carouselGamesInfo.map((game) => [game.name, game]),
+);
 
 export const boxes = [
   {
