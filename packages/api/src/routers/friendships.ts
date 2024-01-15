@@ -46,36 +46,48 @@ export const getUser = async (userId: string, db: typeof Drizzle) => {
 };
 
 export const friendshipRouter = createTRPCRouter({
-  getUsersFriends: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.auth.userId;
+  getUsersFriends: protectedProcedure
+    .input(z.object({ externalLink: z.boolean().optional().default(false) }))
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
 
-    const friendsPrepared = ctx.db.query.friendships
-      .findMany({
-        where: or(
-          eq(friendships.userId, userId),
-          eq(friendships.friendId, userId),
-        ),
-        with: {
-          user: true,
-          friend: true,
-        },
-      })
-      .prepare();
+      const friendsPrepared = ctx.db.query.friendships
+        .findMany({
+          where: or(
+            eq(friendships.userId, userId),
+            eq(friendships.friendId, userId),
+          ),
+          with: {
+            user: true,
+            friend: true,
+          },
+        })
+        .prepare();
 
-    const friends = await friendsPrepared.execute();
+      const friendshipsRaw = await friendsPrepared.execute();
 
-    const cleanedFriends = [];
+      const cleanedFriends = [];
 
-    for (const friend of friends) {
-      if (friend.userId === userId) {
-        cleanedFriends.push(friend.friend);
-      } else {
-        cleanedFriends.push(friend.user);
+      for (const friendship of friendshipsRaw) {
+        if (friendship.userId === userId) {
+          if (input.externalLink) {
+            friendship.friend.imageUrl = `/api/imageProxy?url=${encodeURIComponent(
+              friendship.friend.imageUrl ?? "",
+            )}`;
+          }
+          cleanedFriends.push(friendship.friend);
+        } else {
+          if (input.externalLink) {
+            friendship.user.imageUrl = `/api/imageProxy?url=${encodeURIComponent(
+              friendship.user.imageUrl ?? "",
+            )}`;
+          }
+          cleanedFriends.push(friendship.user);
+        }
       }
-    }
 
-    return cleanedFriends;
-  }),
+      return cleanedFriends;
+    }),
 
   deleteFriend: protectedProcedure
     .input(z.object({ userId: z.string().min(1), friendId: z.string().min(1) }))
@@ -188,12 +200,24 @@ export const friendshipRouter = createTRPCRouter({
                   eq(friendRequests.status, input.type),
                 )
               : eq(friendRequests.receiverId, userId),
+          with: {
+            sender: true,
+            receiver: true,
+          },
         })
         .prepare();
 
       const execute = await friendRequestsPrepared.execute();
 
-      return execute;
+      const friendRequestsFiltered = execute.map((request) => {
+        return {
+          ...request,
+          type: "friendRequest" as "friendRequest" | "gameInvite",
+        };
+      });
+
+      return friendRequestsFiltered;
+      // return friendRequests;
     }),
 
   getAllRequestsFromUser: protectedProcedure.query(async ({ ctx }) => {

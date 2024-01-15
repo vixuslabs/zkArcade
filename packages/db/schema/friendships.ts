@@ -57,7 +57,8 @@ export const friendRequests = mysqlTable(
       .notNull(),
     updatedAt: timestamp("updatedAt")
       .default(sql`CURRENT_TIMESTAMP`)
-      .onUpdateNow(),
+      .onUpdateNow()
+      .notNull(),
   },
   (t) => ({
     requestIndex: uniqueIndex("request_idx").on(t.requestId),
