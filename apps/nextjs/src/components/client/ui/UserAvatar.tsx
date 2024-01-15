@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-// import { useRouter } from "next/navigation";
+// import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
 import { usePusher } from "@/components/client/stores";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,25 +16,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 
-interface UserAvatarProps {
-  imageUrl?: string;
-  username: string | null;
-}
-
-function UserAvatar({ imageUrl, username }: UserAvatarProps) {
+function UserAvatar() {
   const { pusher, removePusher } = usePusher();
   const { setActiveTab } = useDashboardTabContext();
+  const { user } = useUser();
   const { signOut } = useClerk();
-  // const router = useRouter();
+  const router = useRouter();
+
+  // if (isLoaded && !isSignedIn) {
+  //   redirect("/");
+  // }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={imageUrl} alt="Profile Picture" />
+            <AvatarImage
+              src={
+                user
+                  ? `/api/imageProxy?url=${encodeURIComponent(
+                      user?.imageUrl ?? "",
+                    )}`
+                  : ""
+              }
+              // src={convertToSafeUrl(user.imageUrl ?? "")}
+              alt="Profile Picture"
+            />
             <AvatarFallback>SC</AvatarFallback>
           </Avatar>
         </Button>
@@ -41,7 +52,7 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{username}</p>
+            <p className="text-sm font-medium leading-none">{user?.username}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -51,6 +62,7 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {/* <UserButton /> */}
         <DropdownMenuItem
           onPointerDown={() => {
             void signOut(() => {
@@ -58,7 +70,7 @@ function UserAvatar({ imageUrl, username }: UserAvatarProps) {
                 removePusher();
               }
             });
-            // router.push("/");
+            router.push("/");
           }}
         >
           Log out

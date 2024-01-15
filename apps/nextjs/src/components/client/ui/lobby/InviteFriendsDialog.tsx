@@ -19,8 +19,12 @@ import { api } from "@/trpc/react";
 
 import { InvitePlayersSkeleton } from "../../skeletons";
 
+const IS_EXTERNAL_LINK = true;
+
 function DialogCloseButton() {
-  const friends = api.friendships.getUsersFriends.useQuery();
+  const friends = api.friendships.getUsersFriends.useQuery({
+    externalLink: IS_EXTERNAL_LINK,
+  });
   const { lobbyId }: { lobbyId: string } = useParams();
 
   const invite = api.games.sendGameInvite.useMutation();
@@ -63,11 +67,11 @@ function DialogCloseButton() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={
-                          imageUrl
-                            ? `/api/imageProxy?url=${encodeURIComponent(
-                                imageUrl,
+                          IS_EXTERNAL_LINK
+                            ? imageUrl!
+                            : `/api/imageProxy?url=${encodeURIComponent(
+                                imageUrl!,
                               )}`
-                            : undefined
                         }
                         alt="Profile Picture"
                       />

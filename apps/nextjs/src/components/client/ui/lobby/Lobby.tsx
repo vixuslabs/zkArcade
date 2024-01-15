@@ -253,7 +253,7 @@ function Lobby() {
           leaveTo="opacity-0 scale-95"
         >
           <PlayersContainer
-            players={useLobbyStore.getState().players}
+            players={useLobbyStore.getState().players ?? [lobbyMe]}
             handleReady={handleReady}
             starting={starting}
           />
