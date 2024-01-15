@@ -13,7 +13,7 @@ interface CreateMatchButtonProps {
   className?: string;
 }
 
-function CreateMatchButton({ gameName, className }: CreateMatchButtonProps) {
+function CreateMatchButton({ gameName: _, className }: CreateMatchButtonProps) {
   const id = useMemo(() => crypto.randomUUID(), []);
   const [url, setUrl] = useState<string>("");
   const { pusher } = usePusherClient();
@@ -33,7 +33,8 @@ function CreateMatchButton({ gameName, className }: CreateMatchButtonProps) {
         onClick={() => {
           console.log("Start Game");
           console.log("pusher user ", pusher?.user);
-          pusher?.subscribe(`presence-lobby-${id}`);
+          console.log("inside Button - onClick");
+          // pusher?.subscribe(`presence-lobby-${id}`);
         }}
         className={cn(
           className
@@ -44,7 +45,15 @@ function CreateMatchButton({ gameName, className }: CreateMatchButtonProps) {
         asChild
       >
         {/* {user.user && ( */}
-        <Link href={`${url}?game=${gameName}`} prefetch={false}>
+        {/* <Link href={`${url}?game=${gameName}`} prefetch={false}> */}
+        <Link
+          href={url}
+          onPointerDown={() => {
+            console.log("inside Link - onPointerDown");
+            pusher?.subscribe(`presence-lobby-${id}`);
+          }}
+          prefetch={false}
+        >
           Create Match
         </Link>
         {/* // )} */}
