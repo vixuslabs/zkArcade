@@ -2,6 +2,7 @@
 
 import { Fragment } from "react";
 import { useParams } from "next/navigation";
+import { InvitePlayersSkeleton } from "@/components/client/skeletons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,15 +18,16 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
 import { api } from "@/trpc/react";
 
-import { InvitePlayersSkeleton } from "../../skeletons";
-
 const IS_EXTERNAL_LINK = true;
 
 function DialogCloseButton() {
   const friends = api.friendships.getUsersFriends.useQuery({
     externalLink: IS_EXTERNAL_LINK,
   });
-  const { lobbyId }: { lobbyId: string } = useParams();
+  const {
+    lobbyId,
+    username: hostUsername,
+  }: { lobbyId: string; username: string } = useParams();
 
   const invite = api.games.sendGameInvite.useMutation();
 
@@ -33,7 +35,7 @@ function DialogCloseButton() {
     if (!lobbyId) throw new Error("No lobbyId found");
 
     invite.mutate({
-      senderUsername: username,
+      senderUsername: hostUsername,
       receiverId: id,
       lobbyId,
     });

@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import dynamic from "next/dynamic";
-import { useParams } from "next/navigation";
+// import { useParams } from "next/navigation";
 import { useLobbyStore, usePusher } from "@/components/client/stores";
 import {
   HotnColdInstructions,
@@ -30,11 +30,17 @@ const MinaStartButton = dynamic(
   },
 );
 
-function Lobby() {
-  const {
-    username: hostUsername,
-    lobbyId,
-  }: { username: string; lobbyId: string } = useParams();
+function Lobby({
+  hostUsername,
+  lobbyId,
+}: {
+  hostUsername: string;
+  lobbyId: string;
+}) {
+  // const {
+  //   username: hostUsername,
+  //   lobbyId,
+  // }: { username: string; lobbyId: string } = useParams();
   const [toXR, setToXR] = React.useState<boolean>(false);
   const [launchXR, setLaunchXR] = React.useState<boolean>(false);
   const [xrLoaded, setXrLoaded] = React.useState<boolean>(false);

@@ -1,21 +1,22 @@
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 import { MinaProvider } from "@/components/client/providers";
-import { api } from "@/trpc/server";
-import { currentUser } from "@clerk/nextjs";
 
-export default async function XRLayout({
+// import { api } from "@/trpc/server";
+// import { currentUser } from "@clerk/nextjs";
+
+export default function XRLayout({
   children,
 }: {
   children: React.ReactNode;
-  params: { username?: string; lobbyId?: string };
+  // params: { username?: string; lobbyId?: string };
 }) {
-  const clerkUser = await currentUser();
+  // const clerkUser = await currentUser();
 
-  if (!clerkUser) redirect("/");
+  // if (!clerkUser) redirect("/");
 
-  const user = await api.users.getCurrentUser.query();
+  // const user = await api.users.getCurrentUser.query();
 
-  if (!user) redirect("/");
+  // if (!user) redirect("/");
 
   return (
     <MinaProvider>
