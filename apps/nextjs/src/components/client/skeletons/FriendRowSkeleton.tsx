@@ -20,14 +20,14 @@ function FriendRowSkeleton({ rows = 1 }: { rows?: number }) {
 function FriendRowSkeletonItem() {
   return (
     <div className="flex items-center justify-between gap-x-4 py-5">
-      <div className="mr-2 flex min-w-0">
-        <Skeleton className="h-12 w-12 rounded-full" />
+      <div className="flex min-w-0">
+        <Skeleton className="h-8 w-8 rounded-full" />
       </div>
       <div className="min-w-0 flex-auto">
         <Skeleton className="h-6 w-24 rounded-full" />
       </div>
 
-      <Skeleton className="h-1 w-2 rounded-full px-2.5 py-1" />
+      <Skeleton className="h-6 w-[3.25rem] rounded-full px-2.5 py-1" />
     </div>
   );
 }

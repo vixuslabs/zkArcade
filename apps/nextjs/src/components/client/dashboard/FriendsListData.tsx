@@ -1,3 +1,5 @@
+"use client";
+
 import React, { Fragment } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "@/trpc/react";
