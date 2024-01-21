@@ -59,7 +59,7 @@ export default function DashboardLayout({
             <div className="relative h-full px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
               <div className="inset-y-0 flex flex-col gap-y-8">
                 {/* Top Container  */}
-                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-slate-500 bg-opacity-20 p-2 shadow-lg">
+                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 bg-opacity-10 p-2 shadow-lg">
                   <div className="relative m-1 flex h-full flex-grow flex-col items-center rounded-md">
                     {primary}
                   </div>
@@ -74,7 +74,7 @@ export default function DashboardLayout({
                   </div>
                 </div>
                 {/* Bottom container */}
-                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
+                <div className="container relative flex min-h-[43vh] flex-col rounded-md bg-neutral-300 bg-opacity-10 p-2 shadow-lg">
                   <div className="relative m-1 flex flex-grow flex-col items-center rounded-md ">
                     {secondary}
                   </div>
@@ -86,7 +86,7 @@ export default function DashboardLayout({
 
         <aside className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:block lg:px-8">
           {/* Secondary column (hidden on smaller screens) */}
-          <div className="h-full overflow-scroll rounded-md bg-neutral-300 bg-opacity-20 p-2 shadow-lg">
+          <div className="h-full overflow-scroll rounded-md p-2 shadow-lg">
             <ActiveTabContent friends={friends} settings={settings} />
           </div>
         </aside>
