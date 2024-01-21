@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import dynamic from "next/dynamic";
-// import { useParams } from "next/navigation";
 import { useLobbyStore, usePusher } from "@/components/client/stores";
 import {
   HotnColdInstructions,
@@ -21,7 +20,6 @@ import type { LobbyEventMap } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
 import { Transition } from "@headlessui/react";
 import type { PresenceChannel } from "pusher-js";
-import { shallow } from "zustand/shallow";
 
 const MinaStartButton = dynamic(
   () => import("@/components/client/mina/MinaStartButton"),
@@ -37,10 +35,6 @@ function Lobby({
   hostUsername: string;
   lobbyId: string;
 }) {
-  // const {
-  //   username: hostUsername,
-  //   lobbyId,
-  // }: { username: string; lobbyId: string } = useParams();
   const [toXR, setToXR] = React.useState<boolean>(false);
   const [launchXR, setLaunchXR] = React.useState<boolean>(false);
   const [xrLoaded, setXrLoaded] = React.useState<boolean>(false);
@@ -55,16 +49,10 @@ function Lobby({
     {
       ssr: true,
       loading: ({ isLoading, error }) => {
-        if (isLoading) {
-          console.log("loading xr");
-        }
-
-        console.log("loading xr");
-
         isLoading ? setXrLoaded(false) : setXrLoaded(true);
 
         if (error) {
-          console.log("error loading xr");
+          throw new Error("Error loading XR component");
         }
 
         return null;
@@ -88,7 +76,8 @@ function Lobby({
       pusherInitialized: state.pusherInitialized,
       initPusher: state.initPusher,
     };
-  }, shallow);
+  });
+
   const {
     addEventsToPresenceChannel,
     updatePlayer,
@@ -97,6 +86,7 @@ function Lobby({
     setStarting,
     starting,
     me: lobbyMe,
+    players,
   } = useLobbyStore();
   const [lobbyChannel, setLobbyChannel] =
     React.useState<PresenceChannel | null>(null);
@@ -124,12 +114,9 @@ function Lobby({
         });
       },
       "client-mina-toggle": ({ minaToggle }: { minaToggle: boolean }) => {
-        console.log("client mina on");
         setIsMinaOn(minaToggle);
       },
       "client-game-started": () => {
-        console.log("client game started");
-        console.log("lobbyMe", lobbyMe);
         setStarting(true);
         setToXR(true);
       },
@@ -168,7 +155,6 @@ function Lobby({
       return;
     }
 
-    console.log("subscribing to presence lobby channel");
     const channel = subscribeToChannel(presenceChannelName);
 
     if (!channel) {
@@ -185,7 +171,6 @@ function Lobby({
     );
 
     return () => {
-      console.log("unsubscribing from presence channel");
       unsubscribeFromChannel(presenceChannelName);
       setLobbyChannel(null);
     };
@@ -194,28 +179,25 @@ function Lobby({
 
   const [mounted, setMounted] = React.useState(false);
   useEffect(() => {
-    if (mounted) {
+    if (mounted || !user) {
       return;
     }
-    // if (useLobbyStore.getState().players.length === 0) {
-    //   console.log("no players in lobby");
-    //   updatePlayer({
-    //     ...fetchedMe,
-    //     host: fetchedMe.username === hostUsername,
-    //     ready: false,
-    //     inGame: false,
-    //   });
-    // }
+    if (players.length === 0) {
+      updatePlayer({
+        host: user.username === hostUsername,
+        ready: false,
+        inGame: false,
+        username: user.username!,
+        id: user.id,
+        imageUrl: `/api/imageProxy?url=${encodeURIComponent(user.imageUrl)}`,
+      });
+    }
 
     setMounted(true);
-  }, [mounted]);
+  }, [mounted, user, hostUsername, updatePlayer, players]);
 
   const handleReady = useCallback(
     (username: string) => {
-      console.log("inside handleReady");
-
-      const players = useLobbyStore.getState().players;
-
       const player = players.find((p) => p.username === username);
 
       if (!player) {
@@ -226,28 +208,24 @@ function Lobby({
         ...player,
         ready: !player.ready,
       });
-      console.log("player: ", player);
 
       lobbyChannel?.trigger("client-ready-toggle", {
         ready: !player.ready,
         username: player.username,
       });
     },
-    [updatePlayer, lobbyChannel],
+    [updatePlayer, lobbyChannel, players],
   );
 
   return (
     <>
       {/* Lobby UI */}
       <Transition
-        // appear={true}
         show={!toXR && mounted}
         beforeEnter={() => console.log("transition starting to open")}
         afterEnter={() => console.log("transition opened")}
         beforeLeave={() => console.log("transition starting to close")}
         afterLeave={() => setShowInstructions(true)}
-
-        // className="flex h-screen w-screen items-center justify-evenly"
       >
         <Transition.Child
           as={Fragment}
@@ -259,7 +237,7 @@ function Lobby({
           leaveTo="opacity-0 scale-95"
         >
           <PlayersContainer
-            players={useLobbyStore.getState().players ?? [lobbyMe]}
+            players={players}
             handleReady={handleReady}
             starting={starting}
           />
@@ -304,7 +282,6 @@ function Lobby({
               }
               onClick={() => {
                 if (hostUsername === me?.username) {
-                  console.log("starting");
                   lobbyChannel?.trigger("client-game-started", {
                     starting: true,
                   });
