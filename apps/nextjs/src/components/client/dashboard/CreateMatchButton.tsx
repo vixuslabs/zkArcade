@@ -21,7 +21,7 @@ function CreateMatchButton({ gameName: _, className }: CreateMatchButtonProps) {
 
   useEffect(() => {
     if (user) {
-      console.log("user ", user);
+      // console.log("user ", user);
       setUrl(`/play/${user.user?.username}/${id}`);
     }
   }, [user, setUrl, id]);
@@ -30,12 +30,6 @@ function CreateMatchButton({ gameName: _, className }: CreateMatchButtonProps) {
     <>
       <Button
         variant="default"
-        onClick={() => {
-          console.log("Start Game");
-          console.log("pusher user ", pusher?.user);
-          console.log("inside Button - onClick");
-          // pusher?.subscribe(`presence-lobby-${id}`);
-        }}
         className={cn(
           className
             ? className
@@ -44,8 +38,6 @@ function CreateMatchButton({ gameName: _, className }: CreateMatchButtonProps) {
         )}
         asChild
       >
-        {/* {user.user && ( */}
-        {/* <Link href={`${url}?game=${gameName}`} prefetch={false}> */}
         <Link
           href={url}
           onPointerDown={() => {
@@ -56,7 +48,6 @@ function CreateMatchButton({ gameName: _, className }: CreateMatchButtonProps) {
         >
           Create Match
         </Link>
-        {/* // )} */}
       </Button>
     </>
   );
