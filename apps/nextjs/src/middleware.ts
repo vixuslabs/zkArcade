@@ -3,7 +3,7 @@ import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 export default authMiddleware({
   // debug: true,
-  publicRoutes: ["/", "/arcade"],
+  publicRoutes: ["/", "/arcade", "/sign-in", "/sign-up"],
   apiRoutes: ["/api/(.*)"],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   beforeAuth(req, evt) {
