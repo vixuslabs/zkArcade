@@ -4,7 +4,7 @@ import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 export default authMiddleware({
   // debug: true,
   publicRoutes: ["/", "/arcade", "/sign-in", "/sign-up"],
-  apiRoutes: ["/api/(.*)"],
+  apiRoutes: ["/api/(.*)", "/npm/@clerk/(.*)"],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   beforeAuth(req, evt) {
     // console.log("beforeAuth - req ", req);
@@ -12,6 +12,10 @@ export default authMiddleware({
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
+    // console.log("req.url", req.url);
+    // console.log("isPublicRoute", auth.isPublicRoute);
+    // console.log("isAPIRoute", auth.isApiRoute);
+
     if (auth.isApiRoute) {
       return NextResponse.next();
     }
@@ -27,17 +31,27 @@ export default authMiddleware({
 
     return NextResponse.next();
   },
-  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)"],
+  // ignoredRoutes: ["/((?!api))(_next.*|.+.[w]+$)"],
   authorizedParties: [
     "http://localhost:3000",
+    "https://localhost:3000",
     `https://${process.env.VERCEL_URL!}`,
     `https://${process.env.VERCEL_BRANCH_URL!}`,
-    `https://hot-n-cold.vercel.app`,
     `https://funny-unlikely-dolphin.ngrok-free.app`,
-    "https://hot-n-cold-git-webxr-multi-vixus-labs.vercel.app",
+    "https://comic-muskrat-47.clerk.accounts.dev",
+    "https://zkarcade.vixuslabs.com",
   ],
 });
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
+
+// export const config = {
+//   matcher: [
+//     "/((?!.+\\.[\\w]+$|_next).*)",
+//     "/",
+//     "/(api|trpc)(.*)",
+//     "/((?!api|_next/static|_next/image|favicon.ico).*)",
+//   ],
+// };
