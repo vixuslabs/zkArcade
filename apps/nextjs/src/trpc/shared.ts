@@ -7,12 +7,12 @@ export const transformer = superjson;
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
-  if (process.env.ENV === "production" && process.env.VERCEL_URL)
-    return `https://${process.env.VERCEL_URL}`;
-  if (process.env.ENV === "preview" && process.env.VERCEL_BRANCH_URL)
+  if (process.env.VERCEL_ENV === "production")
+    return `https://zkarcade.vixuslabs.com`;
+  if (process.env.VERCEL_ENV === "preview")
     return `https://${process.env.VERCEL_BRANCH_URL}`;
+  // return `https://localhost:${process.env.PORT ?? 3000}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
-  // return `https://funny-unlikely-dolphin.ngrok-free.app`;
 }
 
 export function getUrl() {

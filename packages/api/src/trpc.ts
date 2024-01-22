@@ -7,7 +7,8 @@
  * need to use are documented accordingly near the end.
  */
 import type { NextRequest } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+// import { auth, getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import type {
   SignedInAuthObject,
   SignedOutAuthObject,
@@ -62,9 +63,11 @@ export const createTRPCContext = (opts: { req: NextRequest }) => {
 
   // console.log(">>> tRPC Request from", source, "by", session?.user);
 
+  // console.log(`auth`, auth());
+
   return createInnerTRPCContext({
     headers: opts.req.headers,
-    auth: getAuth(opts.req),
+    auth: auth(),
   });
 };
 
