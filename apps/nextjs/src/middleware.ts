@@ -12,6 +12,10 @@ export default authMiddleware({
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterAuth(auth, req, evt) {
+    if (auth.isApiRoute) {
+      return NextResponse.next();
+    }
+
     if (!auth.userId && !auth.isPublicRoute) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return redirectToSignIn({ returnBackUrl: req.url });
