@@ -21,9 +21,9 @@ const int64Matrix = AffineTransformationMatrix.fromElements(matrixElements);
 
 const originalVector = [-0.9790574908256531, -7.569404054019648e-17, -1.2361774444580078];
 const int64Vector = new Vector3(
-  { x: Int64.from(Math.round(originalVector[0] * SCALE)), 
-    y: Int64.from(Math.round(originalVector[1] * SCALE)), 
-    z: Int64.from(Math.round(originalVector[2] * SCALE)) 
+  { x: Int64.from(Math.round(originalVector[0]! * SCALE)), 
+    y: Int64.from(Math.round(originalVector[1]! * SCALE)), 
+    z: Int64.from(Math.round(originalVector[2]! * SCALE)) 
   });
 const int64TransformedVector = int64Vector.applyATM(int64Matrix);
 console.log('With Int64:');
@@ -44,8 +44,8 @@ const originalVector1 = [0.1, 0.2, 0.3];
 const originalVector2 = [0.4, 0.5, 0.6];
 
 console.log('\nVector cross product tests:');
-const v1 = new Vector3({ x: Int64.from(originalVector1[0] * SCALE), y: Int64.from(originalVector1[1] * SCALE), z: Int64.from(originalVector1[2] * SCALE) });
-const v2 = new Vector3({ x: Int64.from(originalVector2[0] * SCALE), y: Int64.from(originalVector2[1] * SCALE), z: Int64.from(originalVector2[2] * SCALE) });
+const v1 = new Vector3({ x: Int64.from(originalVector1[0]! * SCALE), y: Int64.from(originalVector1[1]! * SCALE), z: Int64.from(originalVector1[2]! * SCALE) });
+const v2 = new Vector3({ x: Int64.from(originalVector2[0]! * SCALE), y: Int64.from(originalVector2[1]! * SCALE), z: Int64.from(originalVector2[2]! * SCALE) });
 const v3 = v1.crossProduct(v2);
 console.log(v3.x.toString(), v3.y.toString(), v3.z.toString());
 

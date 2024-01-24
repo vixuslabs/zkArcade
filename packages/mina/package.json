@@ -12,6 +12,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
+    "build:mina": "tsup",
     "coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -20,15 +21,18 @@
     "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
-    "@zkarcade/eslint-config": "workspace:^0.2.0",
-    "@zkarcade/prettier-config": "workspace:^0.1.0",
-    "@zkarcade/tsconfig": "workspace:^0.1.0",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@types/three": "^0.158.3",
+    "@zkarcade/eslint-config": "workspace:^0.2.0",
+    "@zkarcade/prettier-config": "workspace:^0.1.0",
+    "@zkarcade/tsconfig": "workspace:^0.1.0",
     "eslint": "^8.53.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.2.2"
+    "tsup": "^8.0.1",
+    "typescript": "^5.2.2",
+    "three": "^0.158.0"
+
   },
   "dependencies": {
     "o1js": "^0.14.0"

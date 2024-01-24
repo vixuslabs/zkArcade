@@ -72,21 +72,21 @@ export class AffineTransformationMatrix extends Struct({
       throw new Error("Not an affine transformation matrix");
     }
     return new AffineTransformationMatrix({
-      e0: Int64.from(elements[0]),
-      e1: Int64.from(elements[1]),
-      e2: Int64.from(elements[2]),
+      e0: Int64.from(elements[0]!),
+      e1: Int64.from(elements[1]!),
+      e2: Int64.from(elements[2]!),
       e3: Int64.from(0),
-      e4: Int64.from(elements[4]),
-      e5: Int64.from(elements[5]),
-      e6: Int64.from(elements[6]),
+      e4: Int64.from(elements[4]!),
+      e5: Int64.from(elements[5]!),
+      e6: Int64.from(elements[6]!),
       e7: Int64.from(0),
-      e8: Int64.from(elements[8]),
-      e9: Int64.from(elements[9]),
-      e10: Int64.from(elements[10]),
+      e8: Int64.from(elements[8]!),
+      e9: Int64.from(elements[9]!),
+      e10: Int64.from(elements[10]!),
       e11: Int64.from(0),
-      e12: Int64.from(elements[12]),
-      e13: Int64.from(elements[13]),
-      e14: Int64.from(elements[14]),
+      e12: Int64.from(elements[12]!),
+      e13: Int64.from(elements[13]!),
+      e14: Int64.from(elements[14]!),
       e15: Int64.from(1),
     });
   }
@@ -154,9 +154,9 @@ export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
       return p.applyATM(affineTransformationMatrix);
     });
     return new Plane({
-      a: translatedVertexPoints[0],
-      b: translatedVertexPoints[1],
-      c: translatedVertexPoints[2],
+      a: translatedVertexPoints[0]!,
+      b: translatedVertexPoints[1]!,
+      c: translatedVertexPoints[2]!,
     });
   }
 
