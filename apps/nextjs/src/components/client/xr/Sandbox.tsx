@@ -5,7 +5,7 @@ import { ControllerStateProvider } from "@/components/client/providers";
 import { BuildRoom } from "@/components/client/xr";
 import { SandboxControllers } from "@/components/client/xr/inputDevices";
 import { Button } from "@/components/ui/button";
-import type { RoomCaptureProps } from "@/lib/types";
+import type { SandboxProps } from "@/lib/types";
 // import { clippingEvents } from "@coconut-xr/koestlich";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
 import { XRCanvas } from "@coconut-xr/natuerlich/defaults";
@@ -39,7 +39,7 @@ const sessionOptions: XRSessionInit = {
   ],
 };
 
-function Sandbox({ user }: RoomCaptureProps) {
+function Sandbox({ username }: SandboxProps) {
   const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
 
@@ -60,7 +60,7 @@ function Sandbox({ user }: RoomCaptureProps) {
     <>
       <div className="absolute z-10 flex flex-col items-center justify-center gap-y-2">
         <h2 className="relative text-center text-2xl font-bold">
-          Hey {user?.username}! Press below to launch WebXR
+          Hey {username}! Press below to launch WebXR
         </h2>
         <p className="relative text-center text-2xl font-bold">
           Enjoy this sandbox environment, more to come!

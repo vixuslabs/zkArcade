@@ -16,7 +16,7 @@ function FriendsListData() {
       // refetchOnMount: false,
       cacheTime: 6000,
       trpc: {
-        ssr: false,
+        ssr: true,
       },
     },
   );
@@ -51,9 +51,9 @@ function FriendsListData() {
               Invite
             </button>
           </li>
-          {/* <Separator /> */}
         </Fragment>
       ))}
+      {activeFriends.length === 0 && <></>}
     </ul>
   );
 }

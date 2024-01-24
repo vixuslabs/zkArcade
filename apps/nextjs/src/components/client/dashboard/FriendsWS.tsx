@@ -23,6 +23,9 @@ function FriendsWS() {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
+      trpc: {
+        ssr: true,
+      },
     },
   );
 
@@ -34,6 +37,9 @@ function FriendsWS() {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
+      trpc: {
+        ssr: true,
+      },
     },
   );
 
@@ -45,6 +51,9 @@ function FriendsWS() {
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
+      trpc: {
+        ssr: true,
+      },
     },
   );
 

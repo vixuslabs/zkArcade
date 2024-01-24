@@ -9,7 +9,6 @@ import FriendsWS from "@/components/client/dashboard/FriendsWS";
 import { DashboardTabProvider } from "@/components/client/providers";
 import { AvatarSkeleton } from "@/components/client/skeletons";
 import { UserAvatar } from "@/components/client/ui";
-import { RedirectToSignIn, SignedOut } from "@clerk/nextjs";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;
@@ -22,8 +21,8 @@ interface DashboardLayoutProps {
 // export const dynamic = "force-dynamic";
 
 export default function DashboardLayout({
-  primary, // top right container content
-  secondary, // bottom right container content
+  primary,
+  secondary,
   friends,
   settings,
 }: DashboardLayoutProps) {
@@ -92,9 +91,6 @@ export default function DashboardLayout({
         </aside>
       </DashboardTabProvider>
       <FriendsWS />
-      <SignedOut>
-        <RedirectToSignIn redirectUrl={"/"} />
-      </SignedOut>
     </>
   );
 }

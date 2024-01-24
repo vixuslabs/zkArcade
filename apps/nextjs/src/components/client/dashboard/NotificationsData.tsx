@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Fragment, Suspense, useMemo } from "react";
-// import { revalidatePath } from "next/cache";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -17,10 +16,8 @@ function NotificationData() {
         type: "pending",
       },
       {
-        // refetchOnWindowFocus: true,
-        // refetchOnMount: true,
         trpc: {
-          ssr: false,
+          ssr: true,
         },
       },
     );
@@ -31,10 +28,8 @@ function NotificationData() {
         status: "pending",
       },
       {
-        // refetchOnWindowFocus: true,
-        // refetchOnMount: true,
         trpc: {
-          ssr: false,
+          ssr: true,
         },
       },
     );
