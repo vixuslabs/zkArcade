@@ -17,7 +17,7 @@ const jura = Jura({
 
 export const metadata = {
   title: "zkArcade",
-  description: "Arcade for all XR zero knowledge games, built on Mina Protocol",
+  description: "Arcade for XR zero knowledge games, built on Mina Protocol",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
