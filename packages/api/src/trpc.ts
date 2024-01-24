@@ -102,7 +102,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-export const createCallerFactory = t.createCallerFactory;
+// export const createCallerFactory = t.createCallerFactory;
 
 // const isAuthed = t.middleware(({ next, ctx }) => {
 //   // console.log(`isAuthed - ctx.auth `, ctx.auth.userId);

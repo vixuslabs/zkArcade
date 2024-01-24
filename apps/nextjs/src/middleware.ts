@@ -2,20 +2,9 @@ import { NextResponse } from "next/server";
 import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 export default authMiddleware({
-  // debug: true,
   publicRoutes: ["/", "/arcade", "/sign-in", "/sign-up"],
-  apiRoutes: ["/api/(.*)", "/npm/@clerk/(.*)"],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  beforeAuth(req, evt) {
-    // console.log("beforeAuth - req ", req);
-    // console.log("beforeAuth - evt ", evt);
-  },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  afterAuth(auth, req, evt) {
-    // console.log("req.url", req.url);
-    // console.log("isPublicRoute", auth.isPublicRoute);
-    // console.log("isAPIRoute", auth.isApiRoute);
-
+  apiRoutes: ["/api/(.*)"],
+  afterAuth(auth, req) {
     if (auth.isApiRoute) {
       return NextResponse.next();
     }
@@ -31,13 +20,12 @@ export default authMiddleware({
 
     return NextResponse.next();
   },
-  // ignoredRoutes: ["/((?!api))(_next.*|.+.[w]+$)"],
   authorizedParties: [
     "http://localhost:3000",
     "https://localhost:3000",
     `https://${process.env.VERCEL_URL!}`,
     `https://${process.env.VERCEL_BRANCH_URL!}`,
-    `https://funny-unlikely-dolphin.ngrok-free.app`,
+    "https://correct-uniformly-pelican.ngrok-free.app",
     "https://comic-muskrat-47.clerk.accounts.dev",
     "https://zkarcade.vixuslabs.com",
   ],
@@ -46,12 +34,3 @@ export default authMiddleware({
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
-
-// export const config = {
-//   matcher: [
-//     "/((?!.+\\.[\\w]+$|_next).*)",
-//     "/",
-//     "/(api|trpc)(.*)",
-//     "/((?!api|_next/static|_next/image|favicon.ico).*)",
-//   ],
-// };
