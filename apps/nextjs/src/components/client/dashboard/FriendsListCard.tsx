@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 import { FriendsListData } from ".";
@@ -25,17 +24,19 @@ function FriendsListCard() {
         </CardHeader>
         <Separator />
         <CardContent className="min-h-96">
-          <ScrollArea className="max-h-full">
-            <Suspense fallback={<FriendRowSkeleton rows={2} />}>
-              <FriendsListData />
-            </Suspense>
-          </ScrollArea>
+          {/* <ScrollArea className="max-h-48 w-full"> */}
+          <Suspense
+            fallback={
+              <>
+                <FriendRowSkeleton />
+                <Separator />
+                <FriendRowSkeleton className="-mb-4" />
+              </>
+            }
+          >
+            <FriendsListData />
+          </Suspense>
         </CardContent>
-        {/* <CardFooter>
-          <button className="flex w-full items-center justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0">
-            View all
-          </button>
-        </CardFooter> */}
       </Card>
     </>
   );
