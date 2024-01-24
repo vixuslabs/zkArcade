@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/components/ui/use-toast";
 import { useFriendsChannel } from "@/lib/hooks/useFriendsChannel";
+import type { FriendData } from "@/lib/types";
 import { api } from "@/trpc/react";
 
 function FriendsWS() {
@@ -68,7 +69,7 @@ function FriendsWS() {
         duration: 5000,
       });
     },
-    "friend-deleted": (data) => {
+    "friend-deleted": (data: FriendData) => {
       void friends.refetch();
 
       toast({
