@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import type { GameNames } from "@/lib/constants";
 
 function CarouselImage({
   imageUrl,
@@ -8,13 +9,13 @@ function CarouselImage({
   width = 200,
 }: {
   imageUrl: string;
-  altText: string;
+  altText: GameNames;
   height?: number;
   width?: number;
 }) {
   return (
     <Image
-      priority
+      priority={altText === "Hot 'n Cold" ? true : false}
       width={width}
       height={height}
       src={imageUrl}
