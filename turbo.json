@@ -16,7 +16,7 @@
       ]
     },
     "build:dev": {
-      "dependsOn": ["^build", "^lint", "^typecheck"],
+      "dependsOn": ["^lint", "^typecheck", "lint", "^build"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
