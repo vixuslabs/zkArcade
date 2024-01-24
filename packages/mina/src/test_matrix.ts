@@ -1,5 +1,4 @@
-import { Int64 } from 'o1js';
-import { Vector3, AffineTransformationMatrix, SCALE } from './structs.js';
+import { Real64, Vector3, Matrix4 } from 'zk3d';
 import * as THREE from 'three';
 
 const originalMatrix = [
@@ -9,25 +8,32 @@ const originalMatrix = [
   1.0200589895248413, 1.229479432106018, 0.239743173122406, 1,
 ]
 
-const matrixElements = originalMatrix.map(x => (Math.round(x * SCALE)));
-matrixElements[15] = 1;
-// Int64 representation
-const int64Matrix = AffineTransformationMatrix.fromElements(matrixElements);
-
-// console.log(int64Matrix.e0.toJSON(), int64Matrix.e1.toJSON(), int64Matrix.e2.toJSON(), int64Matrix.e3.toJSON());
-// console.log(int64Matrix.e4.toJSON(), int64Matrix.e5.toJSON(), int64Matrix.e6.toJSON(), int64Matrix.e7.toJSON());
-// console.log(int64Matrix.e8.toJSON(), int64Matrix.e9.toJSON(), int64Matrix.e10.toJSON(), int64Matrix.e11.toJSON());
-// console.log(int64Matrix.e12.toJSON(), int64Matrix.e13.toJSON(), int64Matrix.e14.toJSON(), int64Matrix.e15.toJSON());
+const real64Matrix = [
+  Real64.from(originalMatrix[0]!),
+  Real64.from(originalMatrix[1]!),
+  Real64.from(originalMatrix[2]!),
+  Real64.from(originalMatrix[3]!),
+  Real64.from(originalMatrix[4]!),
+  Real64.from(originalMatrix[5]!),
+  Real64.from(originalMatrix[6]!),
+  Real64.from(originalMatrix[7]!),
+  Real64.from(originalMatrix[8]!),
+  Real64.from(originalMatrix[9]!),
+  Real64.from(originalMatrix[10]!),
+  Real64.from(originalMatrix[11]!),
+  Real64.from(originalMatrix[12]!),
+  Real64.from(originalMatrix[13]!),
+  Real64.from(originalMatrix[14]!),
+  Real64.from(originalMatrix[15]!),
+]
+const matrix = Matrix4.fromElements(real64Matrix);
 
 const originalVector = [-0.9790574908256531, -7.569404054019648e-17, -1.2361774444580078];
-const int64Vector = new Vector3(
-  { x: Int64.from(Math.round(originalVector[0]! * SCALE)), 
-    y: Int64.from(Math.round(originalVector[1]! * SCALE)), 
-    z: Int64.from(Math.round(originalVector[2]! * SCALE)) 
-  });
-const int64TransformedVector = int64Vector.applyATM(int64Matrix);
-console.log('With Int64:');
-console.log(int64TransformedVector.x.toString(), int64TransformedVector.y.toString(), int64TransformedVector.z.toString());
+const vector = Vector3.fromNumbers(originalVector[0]!, originalVector[1]!, originalVector[2]!);
+
+const transformedVector = vector.applyMatrix4(matrix);
+console.log('With Real64:');
+console.log(transformedVector.x.toString(), transformedVector.y.toString(), transformedVector.z.toString());
 
 
 // With THREE
@@ -44,9 +50,9 @@ const originalVector1 = [0.1, 0.2, 0.3];
 const originalVector2 = [0.4, 0.5, 0.6];
 
 console.log('\nVector cross product tests:');
-const v1 = new Vector3({ x: Int64.from(originalVector1[0]! * SCALE), y: Int64.from(originalVector1[1]! * SCALE), z: Int64.from(originalVector1[2]! * SCALE) });
-const v2 = new Vector3({ x: Int64.from(originalVector2[0]! * SCALE), y: Int64.from(originalVector2[1]! * SCALE), z: Int64.from(originalVector2[2]! * SCALE) });
-const v3 = v1.crossProduct(v2);
+const v1 = new Vector3({ x: Real64.from(originalVector1[0]!), y: Real64.from(originalVector1[1]!), z: Real64.from(originalVector1[2]!) });
+const v2 = new Vector3({ x: Real64.from(originalVector2[0]!), y: Real64.from(originalVector2[1]!), z: Real64.from(originalVector2[2]!) });
+const v3 = v1.cross(v2);
 console.log(v3.x.toString(), v3.y.toString(), v3.z.toString());
 
 const v4 = new THREE.Vector3(originalVector1[0], originalVector1[1], originalVector1[2]);
