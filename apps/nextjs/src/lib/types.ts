@@ -104,8 +104,8 @@ export type AppUser = {
   image_url: string | null;
 } | null;
 
-export interface RoomCaptureProps {
-  user: AppUser;
+export interface SandboxProps {
+  username: string;
 }
 
 export interface MyMeshInfo {
@@ -214,7 +214,10 @@ export interface PlaneInfo {
 
 // Game Types
 export enum GameType {
-  HotNCold = "HotNCold",
+  HotNCold = "Hot 'n Cold",
+  zkArcade = "zkArcade",
+  zkTicTacToe = "zkTicTacToe",
+  Sandbox = "Sandbox",
 }
 
 export enum GeneralGameStatus {

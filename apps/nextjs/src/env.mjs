@@ -28,7 +28,6 @@ export const env = createEnv({
         "You forgot to change the default key",
       ),
     CLERK_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
-
     PUSHER_APP_ID: z.string(),
     PUSHER_SECRET: z.string(),
   },
@@ -73,19 +72,11 @@ export const env = createEnv({
 
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    // NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
-    // NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
-    // NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL:
-    //   process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
-    // NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL:
-    //   process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
     NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
     NEXT_PUBLIC_PRIV_KEY1: process.env.NEXT_PUBLIC_PRIV_KEY1,
     NEXT_PUBLIC_PRIV_KEY2: process.env.NEXT_PUBLIC_PRIV_KEY2,
     NEXT_PUBLIC_PUB_KEY1: process.env.NEXT_PUBLIC_PUB_KEY1,
     NEXT_PUBLIC_PUB_KEY2: process.env.NEXT_PUBLIC_PUB_KEY2,
-
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

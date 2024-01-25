@@ -2,17 +2,29 @@
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+
 import type { AppRouter } from "@zkarcade/api";
 import { transformer } from "@zkarcade/api";
 
+// import { getUrl } from "../trpc/shared";
+
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
 
-  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+  switch (process.env.VERCEL_ENV) {
+    case "production":
+      return "https://zkarcade.vixuslabs.com";
+    case "preview":
+      return `https://${process.env.VERCEL_URL}`;
+    default:
+      return `http://localhost:${process.env.PORT ?? 3000}`;
+  }
+
+  // if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
+  // return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
 };
 
-export const trpc = createTRPCNext<AppRouter>({
+export const api = createTRPCNext<AppRouter>({
   config() {
     return {
       transformer,
@@ -23,6 +35,7 @@ export const trpc = createTRPCNext<AppRouter>({
             (opts.direction === "down" && opts.result instanceof Error),
         }),
         httpBatchLink({
+          // url: getUrl(),
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],

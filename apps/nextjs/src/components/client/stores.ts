@@ -83,6 +83,12 @@ export const initialHotnColdState: HotnColdGameState = {
 export const usePusher = createWithEqualityFn(
   combine(initialPusherState, (set, get) => ({
     initPusher: (userInfo: PusherUserInfo) => {
+      if (!userInfo.imageUrl.includes("/api/imageProxy")) {
+        userInfo.imageUrl = `/api/imageProxy?url=${encodeURIComponent(
+          userInfo.imageUrl,
+        )}`;
+      }
+
       const currentPusher = get().pusher;
       if (currentPusher) {
         return;
@@ -106,7 +112,7 @@ export const usePusher = createWithEqualityFn(
           },
         },
         channelAuthorization: {
-          endpoint: `${rootUrl}/api/pusher//channel-auth`,
+          endpoint: `${rootUrl}/api/pusher/channel-auth`,
           transport: "ajax",
           params: {
             username: userInfo.username,
@@ -156,14 +162,13 @@ export const usePusher = createWithEqualityFn(
       });
     },
     subscribeToChannel: (channelName: string) => {
-      const { pusher, activeChannels } = get();
+      const { pusher } = get();
       if (!pusher) {
-        console.log("pusher not initialized");
         return;
       }
 
       const channel = pusher.subscribe(channelName);
-      set({ activeChannels: [...activeChannels, channel] });
+      set((state) => ({ activeChannels: [...state.activeChannels, channel] }));
 
       return channel;
     },
@@ -186,12 +191,9 @@ export const usePusher = createWithEqualityFn(
         (channel) => channel.name !== channelName,
       );
 
-      console.log("newActiveChannels", newActiveChannels);
-
       set({ activeChannels: newActiveChannels });
     },
     addEventsToChannel: (channelName: string, eventMap: GeneralEventMap) => {
-      console.log("inside addEventsToChannel");
       const { pusher, activeChannels } = get();
 
       if (!pusher) {
@@ -256,7 +258,6 @@ export const useFriendsStore = createWithEqualityFn(
         // set( { friends:  })
       },
       addFriendEvents: (eventMap: FriendsEventMap) => {
-        console.log("inside addFriendEvents");
         const { pusher, activeChannels, me } = usePusher.getState();
         if (!pusher) {
           throw new Error("Pusher is not initiated");
@@ -322,8 +323,7 @@ export const useLobbyStore = createWithEqualityFn(
       ) => {
         const { pusher } = usePusher.getState();
 
-        const { me, isHost } = get();
-        console.log("isHost", isHost);
+        const { me } = get();
 
         if (!me) {
           throw new Error("subscribeToPresenceChannel: Me is not set");
@@ -333,7 +333,10 @@ export const useLobbyStore = createWithEqualityFn(
           throw new Error("subscribeToPresenceChannel: Pusher is not set");
         }
 
-        set({ isHost: isLobbyHost });
+        set((state) => ({
+          isHost: isLobbyHost,
+          players: state.players.length > 0 ? state.players : [me],
+        }));
 
         const channel = pusher.channel(channelName);
 
@@ -351,11 +354,8 @@ export const useLobbyStore = createWithEqualityFn(
           channel.bind(
             "pusher:subscription_succeeded",
             ({ members }: { members: MembersObject }) => {
-              console.log("members", members);
               const { isHost } = get();
               Object.entries(members).map(([id, info]) => {
-                console.log("pusher:subscription_succeeded - members", members);
-
                 const prevPlayers = get().players;
 
                 if (prevPlayers.find((p) => p.id === id)) {
@@ -368,23 +368,22 @@ export const useLobbyStore = createWithEqualityFn(
                 // Temp solution to assign keys, Meta Quest Browser
                 // does not have the Auro Wallet extension
                 if (prevPlayers.length === 0) {
-                  console.log("prevPlayers.length === 0");
-
                   prKey = env.NEXT_PUBLIC_PRIV_KEY1;
                   puKey = env.NEXT_PUBLIC_PUB_KEY1;
                 } else {
-                  console.log("prevPlayers.length !== 0");
                   prKey = env.NEXT_PUBLIC_PRIV_KEY2;
                   puKey = env.NEXT_PUBLIC_PUB_KEY2;
                 }
+
+                const imgUrl = info.imageUrl.includes("/api/imageProxy")
+                  ? info.imageUrl
+                  : `/api/imageProxy?url=${encodeURIComponent(info.imageUrl)}`;
 
                 if (id === me.id) {
                   set({
                     me: {
                       ...info,
-                      imageUrl: `/api/imageProxy?url=${encodeURIComponent(
-                        info.imageUrl,
-                      )}`,
+                      imageUrl: imgUrl,
                       id,
                       ready: false,
                       host: id === me.id && isHost,
@@ -399,9 +398,7 @@ export const useLobbyStore = createWithEqualityFn(
                   ...prevPlayers,
                   {
                     ...info,
-                    imageUrl: `/api/imageProxy?url=${encodeURIComponent(
-                      info.imageUrl,
-                    )}`,
+                    imageUrl: imgUrl,
                     id,
                     ready: false,
                     host: id === me.id && isHost,
@@ -421,16 +418,12 @@ export const useLobbyStore = createWithEqualityFn(
                   }
                 });
 
-                console.log(sortedPlayers);
-
                 set({ players: [...sortedPlayers] });
               });
             },
           );
 
           channel.bind("pusher:member_added", (member: PusherMember) => {
-            console.log("pusher:member_added - member", member);
-
             const prevPlayers = get().players;
 
             if (prevPlayers.find((p) => p.id === member.id)) {
@@ -443,24 +436,25 @@ export const useLobbyStore = createWithEqualityFn(
             // Temp solution to assign keys, Meta Quest Browser
             // does not have the Auro Wallet extension
             if (prevPlayers.length === 0) {
-              console.log("prevPlayers.length === 0");
-
               prKey = env.NEXT_PUBLIC_PRIV_KEY1;
               puKey = env.NEXT_PUBLIC_PUB_KEY1;
             } else {
-              console.log("prevPlayers.length !== 0");
               prKey = env.NEXT_PUBLIC_PRIV_KEY2;
               puKey = env.NEXT_PUBLIC_PUB_KEY2;
             }
+
+            const imgUrl = member.info.imageUrl.includes("/api/imageProxy")
+              ? member.info.imageUrl
+              : `/api/imageProxy?url=${encodeURIComponent(
+                  member.info.imageUrl,
+                )}`;
 
             set({
               players: [
                 ...prevPlayers,
                 {
                   ...member.info,
-                  imageUrl: `/api/imageProxy?url=${encodeURIComponent(
-                    member.info.imageUrl,
-                  )}`,
+                  imageUrl: imgUrl,
                   id: member.id,
                   ready: false,
                   host: false,
@@ -582,8 +576,6 @@ export const useHotnCold = create(
           }: {
             status: HotnColdGameStatus;
           }) => {
-            console.log("client-status-change to ", status);
-
             set({ status });
           },
           "client-in-game": () => {

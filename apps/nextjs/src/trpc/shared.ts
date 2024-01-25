@@ -1,14 +1,21 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "@zkarcade/api";
 import superjson from "superjson";
+
+import type { AppRouter } from "@zkarcade/api";
 
 export const transformer = superjson;
 
 function getBaseUrl() {
-  if (typeof window !== "undefined") return "";
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3000}`;
-  // return `https://funny-unlikely-dolphin.ngrok-free.app`;
+  if (typeof window !== "undefined") return ""; // browser should use relative url
+
+  switch (process.env.VERCEL_ENV) {
+    case "production":
+      return "https://zkarcade.vixuslabs.com";
+    case "preview":
+      return `https://${process.env.VERCEL_URL}`;
+    default:
+      return `http://localhost:${process.env.PORT ?? 3000}`;
+  }
 }
 
 export function getUrl() {

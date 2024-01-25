@@ -10,8 +10,14 @@
     "lint": "eslint .",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "push": "drizzle-kit push:mysql",
+    "push:dev": "pnpm with-env:dev drizzle-kit push:mysql",
+    "push:prod": "pnpm with-env:prod drizzle-kit push:mysql",
     "studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "studio:dev": "pnpm with-env:dev drizzle-kit studio",
+    "studio:prod": "pnpm with-env:prod drizzle-kit studio",
+    "typecheck": "tsc --noEmit",
+    "with-env:dev": "dotenv -e ../../.env.development --",
+    "with-env:prod": "dotenv -e ../../.env.production --"
   },
   "dependencies": {
     "@planetscale/database": "^1.11.0",
@@ -22,7 +28,8 @@
     "@zkarcade/eslint-config": "workspace:^0.2.0",
     "@zkarcade/prettier-config": "workspace:^0.1.0",
     "@zkarcade/tsconfig": "workspace:^0.1.0",
-    "drizzle-kit": "^0.20.7",
+    "dotenv-cli": "^7.3.0",
+    "drizzle-kit": "^0.20.13",
     "mysql2": "3.6.5",
     "eslint": "^8.53.0",
     "prettier": "^3.1.0",

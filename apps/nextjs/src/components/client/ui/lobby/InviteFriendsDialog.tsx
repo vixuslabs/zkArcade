@@ -2,6 +2,7 @@
 
 import { Fragment } from "react";
 import { useParams } from "next/navigation";
+import { InvitePlayersSkeleton } from "@/components/client/skeletons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,13 +15,19 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
 import { api } from "@/trpc/react";
 
-function DialogCloseButton() {
-  const friends = api.friendships.getUsersFriends.useQuery();
-  const { lobbyId }: { lobbyId: string } = useParams();
+const IS_EXTERNAL_LINK = true;
+
+function InviteFriendsContent() {
+  const friends = api.friendships.getUsersFriends.useQuery({
+    externalLink: IS_EXTERNAL_LINK,
+  });
+  const {
+    lobbyId,
+    username: hostUsername,
+  }: { lobbyId: string; username: string } = useParams();
 
   const invite = api.games.sendGameInvite.useMutation();
 
@@ -28,7 +35,7 @@ function DialogCloseButton() {
     if (!lobbyId) throw new Error("No lobbyId found");
 
     invite.mutate({
-      senderUsername: username,
+      senderUsername: hostUsername,
       receiverId: id,
       lobbyId,
     });
@@ -39,8 +46,6 @@ function DialogCloseButton() {
       variant: "default",
       duration: 3000,
     });
-
-    // revalidatePath("/dashboard");
   };
 
   return (
@@ -50,24 +55,7 @@ function DialogCloseButton() {
         <DialogDescription>May the best player win!</DialogDescription>
       </DialogHeader>
 
-      {friends.isLoading && (
-        <>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </div>
-        </>
-      )}
+      {friends.isLoading && <InvitePlayersSkeleton rows={2} />}
 
       {friends.isSuccess && (
         <ScrollArea className="max-h-full">
@@ -79,18 +67,18 @@ function DialogCloseButton() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={
-                          imageUrl
-                            ? `/api/imageProxy?url=${encodeURIComponent(
-                                imageUrl,
+                          IS_EXTERNAL_LINK
+                            ? imageUrl!
+                            : `/api/imageProxy?url=${encodeURIComponent(
+                                imageUrl!,
                               )}`
-                            : undefined
                         }
                         alt="Profile Picture"
                       />
                       <AvatarFallback>SC</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-auto">
-                      <p className="mt-1 truncate text-xs leading-5 text-gray-500">
+                      <p className="mt-1 truncate text-sm leading-5 ">
                         {username}
                       </p>
                     </div>
@@ -123,4 +111,4 @@ function DialogCloseButton() {
   );
 }
 
-export default DialogCloseButton;
+export default InviteFriendsContent;

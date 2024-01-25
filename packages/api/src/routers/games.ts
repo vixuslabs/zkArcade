@@ -80,6 +80,27 @@ export const gameRouter = createTRPCRouter({
       });
     }),
 
+  declineGameInvite: protectedProcedure
+    .input(
+      z.object({
+        lobbyId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const invite = await ctx.db.query.gameInvites.findFirst({
+        where: eq(gameInvites.lobbyId, input.lobbyId),
+      });
+
+      if (!invite) {
+        throw new Error("Invite not found");
+      }
+
+      await ctx.db
+        .update(gameInvites)
+        .set({ status: "declined" })
+        .where(eq(gameInvites.lobbyId, input.lobbyId));
+    }),
+
   getGameInvites: protectedProcedure
     .input(
       z.object({
@@ -131,6 +152,9 @@ export const gameRouter = createTRPCRouter({
 
           return {
             gameId: invite.lobbyId,
+            status: invite.status,
+            type: "gameInvite" as "gameInvite" | "friendRequest",
+            updatedAt: invite.updatedAt,
             receiver: {
               id: invite.receiverId,
               username: invite.receiver.username,

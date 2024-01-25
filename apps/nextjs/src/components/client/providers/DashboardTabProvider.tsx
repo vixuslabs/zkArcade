@@ -6,7 +6,7 @@ import { ActiveDashboardTabContext } from "@/lib/types";
 import type { ActiveDashboardTab } from "@/lib/types";
 
 const ActiveDashboardTabContext = createContext<ActiveDashboardTabContext>({
-  activeTab: "home",
+  activeTab: "friends",
   setActiveTab: () => {
     ("");
   },
@@ -24,7 +24,7 @@ export const useDashboardTabContext = () => {
 };
 
 function DashboardTabProvider({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState<ActiveDashboardTab>("home");
+  const [activeTab, setActiveTab] = useState<ActiveDashboardTab>("friends");
 
   const values = useMemo(() => {
     return {

@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@zkarcade/db": "workspace:^0.1.0",
-    "@trpc/client": "^10.44.1",
-    "@trpc/server": "^10.44.1",
-    "@clerk/nextjs": "^4.27.0",
+    "@trpc/client": "^10.45.0",
+    "@trpc/server": "^10.45.0",
+    "@clerk/nextjs": "^4.29.3",
     "superjson": "^2.2.0",
     "zod": "^3.22.4",
     "drizzle-orm": "0.29.1",
@@ -27,7 +27,7 @@
     "@zkarcade/tsconfig": "workspace:^0.1.0",
     "eslint": "^8.53.0",
     "prettier": "^3.1.0",
-    "next": "^14.0.4"
+    "next": "^14.1.0"
   },
   "eslintConfig": {
     "root": true,

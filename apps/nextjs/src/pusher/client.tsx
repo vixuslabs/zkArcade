@@ -2,7 +2,6 @@
 
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { usePusher } from "@/components/client/stores";
-// import { env } from "@/env.mjs";
 import { useUser } from "@clerk/nextjs";
 import type Pusher from "pusher-js";
 import { shallow } from "zustand/shallow";
@@ -36,7 +35,6 @@ export const usePusherClient = () => {
 };
 
 export function PusherClientProvider(props: { children: React.ReactNode }) {
-  // const [pusherClient, setPusherClient] = useState<Pusher>(null!);
   const [isLoading, setIsLoading] = useState(true);
   const { initPusher, removePusher, pusher } = usePusher();
   const pusherInitialized = usePusher(
@@ -50,15 +48,18 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
       return;
     }
 
+    console.log("initializing pusher");
+
     initPusher({
       userId: user.id,
       username: user.username ?? "",
-      imageUrl: user.imageUrl,
+      imageUrl: `/api/imageProxy?url=${encodeURIComponent(user.imageUrl)}`,
     });
 
     setIsLoading(false);
 
     return () => {
+      console.log("removing pusher");
       if (pusherInitialized) removePusher();
     };
   }, [

@@ -6,9 +6,10 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import type { NextRequest } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+// import type { NextRequest } from "next/server";
+// import { auth } from "@clerk/nextjs/server";
 import type {
+  auth,
   SignedInAuthObject,
   SignedOutAuthObject,
 } from "@clerk/nextjs/server";
@@ -17,6 +18,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@zkarcade/db";
+
+type AuthObject = ReturnType<typeof auth>;
 
 /**
  * 1. CONTEXT
@@ -55,16 +58,25 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (opts: { req: NextRequest }) => {
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+  auth: AuthObject;
+  // eslint-disable-next-line @typescript-eslint/require-await
+}) => {
+  // const authSession = auth();
+
   // Fetch stuff that depends on the request
 
   // const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
 
   // console.log(">>> tRPC Request from", source, "by", session?.user);
 
+  // console.log(`auth`, auth());
+
   return createInnerTRPCContext({
-    headers: opts.req.headers,
-    auth: getAuth(opts.req),
+    headers: opts.headers,
+    // auth: auth(),
+    auth: opts.auth,
   });
 };
 
@@ -90,19 +102,22 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-const isAuthed = t.middleware(({ next, ctx }) => {
-  console.log(`isAuthed - ctx.auth `, ctx.auth.userId);
-  // console.log(`isAuthed - ctx.headers `, ctx.headers);
-  if (!ctx.auth.userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
+// export const createCallerFactory = t.createCallerFactory;
 
-  return next({
-    ctx: {
-      auth: ctx.auth,
-    },
-  });
-});
+// const isAuthed = t.middleware(({ next, ctx }) => {
+//   // console.log(`isAuthed - ctx.auth `, ctx.auth.userId);
+//   // console.log(`isAuthed - ctx.headers `, ctx.headers);
+//   if (!ctx.auth.userId) {
+//     console.log(`is UNAUTHORIZED`, ctx.auth.userId);
+//     throw new TRPCError({ code: "UNAUTHORIZED" });
+//   }
+
+//   return next({
+//     ctx: {
+//       auth: ctx.auth,
+//     },
+//   });
+// });
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
@@ -126,4 +141,13 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
-export const protectedProcedure = t.procedure.use(isAuthed);
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.auth ?? !ctx.auth.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      auth: ctx.auth,
+    },
+  });
+});

@@ -1,5 +1,3 @@
-import { revalidatePath } from "next/cache";
-// import { clerkClient } from "@clerk/nextjs";
 import { and, desc, eq, or } from "drizzle-orm";
 import { z } from "zod";
 
@@ -9,6 +7,16 @@ import { users } from "@zkarcade/db/schema/users";
 
 import { pusher } from "../pusher/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+
+interface FriendData {
+  username: string;
+  imageUrl: string;
+  id: string;
+  requestId?: number;
+  friendId?: string;
+  showToast?: boolean;
+  gameId?: string;
+}
 
 interface CleanSentRequest {
   requestId: number;
@@ -46,40 +54,92 @@ export const getUser = async (userId: string, db: typeof Drizzle) => {
 };
 
 export const friendshipRouter = createTRPCRouter({
-  getUsersFriends: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.auth.userId;
+  getUsersFriends: protectedProcedure
+    .input(z.object({ externalLink: z.boolean().optional().default(false) }))
+    .query(async ({ input, ctx }) => {
+      const userId = ctx.auth.userId;
 
-    const friendsPrepared = ctx.db.query.friendships
-      .findMany({
+      const friendsPrepared = ctx.db.query.friendships
+        .findMany({
+          where: or(
+            eq(friendships.userId, userId),
+            eq(friendships.friendId, userId),
+          ),
+          with: {
+            user: true,
+            friend: true,
+          },
+        })
+        .prepare();
+
+      const friendshipsRaw = await friendsPrepared.execute();
+
+      const cleanedFriends = [];
+
+      for (const friendship of friendshipsRaw) {
+        if (friendship.userId === userId) {
+          if (input.externalLink) {
+            friendship.friend.imageUrl = `/api/imageProxy?url=${encodeURIComponent(
+              friendship.friend.imageUrl ?? "",
+            )}`;
+          }
+          cleanedFriends.push(friendship.friend);
+        } else {
+          if (input.externalLink) {
+            friendship.user.imageUrl = `/api/imageProxy?url=${encodeURIComponent(
+              friendship.user.imageUrl ?? "",
+            )}`;
+          }
+          cleanedFriends.push(friendship.user);
+        }
+      }
+
+      return cleanedFriends;
+    }),
+
+  deleteFriend: protectedProcedure
+    .input(z.object({ userId: z.string().min(1), friendId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const friendship = await ctx.db.query.friendships.findFirst({
         where: or(
-          eq(friendships.userId, userId),
-          eq(friendships.friendId, userId),
+          and(
+            eq(friendships.userId, input.userId),
+            eq(friendships.friendId, input.friendId),
+          ),
+          and(
+            eq(friendships.userId, input.friendId),
+            eq(friendships.friendId, input.userId),
+          ),
         ),
         with: {
           user: true,
           friend: true,
         },
-      })
-      .prepare();
+      });
 
-    const friends = await friendsPrepared.execute();
-
-    const cleanedFriends = [];
-
-    for (const friend of friends) {
-      if (friend.userId === userId) {
-        cleanedFriends.push(friend.friend);
-      } else {
-        cleanedFriends.push(friend.user);
+      if (!friendship) {
+        throw new Error("Friendship not found");
       }
-    }
 
-    return cleanedFriends;
-  }),
+      const deletedFriendRequest = await ctx.db
+        .delete(friendRequests)
+        .where(
+          or(
+            and(
+              eq(friendRequests.senderId, input.userId),
+              eq(friendRequests.receiverId, input.friendId),
+            ),
+            and(
+              eq(friendRequests.senderId, input.friendId),
+              eq(friendRequests.receiverId, input.userId),
+            ),
+          ),
+        );
 
-  deleteFriend: protectedProcedure
-    .input(z.object({ userId: z.string().min(1), friendId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
+      if (deletedFriendRequest.rowsAffected === 0) {
+        throw new Error("Deleted Friend request not found");
+      }
+
       const res = await ctx.db
         .delete(friendships)
         .where(
@@ -95,9 +155,25 @@ export const friendshipRouter = createTRPCRouter({
           ),
         );
 
-      revalidatePath("/", "layout");
+      if (res.rowsAffected === 0) {
+        throw new Error("Friendship not found");
+      }
 
-      return res;
+      const pusherData: FriendData = {
+        username: friendship.friend.username,
+        imageUrl: `/api/imageProxy?url=${encodeURIComponent(
+          friendship.friend.imageUrl ?? "",
+        )}`,
+        id: friendship.friend.id,
+      };
+
+      const cutUserId = input.userId.split("_")[1];
+
+      await pusher.trigger(
+        `user-${cutUserId}-friends`,
+        `friend-deleted`,
+        pusherData,
+      );
     }),
 
   deleteAllFriends: publicProcedure
@@ -188,12 +264,24 @@ export const friendshipRouter = createTRPCRouter({
                   eq(friendRequests.status, input.type),
                 )
               : eq(friendRequests.receiverId, userId),
+          with: {
+            sender: true,
+            receiver: true,
+          },
         })
         .prepare();
 
       const execute = await friendRequestsPrepared.execute();
 
-      return execute;
+      const friendRequestsFiltered = execute.map((request) => {
+        return {
+          ...request,
+          type: "friendRequest" as "friendRequest" | "gameInvite",
+        };
+      });
+
+      return friendRequestsFiltered;
+      // return friendRequests;
     }),
 
   getAllRequestsFromUser: protectedProcedure.query(async ({ ctx }) => {
@@ -287,23 +375,7 @@ export const friendshipRouter = createTRPCRouter({
       } else if (friendRequestExists?.status === "accepted") {
         throw new Error("Friend request already accepted");
       } else if (friendRequestExists?.status === "declined") {
-        // await ctx.db
-        //   .update(friendRequests)
-        //   .set({ status: "pending" })
-        //   .where(
-        //     or(
-        //       and(
-        //         eq(friendships.userId, input.senderId),
-        //         eq(friendships.friendId, input.receiverId),
-        //       ),
-        //       and(
-        //         eq(friendships.userId, input.receiverId),
-        //         eq(friendships.friendId, input.senderId),
-        //       ),
-        //     ),
-        //   );
         console.log("friend request already declined");
-        // throw new Error("Friend request already accepted");
       }
 
       const res = await ctx.db.insert(friendRequests).values({

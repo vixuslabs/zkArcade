@@ -5,20 +5,20 @@ import { useDashboardTabContext } from "@/components/client/providers/DashboardT
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  ChartPieIcon,
+  // ChartPieIcon,
   CogIcon,
-  HomeIcon,
+  // HomeIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 
-type ActiveDashboardTab = "home" | "friends" | "leaderboard" | "settings";
+type ActiveDashboardTab = "friends" | "settings";
 
 function SidebarNav() {
   const { activeTab, setActiveTab } = useDashboardTabContext();
 
   return (
     <Tabs
-      defaultValue="home"
+      defaultValue="friends"
       role="list"
       className="h-[25vh] bg-inherit"
       onValueChange={(value) => {
@@ -33,7 +33,7 @@ function SidebarNav() {
         className="flex flex-col items-center space-y-1"
       >
         <>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="home"
             className={cn(
               activeTab === "home"
@@ -43,7 +43,7 @@ function SidebarNav() {
             )}
           >
             <HomeIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="friends"
             className={cn(
@@ -55,7 +55,7 @@ function SidebarNav() {
           >
             <UsersIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="leaderboard"
             className={cn(
               activeTab === "leaderboard"
@@ -65,7 +65,7 @@ function SidebarNav() {
             )}
           >
             <ChartPieIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="settings"
             className={cn(

@@ -14,6 +14,11 @@ const config = {
     "@zkarcade/api",
     "@zkarcade/mina",
   ],
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },

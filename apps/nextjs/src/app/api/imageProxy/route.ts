@@ -17,7 +17,9 @@ export async function GET(req: NextApiRequest) {
   }
 
   try {
-    const response = await fetch(imageUrl);
+    const response = await fetch(imageUrl, {
+      cache: "force-cache",
+    });
 
     if (!response.ok) {
       return Response.json({ error: "Image not found", status: 500 });

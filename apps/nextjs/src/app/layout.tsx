@@ -1,7 +1,6 @@
 import "@/styles/globals.css";
 
 import { Jura } from "next/font/google";
-import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/client/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
@@ -18,7 +17,7 @@ const jura = Jura({
 
 export const metadata = {
   title: "zkArcade",
-  description: "Hub for all zero knowledge games, built on Mina Protocol",
+  description: "Arcade for XR zero knowledge games, built on Mina Protocol",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -42,11 +41,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <PusherClientProvider>
-              <TRPCReactProvider headers={headers()}>
-                {children}
-              </TRPCReactProvider>
-            </PusherClientProvider>
+            <TRPCReactProvider>
+              <PusherClientProvider>{children}</PusherClientProvider>
+            </TRPCReactProvider>
           </ThemeProvider>
           <Toaster />
         </body>
