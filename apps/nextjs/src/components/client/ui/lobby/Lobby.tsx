@@ -7,8 +7,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import dynamic from "next/dynamic";
-import { useLobbyStore, usePusher } from "@/components/client/stores";
+// import dynamic from "next/dynamic";
 import {
   HotnColdInstructions,
   LobbySettings,
@@ -16,17 +15,22 @@ import {
 } from "@/components/client/ui/lobby";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { LobbyEventMap } from "@/lib/types";
+import type { GameNames } from "@/lib/constants";
+import { useHotnCold, useLobbyStore, usePusher } from "@/lib/stores";
+import type { HotnColdPlayer, LobbyEventMap } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
+import { useSessionSupported } from "@coconut-xr/natuerlich/react";
 import { Transition } from "@headlessui/react";
 import type { PresenceChannel } from "pusher-js";
 
-const MinaStartButton = dynamic(
-  () => import("@/components/client/mina/MinaStartButton"),
-  {
-    ssr: false,
-  },
-);
+import { HotnColdGame } from "../../xr";
+
+// const MinaStartButton = dynamic(
+//   () => import("@/components/client/mina/MinaStartButton"),
+//   {
+//     ssr: false,
+//   },
+// );
 
 function Lobby({
   hostUsername,
@@ -36,29 +40,39 @@ function Lobby({
   lobbyId: string;
 }) {
   const [toXR, setToXR] = React.useState<boolean>(false);
-  const [launchXR, setLaunchXR] = React.useState<boolean>(false);
-  const [xrLoaded, setXrLoaded] = React.useState<boolean>(false);
+  // const [launchXR, setLaunchXR] = React.useState<boolean>(false);
+  // const [xrLoaded, setXrLoaded] = React.useState<boolean>(false);
   const [showInstructions, setShowInstructions] =
     React.useState<boolean>(false);
   const [xrSupported, setXRSupported] = useState<boolean>(false);
 
+  const _ = useSessionSupported("immersive-ar");
+
+  // const enterAR = useEnterXR("immersive-ar", sessionOptions);
+
   const { user, isSignedIn } = useUser();
 
-  const HotnColdGame = dynamic(
-    () => import("@/components/client/xr/HotnColdGame"),
-    {
-      ssr: true,
-      loading: ({ isLoading, error }) => {
-        isLoading ? setXrLoaded(false) : setXrLoaded(true);
+  // const HotnColdGame = dynamic(
+  //   () => import("@/components/client/xr/HotnColdGame"),
+  //   {
+  //     ssr: false,
+  //     // loading: ({ isLoading, error }) => {
+  //     //   isLoading ? setXrLoaded(false) : setXrLoaded(true);
 
-        if (error) {
-          throw new Error("Error loading XR component");
-        }
+  //     //   if (error) {
+  //     //     throw new Error("Error loading XR component");
+  //     //   }
 
-        return null;
-      },
-    },
-  );
+  //     //   return null;
+  //     // },
+  //   },
+  // );
+
+  const { gameEventsInitialized } = useHotnCold((state) => {
+    return {
+      gameEventsInitialized: state.gameEventsInitialized,
+    };
+  });
 
   const {
     subscribeToChannel,
@@ -85,8 +99,9 @@ function Lobby({
     setIsMinaOn,
     setStarting,
     starting,
-    me: lobbyMe,
+    // me: lobbyMe,
     players,
+    initGameEventsToPresenceChannel,
   } = useLobbyStore();
   const [lobbyChannel, setLobbyChannel] =
     React.useState<PresenceChannel | null>(null);
@@ -116,9 +131,39 @@ function Lobby({
       "client-mina-toggle": ({ minaToggle }: { minaToggle: boolean }) => {
         setIsMinaOn(minaToggle);
       },
-      "client-game-started": () => {
+      "client-game-started": ({ gameName }: { gameName: GameNames }) => {
         setStarting(true);
-        setToXR(true);
+
+        initGameEventsToPresenceChannel(presenceChannelName, gameName);
+      },
+      "client-game-events-initialized": ({
+        oppInfo,
+        gameName,
+      }: {
+        oppInfo: HotnColdPlayer;
+        gameName: GameNames;
+      }) => {
+        const { me: gameMe } = useHotnCold.getState();
+
+        console.log("client-game-events-initialized: ", oppInfo, gameName);
+
+        switch (gameName) {
+          case "Hot 'n Cold":
+            // setOpponent(oppInfo);
+            useHotnCold.setState({
+              opponent: oppInfo,
+              gameEventsInitialized: gameMe ? true : false,
+            });
+            break;
+          default:
+            throw new Error("lobbyEvents in Lobby: Unknown game name");
+        }
+
+        if (!gameMe) {
+          throw new Error("lobbyEvents in Lobby: Could not find gameMe");
+        }
+
+        // setXrLoaded(true);
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,69 +304,83 @@ function Lobby({
         </Transition.Child>
       </Transition>
 
-      {/* Game */}
-      {xrLoaded && (
-        <HotnColdGame
-          launchXR={launchXR}
-          xrSupported={xrSupported}
-          setXRSupported={setXRSupported}
-        />
-      )}
-
       {/* Start and Settings Buttons, always anchored at the bottom */}
       <div className="absolute bottom-16 flex items-center gap-x-12">
-        {!starting ? (
-          <>
-            <Button
-              variant="default"
-              className="relative"
-              disabled={
-                useLobbyStore.getState().players.some((p) => !p.ready) ||
-                hostUsername !== me?.username ||
-                starting
-              }
-              onClick={() => {
-                if (hostUsername === me?.username) {
-                  lobbyChannel?.trigger("client-game-started", {
-                    starting: true,
-                  });
-                  setStarting(true);
-                  setToXR(true);
+        {
+          !starting ? (
+            <>
+              <Button
+                variant="default"
+                className="relative"
+                disabled={
+                  useLobbyStore.getState().players.some((p) => !p.ready) ||
+                  hostUsername !== me?.username ||
+                  starting
                 }
-              }}
-            >
-              Start Game
-            </Button>
-            <LobbySettings
-              toXR={toXR}
-              isMinaOn={isMinaOn}
-              setIsMinaOn={setIsMinaOn}
-              isHost={me?.username === hostUsername}
-              channel={lobbyChannel}
-            />
-          </>
-        ) : isMinaOn ? (
-          <MinaStartButton
-            setToXR={setToXR}
-            publicKey={lobbyMe?.publicKey}
-            privateKey={lobbyMe?.privateKey}
-          >
-            <Button
-              variant={"default"}
-              onPointerDown={() => setLaunchXR(true)}
-              disabled={launchXR || !xrLoaded || !xrSupported}
-            >
-              {!xrSupported ? "XR Not Supported" : "Launch XR"}
-            </Button>
-          </MinaStartButton>
-        ) : (
-          <Button
-            variant={"default"}
-            onPointerDown={() => setLaunchXR(true)}
-            disabled={launchXR || !xrLoaded || !xrSupported}
-          >
-            {!xrSupported ? "XR Not Supported" : "Launch XR"}
-          </Button>
+                onClick={() => {
+                  if (hostUsername === me?.username) {
+                    lobbyChannel?.trigger("client-game-started", {
+                      starting: true,
+                      gameName: "Hot 'n Cold",
+                    });
+
+                    initGameEventsToPresenceChannel(
+                      presenceChannelName,
+                      "Hot 'n Cold",
+                    );
+
+                    setStarting(true);
+                    setToXR(true);
+                  }
+                }}
+              >
+                Start Game
+              </Button>
+              <LobbySettings
+                toXR={toXR}
+                isMinaOn={isMinaOn}
+                setIsMinaOn={setIsMinaOn}
+                isHost={me?.username === hostUsername}
+                channel={lobbyChannel}
+              />
+            </>
+          ) : null
+          // isMinaOn ? (
+          //   <MinaStartButton
+          //     setToXR={setToXR}
+          //     publicKey={lobbyMe?.publicKey}
+          //     privateKey={lobbyMe?.privateKey}
+          //   >
+          //     <Button
+          //       variant={"default"}
+          //       onPointerDown={() => {
+          //         // setLaunchXR(true);
+          //         void enterAR();
+          //       }}
+          //       disabled={launchXR || !gameEventsInitialized || !xrSupported}
+          //     >
+          //       {!xrSupported ? "XR Not Supported" : "Launch XR"}
+          //     </Button>
+          //   </MinaStartButton>
+          // ) : (
+          //   <Button
+          //     variant={"default"}
+          //     onPointerDown={() => setLaunchXR(true)}
+          //     disabled={!isXRSupported || !gameEventsInitialized || !xrSupported}
+          //   >
+          //     {!isXRSupported ? "XR Not Supported" : "Launch XR"}
+          //   </Button>
+          // )
+        }
+
+        {/* Game */}
+        {starting && (
+          <HotnColdGame
+            gameEventsInitialized={gameEventsInitialized}
+            // launchXR={launchXR}
+            xrSupported={xrSupported}
+            setXRSupported={setXRSupported}
+          />
         )}
       </div>
     </>

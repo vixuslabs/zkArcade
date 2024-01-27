@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ControllerStateProvider } from "@/components/client/providers";
-import { useHotnCold, useLobbyStore } from "@/components/client/stores";
 import { BuildRoom } from "@/components/client/xr";
 import { GameControllers } from "@/components/client/xr/inputDevices";
 import GameSphere from "@/components/client/xr/objects/GameSphere";
 import { FriendRoom } from "@/components/client/xr/rooms";
-import { HotnColdGameStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { useHotnCold } from "@/lib/stores";
+// import { useHotnCold, useLobbyStore } from "@/lib/stores";
+import { HotnColdEvents, HotnColdGameStatus } from "@/lib/types";
 import { clippingEvents } from "@coconut-xr/koestlich";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
 import {
@@ -27,24 +29,35 @@ import {
 } from "@coconut-xr/natuerlich/react";
 import { XRPhysics } from "@vixuslabs/newtonxr";
 import { Vector3 } from "three";
+import { useShallow } from "zustand/react/shallow";
 
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
+  optionalFeatures: ["hand-tracking"],
 };
 
 function HotnColdGame({
-  launchXR,
-  xrSupported,
-  setXRSupported,
+  // launchXR,
+  gameEventsInitialized, // xrSupported, // setXRSupported,
 }: {
-  launchXR: boolean;
+  // launchXR: boolean;
+  gameEventsInitialized: boolean;
   xrSupported: boolean;
   setXRSupported: (isXRSupported: boolean) => void;
 }) {
-  const hotNColdStore = useHotnCold();
-  const lobbyStore = useLobbyStore();
+  // const hotNColdStore = useHotnCold();
+
+  const getGameChannel = useHotnCold(
+    useShallow((state) => state.getGameChannel),
+  );
+
+  const setGameStatus = useHotnCold(useShallow((state) => state.setGameStatus));
+
+  // const hotnColdStore = useHotnCold();
+
+  const { me, setMe, opponent, status, startRoomSync } = useHotnCold();
 
   // teleport not working right now
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +65,7 @@ function HotnColdGame({
     new Vector3(0, 0, 0),
   );
 
-  const [startSync, setStartSync] = useState(false);
+  // const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
 
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
@@ -60,85 +73,77 @@ function HotnColdGame({
   const isSupported = useSessionSupported("immersive-ar");
 
   useSessionChange((curSession, prevSession) => {
+    // const hotnColdMe = hotNColdStore.me;
+
     if (prevSession && !curSession) {
       console.log("session ended");
-      setStartSync(false);
+      // setStartSync(false);
       // setXrStarted(false);
-      const storeMe = hotNColdStore.me;
 
-      if (!storeMe) {
-        throw new Error("no storeMe");
+      if (!me) {
+        throw new Error("useSessionChanaged - out of XR: no hotnColdMe");
       }
 
-      hotNColdStore.setMe({ ...storeMe, inGame: false });
+      setMe({ ...me, inGame: false });
     }
 
     if (curSession && !prevSession) {
       console.log("session started");
+
+      if (!me) {
+        throw new Error("useSessionChanaged - into XR: no hotnColdMe");
+      }
+
+      // setStartSync(true);
+
+      setMe({ ...me, inGame: true });
     }
   }, []);
 
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
-  useEffect(() => {
-    if (isSupported && !xrSupported) {
-      setXRSupported(true);
-    }
+  if (!isSupported) {
+    return null;
+  }
 
-    if (!isSupported && xrSupported) {
-      setXRSupported(false);
-    }
-  }, [isSupported, setXRSupported, xrSupported]);
-
-  useEffect(() => {
-    if (xrSupported && launchXR) {
-      enterAR()
-        .then(() => {
-          setStartSync(true);
-          // setXrStarted(true);
-          const storeMe = hotNColdStore.me;
-
-          if (storeMe) {
-            console.log("storeMe: ", storeMe);
-
-            hotNColdStore.setMe({ ...storeMe, inGame: true });
-          } else {
-            const me = lobbyStore.me;
-
-            if (!me) {
-              throw new Error("no me in lobby - lobbyStore.me");
-            }
-
-            hotNColdStore.setMe({
-              ...me,
-              inGame: false,
-              playerPosition: null,
-              playerProximity: null,
-              objectMatrix: null,
-              objectPosition: null,
-              roomLayout: null,
-              hiding: false,
-              foundObject: false,
-            });
-          }
-        })
-        .catch((err) => {
-          console.log("error entering AR: ", err);
-        });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [launchXR, xrSupported, enterAR]);
-
-  useEffect(() => {
-    if (!hotNColdStore.me) {
-      hotNColdStore.updatePlayers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  if (!me || !opponent) {
+    return null;
+  }
 
   return (
     <>
+      <div className="absolute bottom-16 z-30 flex items-center gap-x-12">
+        <Button
+          variant={"default"}
+          onClick={() => {
+            console.log("clicked!");
+            void enterAR().then(() => {
+              console.log("entered");
+
+              const channel = getGameChannel();
+
+              channel.trigger("client-in-game" as HotnColdEvents, {});
+
+              if (!opponent) {
+                throw new Error("void enterAR().then: no opponent");
+              }
+
+              if (opponent.inGame) {
+                if (status !== HotnColdGameStatus.BOTHHIDING) {
+                  setGameStatus(HotnColdGameStatus.BOTHHIDING);
+                }
+              }
+
+              // setStartSync(true);
+            });
+          }}
+          disabled={!isSupported || !gameEventsInitialized}
+        >
+          {!isSupported ? "XR Not Supported" : "Launch XR"}
+        </Button>
+      </div>
+
       <XRCanvas
         frameBufferScaling={frameBufferScaling}
         frameRate={frameRate}
@@ -151,46 +156,46 @@ function HotnColdGame({
           {/* {startSync && ( */}
           <XRPhysics
             colliders={false}
-            gravity={[0, -5, 0]}
+            gravity={[0, 0, 0]}
             interpolate={false}
             timeStep={"vary"}
-            // debug
+            debug
           >
             <NonImmersiveCamera />
 
-            {hotNColdStore.status === HotnColdGameStatus.SEEKING ? (
+            {status === HotnColdGameStatus.SEEKING ? (
               <ambientLight intensity={0} />
             ) : (
               <ambientLight intensity={0.5} />
             )}
 
-            {(hotNColdStore.status === HotnColdGameStatus.BOTHHIDING ||
-              hotNColdStore.status === HotnColdGameStatus.ONEHIDING) &&
-              hotNColdStore.me?.hiding && (
-                <GameSphere inGame position={[0, 2, -0.3]} />
-              )}
+            {(status === HotnColdGameStatus.BOTHHIDING ||
+              status === HotnColdGameStatus.ONEHIDING) &&
+              me.hiding && <GameSphere inGame position={[0, 2, -0.3]} />}
 
-            {hotNColdStore.status === HotnColdGameStatus.SEEKING &&
-              hotNColdStore.opponent?.objectPosition && (
+            {status === HotnColdGameStatus.SEEKING &&
+              opponent.objectPosition && (
                 <GameSphere
                   inGame
                   name={"hiddenObject"}
                   color="yellow"
                   // @ts-expect-error - this works i swear
-                  position={hotNColdStore.opponent.objectPosition}
+                  position={opponent.objectPosition}
                 />
               )}
 
             <ImmersiveSessionOrigin>
-              {startSync && (
+              {startRoomSync && (
                 <>
                   <MeshesAndPlanesProvider>
                     {/* {gameState && !gameState.me.isHiding && (
                       <BuildRoom inGame={true} />
                     )} */}
 
-                    {hotNColdStore.status === HotnColdGameStatus.BOTHHIDING ||
-                    hotNColdStore.status === HotnColdGameStatus.ONEHIDING ? (
+                    {(status === HotnColdGameStatus.BOTHHIDING ||
+                      status === HotnColdGameStatus.ONEHIDING) &&
+                    me.roomLayout &&
+                    opponent.roomLayout ? (
                       <FriendRoom />
                     ) : (
                       <BuildRoom inGame={true} />
@@ -201,9 +206,9 @@ function HotnColdGame({
                   </MeshesAndPlanesProvider>
                 </>
               )}
-              {(hotNColdStore.status === HotnColdGameStatus.BOTHHIDING ||
-                hotNColdStore.status === HotnColdGameStatus.ONEHIDING) &&
-              hotNColdStore.me?.hiding
+              {(status === HotnColdGameStatus.BOTHHIDING ||
+                status === HotnColdGameStatus.ONEHIDING) &&
+              me.hiding
                 ? inputSources.map((inputSource: XRInputSource) => {
                     if (inputSource.handedness === "left") {
                       return (

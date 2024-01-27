@@ -20,8 +20,6 @@ export const useZkArcade = create<ZkArcadeState>()((set, get) => ({
   },
   getCarouselApi: () => {
     const { carouselApi, setCarouselApi } = get();
-    // carouselApi.carouselApi;
-    // const setCarouselApi = useZkArcade.getState().setCarouselApi;
 
     return [carouselApi, setCarouselApi];
   },

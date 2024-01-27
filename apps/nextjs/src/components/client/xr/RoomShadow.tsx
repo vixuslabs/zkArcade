@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
-import { TrackedMesh } from "@coconut-xr/natuerlich/react";
-import { Vector3, Object3D, Quaternion } from "three";
-
-// @ts-expect-error - will fix type error later
-import vertex from "@/lib/shaders/roomShadow/vertex.glsl";
-// @ts-expect-error - will fix type error later
-import fragment from "@/lib/shaders/roomShadow/fragment.glsl";
-
-import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
-import type { Mesh } from "three";
+import React, { useMemo, useRef } from "react";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
+// // @ts-expect-error - will fix type error later
+// import fragment from "@/lib/shaders/roomShadow/fragment.glsl";
+// // @ts-expect-error - will fix type error later
+// import vertex from "@/lib/shaders/roomShadow/vertex.glsl";
+import { TrackedMesh } from "@coconut-xr/natuerlich/react";
+import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
 import { useFrame } from "@react-three/fiber";
+import { Object3D, Quaternion, Vector3 } from "three";
+import type { Mesh } from "three";
 
 /**
  *
@@ -64,8 +62,43 @@ function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
     <TrackedMesh ref={ref} mesh={mesh}>
       <shaderMaterial
         uniforms={shaderUniforms}
-        vertexShader={vertex as string}
-        fragmentShader={fragment as string}
+        // vertexShader={vertex as string}
+        vertexShader={`varying vec3 vPosition;
+        varying vec3 vWorldPosition;
+            
+        void main() {
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+        }`}
+        // fragmentShader={fragment as string}
+        fragmentShader={`uniform vec3 flashlightPosition;
+        uniform vec3 flashlightDirection;
+        uniform float circleRadius;
+        
+        varying vec3 vWorldPosition; 
+        
+        void main() {
+          vec3 toFragment = vWorldPosition - flashlightPosition;
+        
+        
+          float distanceAlongRay = dot(toFragment, flashlightDirection);
+        
+          // make sure the flashlight effect only works in front
+          if (distanceAlongRay < 0.0) {
+            gl_FragColor = vec4(vec3(0.0), 0.985); 
+            return;
+          }
+        
+          vec3 onRay = flashlightPosition + flashlightDirection * distanceAlongRay;
+          float circleDistance = length(onRay - vWorldPosition);
+        
+          if (circleDistance >= circleRadius) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.985); 
+          } else {
+            discard; 
+          }
+        }`}
         transparent
       />
     </TrackedMesh>

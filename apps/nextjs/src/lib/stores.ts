@@ -3,7 +3,8 @@ import type {
   FriendsEventMap,
   GameState,
   GeneralEventMap,
-  HotnColdGameEvents,
+  GeneralLobbyEvent,
+  HotnColdEventMap,
   HotnColdGameState,
   HotnColdPlayer,
   LobbyEventMap,
@@ -18,7 +19,10 @@ import type { Channel, PresenceChannel } from "pusher-js";
 import Pusher from "pusher-js";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { createWithEqualityFn } from "zustand/traditional";
+
+import { GameNames } from "./constants";
+
+// import { createWithEqualityFn } from "zustand/traditional";
 
 interface LobbyState {
   players: Player[];
@@ -29,6 +33,7 @@ interface LobbyState {
   me: Player | null;
   isHost: boolean;
   lobbyId: string | null;
+  lobbyEventsInitialized: boolean;
 }
 
 interface UserPusherInfo {
@@ -66,6 +71,7 @@ const initialPusherState: PusherState = {
 const initialLobbyState: LobbyState = {
   me: null,
   players: [],
+  lobbyEventsInitialized: false,
   starting: false,
   isMinaOn: false,
   channel: null,
@@ -76,11 +82,13 @@ const initialLobbyState: LobbyState = {
 
 export const initialHotnColdState: HotnColdGameState = {
   status: HotnColdGameStatus.LOBBY,
+  gameEventsInitialized: false,
+  startRoomSync: false,
   me: null,
   opponent: null,
 };
 
-export const usePusher = createWithEqualityFn(
+export const usePusher = create(
   combine(initialPusherState, (set, get) => ({
     initPusher: (userInfo: PusherUserInfo) => {
       if (!userInfo.imageUrl.includes("/api/imageProxy")) {
@@ -185,6 +193,8 @@ export const usePusher = createWithEqualityFn(
         throw new Error(`Channel ${channelName} does not exist`);
       }
 
+      channel.unbind_all();
+
       channel.unsubscribe();
 
       const newActiveChannels = activeChannels.filter(
@@ -240,7 +250,7 @@ export const usePusher = createWithEqualityFn(
   })),
 );
 
-export const useFriendsStore = createWithEqualityFn(
+export const useFriendsStore = create(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   combine(initialLobbyState, (set, get) => {
     return {
@@ -285,7 +295,7 @@ export const useFriendsStore = createWithEqualityFn(
   }),
 );
 
-export const useLobbyStore = createWithEqualityFn(
+export const useLobbyStore = create(
   combine(initialLobbyState, (set, get) => {
     return {
       setMe: (me: Player) => {
@@ -338,7 +348,7 @@ export const useLobbyStore = createWithEqualityFn(
           players: state.players.length > 0 ? state.players : [me],
         }));
 
-        const channel = pusher.channel(channelName);
+        const channel = pusher.channel(channelName) as PresenceChannel;
 
         if (!channel) {
           throw new Error(
@@ -418,7 +428,7 @@ export const useLobbyStore = createWithEqualityFn(
                   }
                 });
 
-                set({ players: [...sortedPlayers] });
+                set({ players: [...sortedPlayers], channel });
               });
             },
           );
@@ -479,17 +489,60 @@ export const useLobbyStore = createWithEqualityFn(
 
             set({ players: newPlayers });
           });
+
+          set({ lobbyEventsInitialized: true, channel });
         } catch (error) {
           console.error("subscribeToPresenceChannel: ", error);
         }
+      },
+      initGameEventsToPresenceChannel: (
+        channelName: string,
+        gameName: GameNames,
+      ) => {
+        const { me, lobbyEventsInitialized } = get();
+        const pusher = usePusher.getState().pusher;
+        const addHotnColdGameEvents = useHotnCold.getState().addGameEvents;
+
+        if (!me) {
+          throw new Error("addGameEventsToPresenceChannel: Me is not set");
+        }
+
+        if (!pusher) {
+          throw new Error("addGameEventsToPresenceChannel: Pusher is not set");
+        }
+
+        if (!lobbyEventsInitialized) {
+          throw new Error(
+            "addGameEventsToPresenceChannel: Lobby events are not initialized",
+          );
+        }
+
+        const channel = pusher.channel(channelName);
+
+        if (!channel) {
+          throw new Error(
+            `addGameEventsToPresenceChannel: Channel ${channelName} was not found`,
+          );
+        }
+
+        switch (gameName) {
+          case "Hot 'n Cold":
+            addHotnColdGameEvents();
+            break;
+          default:
+            break;
+        }
+
+        // try {
+
+        // } catch (error) {
+        //   console.error("subscribeToPresenceChannel: ", error);
+        // }
       },
       unsubscribeFromPresenceChannel: (lobbyId: string) => {
         const { unsubscribeFromChannel } = usePusher.getState();
 
         unsubscribeFromChannel(`presence-lobby-${lobbyId}`);
-      },
-      onPusherEvent: (event: HotnColdGameEvents) => {
-        console.log("onPusherEvent: ", event);
       },
     };
   }),
@@ -498,77 +551,32 @@ export const useLobbyStore = createWithEqualityFn(
 export const useHotnCold = create(
   combine(initialHotnColdState, (set, get) => {
     return {
-      updatePlayers: () => {
-        const me = useLobbyStore.getState().me;
-
-        if (!me) {
-          throw new Error("assignStateValues: Me is not set in lobby store");
-        }
-
-        const players = useLobbyStore.getState().players;
-
-        if (players.length < 1) {
-          throw new Error(
-            "assignStateValues: 2 players are required to play the game",
-          );
-        }
-
-        const opponent = players.find((p) => p.id !== me.id);
-
-        if (!opponent) {
-          throw new Error(
-            "assignStateValues: Opponent is not found in players",
-          );
-        }
-
-        set({
-          me: {
-            ...me,
-            hiding: false,
-            foundObject: false,
-            playerPosition: null,
-            playerProximity: null,
-            objectPosition: null,
-            objectMatrix: null,
-            roomLayout: null,
-          },
-          opponent: {
-            ...opponent,
-            hiding: false,
-            foundObject: false,
-            playerPosition: null,
-            playerProximity: null,
-            objectPosition: null,
-            objectMatrix: null,
-            roomLayout: null,
-          },
-        });
-      },
       addGameEvents: () => {
-        // const { channel } = useLobbyStore.getState();
+        const {
+          me: gameMe,
+          opponent: gameOpponent,
+          setMe: setGameMe,
+        } = useHotnCold.getState();
+
+        const { me: lobbyMe, lobbyEventsInitialized } =
+          useLobbyStore.getState();
         const channel = useHotnCold.getState().getGameChannel();
+
+        if (!lobbyEventsInitialized) {
+          throw new Error(
+            "addGameEvents: Lobby events are not initialized, cannot add game events yet",
+          );
+        }
 
         if (!channel) {
           throw new Error("initGameEvents: Presence Channel is not set");
         }
 
+        if (!lobbyMe) {
+          throw new Error("addGameEvents: Lobby Me is not set");
+        }
+
         // const { addEventsToPresenceChannel } = useLobbyStore.getState();
-
-        type HotnColdEvents =
-          | "client-status-change"
-          | "client-in-game"
-          | "client-hiding"
-          | "client-done-hiding"
-          | "client-seeking"
-          | "client-set-object"
-          | "client-found-object";
-
-        type HotnColdEventCallbacks =
-          | (() => void)
-          | (({ status }: { status: HotnColdGameStatus }) => void)
-          | (({ objectPosition }: { objectPosition: THREE.Vector3 }) => void);
-
-        type HotnColdEventMap = Record<HotnColdEvents, HotnColdEventCallbacks>;
 
         const eventMap: HotnColdEventMap = {
           "client-status-change": ({
@@ -580,7 +588,9 @@ export const useHotnCold = create(
           },
           "client-in-game": () => {
             console.log("client-in-game");
-            const { opponent } = get();
+            const { opponent, me, status } = get();
+
+            const { setGameStatus } = useHotnCold.getState();
 
             if (!opponent) {
               throw new Error("client-in-game: Opponent is not set");
@@ -589,6 +599,14 @@ export const useHotnCold = create(
             set({
               opponent: { ...opponent, inGame: true },
             });
+
+            if (!me) {
+              throw new Error("client-in-game: Me is not set");
+            }
+
+            if (me.inGame && status !== HotnColdGameStatus.BOTHHIDING) {
+              setGameStatus(HotnColdGameStatus.BOTHHIDING);
+            }
           },
           "client-hiding": () => {
             console.log("client-hiding");
@@ -679,7 +697,86 @@ export const useHotnCold = create(
         Object.entries(eventMap).forEach(([eventName, handler]) => {
           channel.bind(eventName, handler);
         });
+
+        const newGameMe: HotnColdPlayer = {
+          ...lobbyMe,
+          gameEventsInitialized: true,
+          hiding: false,
+          foundObject: false,
+          playerPosition: null,
+          playerProximity: null,
+          objectPosition: null,
+          objectMatrix: null,
+          roomLayout: null,
+        };
+
+        if (!gameMe) {
+          setGameMe({ ...newGameMe });
+        }
+
+        // setGameStatus(HotnColdGameStatus.PREGAME);
+
+        channel.trigger(
+          "client-game-events-initialized" as GeneralLobbyEvent,
+          {
+            oppInfo: newGameMe,
+            gameName: "Hot 'n Cold",
+          } as {
+            oppInfo: HotnColdPlayer;
+            gameName: GameNames;
+          },
+        );
+
+        gameOpponent
+          ? set({ gameEventsInitialized: true })
+          : set({ gameEventsInitialized: false });
       },
+      // updatePlayers: () => {
+      //   const me = useLobbyStore.getState().me;
+
+      //   if (!me) {
+      //     throw new Error("assignStateValues: Me is not set in lobby store");
+      //   }
+
+      //   const players = useLobbyStore.getState().players;
+
+      //   if (players.length < 1) {
+      //     throw new Error(
+      //       "assignStateValues: 2 players are required to play the game",
+      //     );
+      //   }
+
+      //   const opponent = players.find((p) => p.id !== me.id);
+
+      //   if (!opponent) {
+      //     throw new Error(
+      //       "assignStateValues: Opponent is not found in players",
+      //     );
+      //   }
+
+      //   set({
+      //     me: {
+      //       ...me,
+      //       hiding: false,
+      //       foundObject: false,
+      //       playerPosition: null,
+      //       playerProximity: null,
+      //       objectPosition: null,
+      //       objectMatrix: null,
+      //       roomLayout: null,
+      //     },
+      //     opponent: {
+      //       ...opponent,
+      //       hiding: false,
+      //       foundObject: false,
+      //       playerPosition: null,
+      //       playerProximity: null,
+      //       objectPosition: null,
+      //       objectMatrix: null,
+      //       roomLayout: null,
+      //     },
+      //   });
+      // },
       setGameStatus: (status: HotnColdGameStatus) => {
         const { me, opponent, status: currentStatus } = get();
 
@@ -688,7 +785,6 @@ export const useHotnCold = create(
           throw new Error(
             `setGameStatus: Status is already ${status}, cannot set to the same status`,
           );
-          return;
         }
 
         if (!me) {
@@ -716,11 +812,12 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.BOTHHIDING:
-            if (!me.inGame || !opponent.inGame) {
-              throw new Error(
-                "setGameStatus: Both players are not in game yet, cannot set to bothHiding yet",
-              );
-            }
+            useHotnCold.setState({ startRoomSync: true });
+            // if (!me.inGame || !opponent.inGame) {
+            //   throw new Error(
+            //     "setGameStatus: Both players are not in game yet, cannot set to bothHiding yet",
+            //   );
+            // }
             break;
           case HotnColdGameStatus.ONEHIDING:
             if (me.hiding && opponent.hiding) {
