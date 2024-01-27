@@ -2,8 +2,15 @@
 
 import React, { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
-function FriendRowSkeleton({ rows = 1 }: { rows?: number }) {
+function FriendRowSkeleton({
+  rows = 1,
+  className,
+}: {
+  rows?: number;
+  className?: string;
+}) {
   const arr = useMemo(() => {
     return Array.from({ length: rows }).map((_, i) => i);
   }, [rows]);
@@ -11,15 +18,20 @@ function FriendRowSkeleton({ rows = 1 }: { rows?: number }) {
   return (
     <div className="flex flex-col">
       {arr.map((i) => (
-        <FriendRowSkeletonItem key={i} />
+        <FriendRowSkeletonItem className={className} key={i} />
       ))}
     </div>
   );
 }
 
-function FriendRowSkeletonItem() {
+function FriendRowSkeletonItem({ className }: { className?: string }) {
   return (
-    <div className="flex items-center justify-between gap-x-4 py-5">
+    <div
+      className={cn(
+        className,
+        "flex items-center justify-between gap-x-4 py-5",
+      )}
+    >
       <div className="flex min-w-0">
         <Skeleton className="h-8 w-8 rounded-full" />
       </div>

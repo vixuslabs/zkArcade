@@ -49,12 +49,9 @@ export async function POST(req: Request) {
       "svix-signature": svix_signature,
     }) as WebhookEvent;
 
-    // now test the type of the end point and update db accordingly
-
     let id: string | undefined,
       username: string | null,
       image_url: string,
-      // created_at: number,
       email_addresses: EmailAddressJSON[];
 
     switch (evt.type) {

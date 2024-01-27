@@ -4,6 +4,7 @@ import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
+
 import type { AppRouter } from "@zkarcade/api";
 
 import { getUrl, transformer } from "./shared";
@@ -12,7 +13,7 @@ export const api = createTRPCReact<AppRouter>();
 
 export function TRPCReactProvider(props: {
   children: React.ReactNode;
-  headers: Headers;
+  // headers: Headers;
 }) {
   const [queryClient] = useState(() => new QueryClient());
 
@@ -27,11 +28,11 @@ export function TRPCReactProvider(props: {
         }),
         unstable_httpBatchStreamLink({
           url: getUrl(),
-          headers() {
-            const heads = new Map(props.headers);
-            heads.set("x-trpc-source", "react");
-            return Object.fromEntries(heads);
-          },
+          // headers() {
+          //   const heads = new Map(props.headers);
+          //   heads.set("x-trpc-source", "react");
+          //   return Object.fromEntries(heads);
+          // },
         }),
       ],
     }),

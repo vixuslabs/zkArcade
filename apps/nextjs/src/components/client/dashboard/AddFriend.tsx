@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/trpc/react";
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -33,6 +34,7 @@ import * as z from "zod";
 // import { usePusher } from "../lobbyStore";
 
 function AddFriend() {
+  const { user: currentUser } = useUser();
   const [retrievedUser, setRetrievedUser] = useState<{
     id: string;
     username: string;
@@ -81,10 +83,19 @@ function AddFriend() {
   }, [noUserFound, toast]);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setLoading(true);
-    const user = await utils.users.getUser.fetch({ username: data.username });
+    if (currentUser?.username === data.username) {
+      toast({
+        variant: "destructive",
+        title: "You can't add yourself!",
+        description: "Nice try lolololol",
+        duration: 5000,
+      });
+      return;
+    }
 
-    console.log(`user`, user);
+    setLoading(true);
+
+    const user = await utils.users.getUser.fetch({ username: data.username });
 
     if (!user) {
       setNoUserFound(true);

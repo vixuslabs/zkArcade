@@ -20,7 +20,7 @@ import { api } from "@/trpc/react";
 
 const IS_EXTERNAL_LINK = true;
 
-function DialogCloseButton() {
+function InviteFriendsContent() {
   const friends = api.friendships.getUsersFriends.useQuery({
     externalLink: IS_EXTERNAL_LINK,
   });
@@ -46,8 +46,6 @@ function DialogCloseButton() {
       variant: "default",
       duration: 3000,
     });
-
-    // revalidatePath("/dashboard");
   };
 
   return (
@@ -113,4 +111,4 @@ function DialogCloseButton() {
   );
 }
 
-export default DialogCloseButton;
+export default InviteFriendsContent;

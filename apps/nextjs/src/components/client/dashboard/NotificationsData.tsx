@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Fragment, Suspense, useMemo } from "react";
-// import { revalidatePath } from "next/cache";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -17,10 +16,8 @@ function NotificationData() {
         type: "pending",
       },
       {
-        // refetchOnWindowFocus: true,
-        // refetchOnMount: true,
         trpc: {
-          ssr: false,
+          ssr: true,
         },
       },
     );
@@ -31,10 +28,8 @@ function NotificationData() {
         status: "pending",
       },
       {
-        // refetchOnWindowFocus: true,
-        // refetchOnMount: true,
         trpc: {
-          ssr: false,
+          ssr: true,
         },
       },
     );
@@ -119,7 +114,7 @@ function NotificationData() {
             return (
               <Fragment key={noti.gameId}>
                 <div className="my-2 flex flex-1 justify-between">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem disableBgAccent>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
                         {noti.sender.username} invited you to a game!
@@ -161,7 +156,7 @@ function NotificationData() {
             return (
               <Fragment key={noti.requestId}>
                 <div className="my-2 flex flex-1 justify-between">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem disableBgAccent>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
                         {noti.sender.username} sent you a friend request!
@@ -198,7 +193,7 @@ function NotificationData() {
           }
         })
       ) : (
-        <DropdownMenuItem>
+        <DropdownMenuItem disableBgAccent>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
               No new notifications

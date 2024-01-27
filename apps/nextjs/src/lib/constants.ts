@@ -27,6 +27,13 @@ export type GameNames =
   | "zkTicTacToe"
   | "Sandbox";
 
+export const gameNames: GameNames[] = [
+  "Hot 'n Cold",
+  "zkBattleship",
+  "zkTicTacToe",
+  "Sandbox",
+];
+
 export interface CarouselGameInfo {
   name: GameNames;
   mainDescription: string;
@@ -43,6 +50,12 @@ export const carouselGamesInfo: CarouselGameInfo[] = [
     imageUrl: "/thumbnails/hotnCold.png",
   },
   {
+    name: "Sandbox",
+    mainDescription: `Play around with the tools and objects in your room. Meant to be a fun and quick environment to test out mixed reality in your room!`,
+    zkDescription: "No zk stuff going on here, just a sandbox.",
+    imageUrl: "/thumbnails/sandbox.png",
+  },
+  {
     name: "zkBattleship",
     mainDescription: `This is like the original Battleship game we all know and love, yet upgraded. The game is played in mixed reality, with your board right in front of you, and the ships as grabbable objects. Start the game by placing your ships on your board. The game is played in rounds, where each player takes a turn guessing a coordinate on the grid. If the coordinate is a hit, the player gets to guess again. The first player to sink all of their opponent's ships wins!`,
     zkDescription:
@@ -55,12 +68,6 @@ export const carouselGamesInfo: CarouselGameInfo[] = [
     zkDescription:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Sed elementum tempus egestas sed sed risus pretium quam.",
     imageUrl: "/thumbnails/zkTicTacToe.png",
-  },
-  {
-    name: "Sandbox",
-    mainDescription: `Play around with the tools and objects in your room. Meant to be a fun and quick environment to test out mixed reality in your room!`,
-    zkDescription: "No zk stuff going on here, just a sandbox.",
-    imageUrl: "/thumbnails/sandbox.png",
   },
 ];
 

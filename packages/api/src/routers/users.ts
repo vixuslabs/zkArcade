@@ -32,18 +32,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
-    // const userClerk = await clerkClient.users.getUser(ctx.auth.userId);
     const user = await getUser(ctx.auth.userId, ctx.db);
-
-    // const query = ctx.db.query.users
-    //   .findFirst({
-    //     where: eq(users.id, user.id),
-    //   })
-    //   .prepare();
-
-    // const userDB = await query.execute();
-
-    // if (!userDB) return null;
 
     return {
       id: user.id,

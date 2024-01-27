@@ -15,4 +15,7 @@ export { default as StartSandbox } from "./StartSandbox";
 export { default as GameCarousel } from "./GameCarousel";
 export { default as CarouselImage } from "./CarouselImage";
 export { default as GameOverview } from "./GameOverview";
+
+// Friends
 export { default as FriendsListData } from "./FriendsListData";
+export { default as FriendProfileDialog } from "./FriendProfileDialog";
