@@ -6,6 +6,7 @@
  * @see https://v0.dev/t/IeYI0zKLess
  */
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 // import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -37,13 +38,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/components/ui/use-toast";
 import { gameNames } from "@/lib/constants";
+import type { GameNames } from "@/lib/types";
+import { useZkArcade } from "@/lib/zkArcadeStore";
 import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-
-// import { X } from "lucide-react";
 
 interface FriendProfileDialogProps {
   username: string;
@@ -56,10 +58,12 @@ export default function FriendProfileDialog({
   imageUrl,
   id: friendId,
 }: FriendProfileDialogProps) {
-  // const router = useRouter();
+  const router = useRouter();
+  const { matchPath } = useZkArcade();
   const [open, setOpen] = useState(false);
   const { user } = useUser();
   const friendshipMutation = api.friendships.deleteFriend.useMutation();
+  const inviteMutation = api.games.sendGameInvite.useMutation();
 
   const handleDeleteFriend = async () => {
     if (!user) {
@@ -86,6 +90,59 @@ export default function FriendProfileDialog({
       variant: "destructive",
       duration: 5000,
     });
+  };
+
+  const handleInviteToGame = (gameName: GameNames) => {
+    if (!user) {
+      return;
+    }
+
+    if (!user.username) {
+      return;
+    }
+
+    if (gameName !== "Hot 'n Cold") {
+      toast({
+        title: `Unable to Invite`,
+        description: `Game still in development.`,
+        variant: "destructive",
+        duration: 3000,
+      });
+
+      return;
+    }
+
+    toast({
+      title: `Inviting ${username}`,
+      description: `Please stay on the page`,
+      variant: "default",
+      duration: 3000,
+    });
+
+    const mathPathArr = matchPath.split("/");
+
+    const lobbyId = mathPathArr[mathPathArr.length - 1];
+
+    if (!lobbyId) {
+      console.log("matchPath: ", matchPath);
+      throw new Error("FriendProfileDialog: No lobby id found");
+    }
+
+    inviteMutation.mutate({
+      senderUsername: user.username,
+      receiverId: friendId,
+      lobbyId,
+    });
+
+    toast({
+      title: `Invite Sent to ${username}!`,
+      description: `Redirecting to lobby now...`,
+      variant: "default",
+      duration: 1000,
+      action: <ToastAction altText="Dismiss">Dismiss</ToastAction>,
+    });
+
+    router.push(matchPath);
   };
 
   return (
@@ -129,11 +186,24 @@ export default function FriendProfileDialog({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Invite to Game</DropdownMenuLabel>
+                <DropdownMenuLabel>Invite to:</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {gameNames.map((gameName) => (
-                  <DropdownMenuItem key={gameName}>{gameName}</DropdownMenuItem>
-                ))}
+                {gameNames
+                  .filter((name) => name !== "Sandbox")
+                  .map((gameName) => (
+                    <DropdownMenuItem
+                      disabled={gameName !== "Hot 'n Cold"}
+                      key={gameName}
+                      className={
+                        gameName === "Hot 'n Cold" ? "cursor-pointer" : ""
+                      }
+                      onClick={() => handleInviteToGame(gameName)}
+                    >
+                      {gameName === "Hot 'n Cold"
+                        ? gameName
+                        : `${gameName} (Coming Soon)`}
+                    </DropdownMenuItem>
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
             <AlertDialogTrigger asChild>

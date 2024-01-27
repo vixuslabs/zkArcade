@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import type { GameNames } from "@/lib/constants";
+import type { GameNames } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useZkArcade } from "@/lib/zkArcadeStore";
 import { usePusherClient } from "@/pusher/client";
 import { useUser } from "@clerk/nextjs";
 
@@ -15,21 +16,30 @@ interface CreateMatchButtonProps {
 
 function CreateMatchButton({ gameName, className }: CreateMatchButtonProps) {
   const id = useMemo(() => crypto.randomUUID(), []);
-  const [url, setUrl] = useState<string>("");
+  const { matchPath, setMatchPath } = useZkArcade();
   const { pusher } = usePusherClient();
-  const user = useUser();
+  const { user } = useUser();
 
   useEffect(() => {
     if (user) {
-      setUrl(`/play/${user.user?.username}/${id}`);
+      // setMatchPath(`/play/${user.username}/${id}`);
+
+      if (user.username) {
+        setMatchPath(user.username, id);
+      } else {
+        console.log(
+          "CreateMatchButton - useEffect: user.username is undefined",
+        );
+      }
     }
-  }, [user, setUrl, id]);
+  }, [user, setMatchPath, id]);
 
   return (
     <>
       {gameName === "Hot 'n Cold" ? (
         <Button
           variant="default"
+          disabled={!user || matchPath === ""}
           className={cn(
             className
               ? className
@@ -39,7 +49,7 @@ function CreateMatchButton({ gameName, className }: CreateMatchButtonProps) {
           asChild
         >
           <Link
-            href={url}
+            href={matchPath}
             onPointerDown={() => {
               console.log("inside Link - onPointerDown");
               pusher?.subscribe(`presence-lobby-${id}`);
