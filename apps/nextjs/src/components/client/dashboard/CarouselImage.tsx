@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import type { GameNames } from "@/lib/constants";
+import type { GameNames } from "@/lib/types";
 
 function CarouselImage({
   imageUrl,
@@ -20,6 +20,7 @@ function CarouselImage({
       height={height}
       src={imageUrl}
       alt={altText}
+      placeholder="blur"
     />
   );
 }
