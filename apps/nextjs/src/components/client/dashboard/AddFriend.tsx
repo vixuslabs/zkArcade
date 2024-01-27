@@ -207,7 +207,7 @@ function AddFriend() {
                     Searching...
                   </>
                 ) : (
-                  "Add Friend"
+                  "Search"
                 )}
               </Button>
             </form>
