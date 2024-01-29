@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useHotnCold } from "@/lib/stores";
+import { HotnColdGameStatus } from "@/lib/types";
 import { TrackedPlane } from "@coconut-xr/natuerlich/react";
-import { RigidBody } from "@react-three/rapier";
-import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
-
 import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
-import type { Mesh } from "three";
+import { RigidBody } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
+import type { Mesh } from "three";
+
+import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
 
 // import { SpacialPlaneProps } from "@/utils/types";
 
@@ -21,16 +23,7 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
   const { setMyPlanes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
-  // const [test, setTest] = React.useState<Vector3>();
-
-  // useEffect(() => {
-  //   console.log(`plane ref for ${name}`, ref.current);
-  //   if (ref.current) {
-  //     const world = ref.current.getWorldPosition(ref.current.position);
-  //     setTest(world);
-  //     console.log(`world position for plane named ${name}`, world);
-  //   }
-  // });
+  const { status } = useHotnCold();
 
   const [init, setInit] = useState(false);
 
@@ -44,6 +37,8 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
       console.log("no ref");
       return;
     }
+
+    if (status !== HotnColdGameStatus.LOADINGROOMS) return;
 
     void (() => {
       console.log("inside IIFE");

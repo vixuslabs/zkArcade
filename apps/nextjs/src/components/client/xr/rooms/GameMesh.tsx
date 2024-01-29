@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useHotnCold } from "@/lib/stores";
+import { HotnColdGameStatus } from "@/lib/types";
 import { TrackedMesh } from "@coconut-xr/natuerlich/react";
-import { RigidBody } from "@react-three/rapier";
-
 import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
+import { RigidBody } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
 import type { Mesh } from "three";
-import RoomShadow from "../RoomShadow";
+
 import { useMeshesAndPlanesContext } from "../../providers/MeshesAndPlanesProvider";
+import RoomShadow from "../RoomShadow";
 
 interface GameMeshProps {
   mesh: ExtendedXRMesh;
@@ -20,6 +22,7 @@ function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
   const { setMyMeshes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
+  const { status } = useHotnCold();
 
   const [init, setInit] = useState(false);
 
@@ -33,6 +36,8 @@ function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
       console.log("no ref");
       return;
     }
+
+    if (status !== HotnColdGameStatus.LOADINGROOMS) return;
 
     void (() => {
       console.log("inside IIFE");
@@ -60,7 +65,7 @@ function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
         ];
       });
     })();
-  }, [ref, init, mesh, setMyMeshes, name]);
+  }, [ref, init, mesh, setMyMeshes, name, status]);
 
   if (name === "global mesh") {
     return <RoomShadow mesh={mesh} />;

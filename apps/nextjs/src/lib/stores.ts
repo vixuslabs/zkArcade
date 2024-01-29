@@ -9,8 +9,10 @@ import type {
   HotnColdPlayer,
   LobbyEventMap,
   MeshInfo,
+  MeshPusherData,
   PartialEventMap,
   PlaneInfo,
+  PlanePusherData,
   Player,
   PusherUserInfo,
 } from "@/lib/types";
@@ -20,13 +22,13 @@ import Pusher from "pusher-js";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 
-import { GameNames } from "./constants";
+import type { GameNames } from "./types";
 
 // import { createWithEqualityFn } from "zustand/traditional";
 
 interface LobbyState {
   players: Player[];
-  starting: boolean;
+  gameStarting: boolean;
   isMinaOn: boolean;
   gameState: GameState | undefined;
   channel: PresenceChannel | null;
@@ -72,7 +74,7 @@ const initialLobbyState: LobbyState = {
   me: null,
   players: [],
   lobbyEventsInitialized: false,
-  starting: false,
+  gameStarting: false,
   isMinaOn: false,
   channel: null,
   gameState: undefined,
@@ -304,6 +306,16 @@ export const useLobbyStore = create(
       setHost: (host: boolean) => {
         set({ isHost: host });
       },
+      setPresenceChannel: (channel: PresenceChannel) => {
+        const { channel: curChannel } = get();
+
+        if (curChannel) {
+          console.log("setPresenceChannel: Channel already exists");
+          return;
+        }
+
+        set({ channel });
+      },
       updatePlayer: (player: Player) => {
         const { players } = get();
 
@@ -320,13 +332,19 @@ export const useLobbyStore = create(
           }),
         }));
       },
-      setStarting: (starting: boolean) => {
-        set({ starting });
+      setGameStarting: (gameStarting: boolean) => {
+        const setGameStatus = useHotnCold.getState().setGameStatus;
+
+        set({ gameStarting });
+
+        if (gameStarting) {
+          setGameStatus(HotnColdGameStatus.PREGAME);
+        }
       },
       setIsMinaOn: (isMinaOn: boolean) => {
         set({ isMinaOn });
       },
-      addEventsToPresenceChannel: (
+      initLobbyEventsToPresenceChannel: (
         channelName: string,
         eventMap: LobbyEventMap,
         isLobbyHost: boolean,
@@ -501,7 +519,7 @@ export const useLobbyStore = create(
       ) => {
         const { me, lobbyEventsInitialized } = get();
         const pusher = usePusher.getState().pusher;
-        const addHotnColdGameEvents = useHotnCold.getState().addGameEvents;
+        const initHotnColdGameEvents = useHotnCold.getState().initGameEvents;
 
         if (!me) {
           throw new Error("addGameEventsToPresenceChannel: Me is not set");
@@ -527,7 +545,7 @@ export const useLobbyStore = create(
 
         switch (gameName) {
           case "Hot 'n Cold":
-            addHotnColdGameEvents();
+            initHotnColdGameEvents();
             break;
           default:
             break;
@@ -551,11 +569,12 @@ export const useLobbyStore = create(
 export const useHotnCold = create(
   combine(initialHotnColdState, (set, get) => {
     return {
-      addGameEvents: () => {
+      initGameEvents: () => {
         const {
           me: gameMe,
           opponent: gameOpponent,
           setMe: setGameMe,
+          // setGameStatus,
         } = useHotnCold.getState();
 
         const { me: lobbyMe, lobbyEventsInitialized } =
@@ -576,8 +595,6 @@ export const useHotnCold = create(
           throw new Error("addGameEvents: Lobby Me is not set");
         }
 
-        // const { addEventsToPresenceChannel } = useLobbyStore.getState();
-
         const eventMap: HotnColdEventMap = {
           "client-status-change": ({
             status,
@@ -586,8 +603,8 @@ export const useHotnCold = create(
           }) => {
             set({ status });
           },
-          "client-in-game": () => {
-            console.log("client-in-game");
+          "client-in-game": ({ inGame: oppInGame }: { inGame: boolean }) => {
+            console.log("client-in-game: opp-", oppInGame);
             const { opponent, me, status } = get();
 
             const { setGameStatus } = useHotnCold.getState();
@@ -597,17 +614,208 @@ export const useHotnCold = create(
             }
 
             set({
-              opponent: { ...opponent, inGame: true },
+              opponent: { ...opponent, inGame: oppInGame },
             });
 
             if (!me) {
               throw new Error("client-in-game: Me is not set");
             }
 
-            if (me.inGame && status !== HotnColdGameStatus.BOTHHIDING) {
-              setGameStatus(HotnColdGameStatus.BOTHHIDING);
+            console.log("me.inGame", me.inGame);
+
+            console.log("status", status);
+
+            if (oppInGame) {
+              me.inGame && setGameStatus(HotnColdGameStatus.LOADINGROOMS);
             }
           },
+          "client-roomLayout-planes": ({
+            planes,
+          }: {
+            planes: PlanePusherData[];
+          }) => {
+            console.log("client-roomLayout-planes", planes);
+
+            const { setRoomLayout } = useHotnCold.getState();
+            const { opponent } = get();
+
+            if (!opponent) {
+              throw new Error("client-roomLayout-planes: Opponent is not set");
+            }
+
+            const updatedPlanes: PlaneInfo[] = planes.map((plane) => {
+              const bufferPos = new ArrayBuffer(
+                Object.keys(plane.geometry.position.array).length * 4,
+              ); // 4 bytes per Float32
+
+              const planePosArr = new Float32Array(bufferPos);
+
+              Object.entries(plane.geometry.position.array).forEach(
+                ([key, value]) => {
+                  const index = parseInt(key, 10);
+                  if (!isNaN(index) && typeof value === "number") {
+                    planePosArr[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: ${value}`,
+                    );
+                  }
+                },
+              );
+
+              if (!plane.geometry.index) {
+                throw new Error("client-roomLayout-planes: Index is not set");
+              }
+
+              const bufferIndex = new ArrayBuffer(
+                Object.keys(plane.geometry.index.array).length * 2,
+              ); // 2 bytes per Uint16
+
+              const planeIndexArr = new Uint16Array(bufferIndex);
+
+              Object.entries(plane.geometry.index.array).forEach(
+                ([key, value]) => {
+                  // Ensure key is a number and value is within Uint16 range
+                  const index = parseInt(key, 10);
+                  if (
+                    !isNaN(index) &&
+                    typeof value === "number" &&
+                    value >= 0 &&
+                    value <= 65535
+                  ) {
+                    planeIndexArr[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: ${value}`,
+                    );
+                  }
+                },
+              );
+
+              // const iArr = plane.geometry.index
+              //   ? new Float32Array(plane.geometry.index.array)
+              //   : null;
+
+              return {
+                ...plane,
+                geometry: {
+                  ...plane.geometry,
+                  position: {
+                    ...plane.geometry.position,
+                    array: planePosArr,
+                  },
+                  index: {
+                    ...plane.geometry.index,
+                    array: planeIndexArr,
+                  },
+                },
+              };
+            });
+
+            console.log("updatedPlanes", updatedPlanes);
+
+            setRoomLayout({ planes: updatedPlanes }, "opponent");
+          },
+          "client-roomLayout-meshes": ({
+            meshes,
+          }: {
+            meshes: MeshPusherData[];
+          }) => {
+            console.log("client-roomLayout-meshes", meshes);
+
+            const { setRoomLayout } = useHotnCold.getState();
+            const { opponent } = get();
+
+            const updatedMeshes: MeshInfo[] = meshes.map((mesh) => {
+              const positionsBuffer = new ArrayBuffer(
+                Object.keys(mesh.geometry.position.array).length * 4,
+              ); // 4 bytes per Float32
+              const positionsView = new Float32Array(positionsBuffer);
+
+              Object.entries(mesh.geometry.position.array).forEach(
+                ([key, value]) => {
+                  console.log("key", key);
+                  console.log("value", value);
+                  const index = parseInt(key, 10);
+                  if (!isNaN(index) && typeof value === "number") {
+                    positionsView[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: `,
+                    );
+                  }
+                },
+              );
+
+              if (!mesh.geometry.index) {
+                throw new Error("client-roomLayout-meshes: Index is not set");
+              }
+
+              const indicesBuffer = new ArrayBuffer(
+                Object.keys(mesh.geometry.index.array).length * 4,
+              ); // 4 bytes per Uint32
+              const indicesView = new Uint32Array(indicesBuffer);
+
+              Object.entries(mesh.geometry.index.array).forEach(
+                ([key, value]) => {
+                  const index = parseInt(key, 10);
+                  if (
+                    !isNaN(index) &&
+                    typeof value === "number" &&
+                    value >= 0 &&
+                    value <= 4294967295
+                  ) {
+                    indicesView[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: `,
+                    );
+                  }
+                },
+              );
+
+              return {
+                ...mesh,
+                geometry: {
+                  ...mesh.geometry,
+                  position: {
+                    ...mesh.geometry.position,
+                    array: positionsView,
+                  },
+                  index: {
+                    ...mesh.geometry.index,
+                    array: indicesView,
+                  },
+                },
+              };
+            });
+
+            if (!opponent) {
+              throw new Error("client-roomLayout-meshes: Opponent is not set");
+            }
+
+            console.log("updatedMeshes", updatedMeshes);
+
+            setRoomLayout({ meshes: updatedMeshes }, "opponent");
+          },
+          // "client-roomLayout-complete": ({
+          //   roomLayout,
+          // }: {
+          //   roomLayout: { meshes: MeshInfo[]; planes: PlaneInfo[] };
+          // }) => {
+          //   console.log("client-roomLayout-complete", roomLayout);
+
+          //   const { setRoomLayout } = useHotnCold.getState();
+          //   const { opponent } = get();
+
+          //   if (!opponent) {
+          //     throw new Error(
+          //       "client-roomLayout-complete: Opponent is not set",
+          //     );
+          //   }
+
+          //   setRoomLayout(roomLayout, "opponent");
+          // },
           "client-hiding": () => {
             console.log("client-hiding");
           },
@@ -669,7 +877,13 @@ export const useHotnCold = create(
             }
 
             set({
-              opponent: { ...opponent, objectPosition },
+              opponent: {
+                ...opponent,
+                objectPosition,
+                // seeking: true,
+                hidObject: true,
+                hiding: false,
+              },
             });
           },
           "client-found-object": ({
@@ -698,20 +912,54 @@ export const useHotnCold = create(
           channel.bind(eventName, handler);
         });
 
+        const opp = useLobbyStore.getState().players.find((p) => {
+          return p.id !== lobbyMe.id;
+        });
+
+        if (!opp) {
+          throw new Error("initGameEvents: Opponent is not set");
+        }
+
         const newGameMe: HotnColdPlayer = {
           ...lobbyMe,
           gameEventsInitialized: true,
           hiding: false,
+          seeking: false,
+          hidObject: false,
           foundObject: false,
           playerPosition: null,
           playerProximity: null,
           objectPosition: null,
           objectMatrix: null,
-          roomLayout: null,
+          roomLayout: {
+            meshes: [],
+            planes: [],
+          },
+        };
+
+        const newGameOpponent: HotnColdPlayer = {
+          ...opp,
+          gameEventsInitialized: false,
+          hiding: false,
+          seeking: false,
+          hidObject: false,
+          foundObject: false,
+          playerPosition: null,
+          playerProximity: null,
+          objectPosition: null,
+          objectMatrix: null,
+          roomLayout: {
+            meshes: [],
+            planes: [],
+          },
         };
 
         if (!gameMe) {
           setGameMe({ ...newGameMe });
+        }
+
+        if (!gameOpponent) {
+          set({ opponent: { ...newGameOpponent } });
         }
 
         // setGameStatus(HotnColdGameStatus.PREGAME);
@@ -727,9 +975,11 @@ export const useHotnCold = create(
           },
         );
 
-        gameOpponent
-          ? set({ gameEventsInitialized: true })
-          : set({ gameEventsInitialized: false });
+        set({ gameEventsInitialized: true });
+
+        // gameOpponent
+        //   ? set({ gameEventsInitialized: true })
+        //   : set({ gameEventsInitialized: false });
       },
       // updatePlayers: () => {
       //   const me = useLobbyStore.getState().me;
@@ -780,6 +1030,8 @@ export const useHotnCold = create(
       setGameStatus: (status: HotnColdGameStatus) => {
         const { me, opponent, status: currentStatus } = get();
 
+        const { setMe, setOpponent } = useHotnCold.getState();
+
         if (status === currentStatus) {
           console.log("setGameStatus: Status is already", status);
           throw new Error(
@@ -795,31 +1047,70 @@ export const useHotnCold = create(
           throw new Error("setGameStatus: Opponent is not set");
         }
 
+        console.log("setGameStatus: Passed Status is", status);
+
+        console.log("me ", me);
+        console.log("opponent ", opponent);
+
+        if (
+          // (!opponent && status !== HotnColdGameStatus.LOBBY) ||
+          !opponent &&
+          status !== HotnColdGameStatus.PREGAME
+        ) {
+          throw new Error("setGameStatus: Opponent is not set");
+        }
+
         // test cases to make sure that the game status is being set correctly
         switch (status) {
           case HotnColdGameStatus.PREGAME:
-            if (!me.ready && !opponent.ready) {
+            console.log("setGameStatus: Pregame");
+            if (!me.ready && !opponent?.ready) {
               throw new Error(
                 "setGameStatus: Both players are not ready, cannot set to pregame yet",
               );
             }
             break;
           case HotnColdGameStatus.IDLE:
-            if (!me.inGame && !opponent.inGame) {
+            console.log("setGameStatus: Idle");
+            if (!me.inGame && !opponent?.inGame) {
               throw new Error(
                 "setGameStatus: Both players have not launched the game, cannot set to idle yet. One player must launch the game",
               );
             }
             break;
-          case HotnColdGameStatus.BOTHHIDING:
+
+          case HotnColdGameStatus.LOADINGROOMS:
+            console.log("setGameStatus: LOADINGROOMS");
+            if (!me.inGame || !opponent.inGame) {
+              throw new Error(
+                "setGameStatus: Both players are not in game yet, cannot set to loadingRooms yet",
+              );
+            }
             useHotnCold.setState({ startRoomSync: true });
-            // if (!me.inGame || !opponent.inGame) {
-            //   throw new Error(
-            //     "setGameStatus: Both players are not in game yet, cannot set to bothHiding yet",
-            //   );
-            // }
+            break;
+          case HotnColdGameStatus.BOTHHIDING:
+            console.log("setGameStatus: BothHiding");
+
+            console.log("me.roomLayout ", me.roomLayout);
+            console.log("opponent.roomLayout ", opponent.roomLayout);
+
+            if (
+              !me.roomLayout.meshes ||
+              !me.roomLayout.planes ||
+              !opponent.roomLayout.meshes ||
+              !opponent.roomLayout.planes
+            ) {
+              throw new Error(
+                "setGameStatus: Both players do not have there rooms synced with user, cannot set to bothHiding yet",
+              );
+            }
+            setMe({ ...me, hiding: true });
+
+            setOpponent({ ...opponent, hiding: true });
+
             break;
           case HotnColdGameStatus.ONEHIDING:
+            console.log("setGameStatus: OneHiding");
             if (me.hiding && opponent.hiding) {
               throw new Error(
                 "setGameStatus: Both players are still hiding the object, cannot set status to oneHiding until one player is no longer hiding",
@@ -827,6 +1118,7 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.SEEKING:
+            console.log("setGameStatus: Seeking");
             if (me.hiding || opponent.hiding) {
               throw new Error(
                 "setGameStatus: One player is still hiding the object, cannot set to seeking yet",
@@ -834,6 +1126,7 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.GAMEOVER:
+            console.log("setGameStatus: GameOver");
             if (!me.foundObject && !opponent.foundObject) {
               throw new Error(
                 "setGameStatus: Neither player has found the object, cannot set to gameover yet",
@@ -854,25 +1147,39 @@ export const useHotnCold = create(
       },
       setRoomLayout: (
         roomLayout: {
-          meshes: MeshInfo[];
-          planes: PlaneInfo[];
+          meshes?: MeshInfo[];
+          planes?: PlaneInfo[];
         },
         user: "me" | "opponent",
       ) => {
-        // const { me } = get();
-        // if (!me) {
-        //   throw new Error("setRoomLayout: Me is not set");
-        // }
+        console.log("setRoomLayout called with user", user);
+        console.log("setRoomLayout called with roomLayout", roomLayout);
+
+        const { me, opponent } = get();
+
+        const { setGameStatus } = useHotnCold.getState();
+
+        if (!me) {
+          throw new Error("setRoomLayout: Me is not set");
+        }
+
+        if (!opponent) {
+          throw new Error("setRoomLayout: Opponent is not set");
+        }
 
         if (user === "me") {
           set((state) => {
             if (!state.me) {
               throw new Error("setRoomLayout: Me is not set");
             }
+
             return {
               me: {
                 ...state.me,
-                roomLayout: { ...roomLayout },
+                roomLayout: {
+                  meshes: roomLayout.meshes ?? state.me.roomLayout.meshes,
+                  planes: roomLayout.planes ?? state.me.roomLayout?.planes,
+                },
               },
             };
           });
@@ -881,13 +1188,35 @@ export const useHotnCold = create(
             if (!state.opponent) {
               throw new Error("setRoomLayout: Opponent is not set");
             }
+
             return {
               opponent: {
                 ...state.opponent,
-                roomLayout: { ...roomLayout },
+                roomLayout: {
+                  meshes: roomLayout.meshes ?? state.opponent.roomLayout.meshes,
+                  planes:
+                    roomLayout.planes ?? state.opponent.roomLayout?.planes,
+                },
               },
             };
           });
+        }
+
+        console.log("checking if roomLayout is ready");
+
+        console.log("me.roomLayout", me.roomLayout);
+        console.log("opponent.roomLayout", opponent.roomLayout);
+
+        console.log(`passed in roomLayout.meshes`, roomLayout.meshes);
+        console.log(`passed in roomLayout.planes`, roomLayout.planes);
+
+        if (
+          me.roomLayout.meshes.length > 0 &&
+          me.roomLayout.planes.length > 0 &&
+          opponent.roomLayout.planes.length > 0 &&
+          opponent.roomLayout.meshes.length > 0
+        ) {
+          setGameStatus(HotnColdGameStatus.BOTHHIDING);
         }
       },
       setPlayerPosition: (
@@ -962,6 +1291,8 @@ export const useHotnCold = create(
             return {
               me: {
                 ...state.me,
+                hidObject: true,
+                hiding: false,
                 objectPosition: position,
               },
             };
@@ -974,6 +1305,8 @@ export const useHotnCold = create(
             return {
               opponent: {
                 ...state.opponent,
+                hidObject: true,
+                hiding: false,
                 objectPosition: position,
               },
             };

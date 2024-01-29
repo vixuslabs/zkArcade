@@ -1,43 +1,60 @@
+import type { GeometryData } from "@/lib/types";
 import {
+  // BoxGeometry,
+  BufferAttribute,
   BufferGeometry,
-  Float32BufferAttribute,
+  // Float32BufferAttribute,
   Matrix4,
   Mesh,
-  MeshStandardMaterial,
-  Uint16BufferAttribute,
+  MeshBasicMaterial,
+  // MeshStandardMaterial,
+  // Uint16BufferAttribute,
 } from "three";
 
-function FriendMesh({
-  positionData,
-  indexData,
-  matrixData,
-}: {
-  positionData: { itemSize: number; array: number[] };
-  indexData: { itemSize: number; array: number[] };
-  matrixData: { elements: number[] };
+interface FriendMeshProps extends GeometryData {
   name?: string;
-}) {
-  const positionAttribute = new Float32BufferAttribute(
-    positionData.array,
-    positionData.itemSize,
-  );
-  const indexAttribute = new Uint16BufferAttribute(
-    indexData.array,
-    indexData.itemSize,
-  );
-  const matrix = new Matrix4().fromArray(matrixData.elements);
+  matrix: {
+    elements: number[];
+  };
+}
+
+function FriendMesh({ position, index, matrix, name }: FriendMeshProps) {
+  console.log("\n-------------\n");
+  console.log("name:", name);
+  console.log("inside FriendMesh component");
+  console.log("position:", position);
+  console.log("indexData:", index);
+  console.log("matrix:", matrix);
+
+  // const positionAttribute = new Float32BufferAttribute(
+  //   position.array,
+  //   position.itemSize,
+  // );
+  // const indexAttribute = new Uint16BufferAttribute(
+  //   indexData.array,
+  //   indexData.itemSize,
+  // );
+  const matrixFour = new Matrix4().fromArray(matrix.elements);
 
   const geometry = new BufferGeometry();
-  geometry.setAttribute("position", positionAttribute);
-  geometry.setIndex(indexAttribute);
+  // geometry.setAttribute("position", positionAttribute);
 
-  const material = new MeshStandardMaterial({
+  geometry.setAttribute("position", new BufferAttribute(position.array, 3));
+
+  index && geometry.setIndex(new BufferAttribute(index.array, 1));
+
+  const material = new MeshBasicMaterial({
+    side: 2,
     color: "#CC4F4F", // soft red for all furniture (global mesh not included)
   });
 
   const mesh = new Mesh(geometry, material);
 
-  mesh.applyMatrix4(matrix);
+  mesh.matrixAutoUpdate = false;
+
+  mesh.applyMatrix4(matrixFour);
+
+  console.log("FriendMesh - friend generated mesh:", mesh);
 
   return <primitive object={mesh} />;
 }

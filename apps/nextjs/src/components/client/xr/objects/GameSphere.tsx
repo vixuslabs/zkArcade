@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import { GrabPhysics } from "@/components/client/xr/physics";
+// import { useHotnCold } from "@/lib/stores";
 import type { ThreeEvent } from "@react-three/fiber";
 import { RigidBody, vec3 } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
@@ -21,6 +22,7 @@ function GameSphere({
   inGame: boolean;
 }) {
   const { pointers } = useControllerStateContext();
+  // const { me } = useHotnCold();
   const rigidRef = useRef<RapierRigidBody>(null);
   const ref = useRef<Mesh>(null);
   const rigidAndMeshRef = useRef({

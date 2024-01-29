@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
-import { useHotnCold } from "@/components/client/stores";
+import { useHotnCold } from "@/lib/stores";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { TriggerState } from "@/lib/types";
 import { RayBasicMaterial } from "@coconut-xr/natuerlich/defaults";
@@ -40,6 +40,7 @@ function GameControllers({
   inputSource,
   id,
 }: {
+  hidingObject?: boolean;
   inputSource: XRInputSource;
   id: number;
 }) {

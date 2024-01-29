@@ -9,7 +9,8 @@ import { FriendRoom } from "@/components/client/xr/rooms";
 import { Button } from "@/components/ui/button";
 import { useHotnCold } from "@/lib/stores";
 // import { useHotnCold, useLobbyStore } from "@/lib/stores";
-import { HotnColdEvents, HotnColdGameStatus } from "@/lib/types";
+import { HotnColdGameStatus } from "@/lib/types";
+import type { HotnColdEvents } from "@/lib/types";
 import { clippingEvents } from "@coconut-xr/koestlich";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
 import {
@@ -24,7 +25,6 @@ import {
   useHeighestAvailableFrameRate,
   useInputSources,
   useNativeFramebufferScaling,
-  useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
 import { XRPhysics } from "@vixuslabs/newtonxr";
@@ -44,8 +44,8 @@ function HotnColdGame({
 }: {
   // launchXR: boolean;
   gameEventsInitialized: boolean;
-  xrSupported: boolean;
-  setXRSupported: (isXRSupported: boolean) => void;
+  // xrSupported: boolean;
+  // setXRSupported: (isXRSupported: boolean) => void;
 }) {
   // const hotNColdStore = useHotnCold();
 
@@ -65,47 +65,18 @@ function HotnColdGame({
     new Vector3(0, 0, 0),
   );
 
-  // const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
 
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
 
   const isSupported = useSessionSupported("immersive-ar");
 
-  useSessionChange((curSession, prevSession) => {
-    // const hotnColdMe = hotNColdStore.me;
-
-    if (prevSession && !curSession) {
-      console.log("session ended");
-      // setStartSync(false);
-      // setXrStarted(false);
-
-      if (!me) {
-        throw new Error("useSessionChanaged - out of XR: no hotnColdMe");
-      }
-
-      setMe({ ...me, inGame: false });
-    }
-
-    if (curSession && !prevSession) {
-      console.log("session started");
-
-      if (!me) {
-        throw new Error("useSessionChanaged - into XR: no hotnColdMe");
-      }
-
-      // setStartSync(true);
-
-      setMe({ ...me, inGame: true });
-    }
-  }, []);
-
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
-  if (!isSupported) {
-    return null;
-  }
+  // if (!isSupported) {
+  //   return null;
+  // }
 
   if (!me || !opponent) {
     return null;
@@ -113,7 +84,7 @@ function HotnColdGame({
 
   return (
     <>
-      <div className="absolute bottom-16 z-30 flex items-center gap-x-12">
+      <div className="relative z-30 mt-4 flex items-center justify-center">
         <Button
           variant={"default"}
           onClick={() => {
@@ -123,16 +94,32 @@ function HotnColdGame({
 
               const channel = getGameChannel();
 
-              channel.trigger("client-in-game" as HotnColdEvents, {});
+              const { opponent } = useHotnCold.getState();
+
+              channel.trigger("client-in-game" as HotnColdEvents, {
+                inGame: true,
+              });
+
+              setMe({ ...me, inGame: true });
 
               if (!opponent) {
                 throw new Error("void enterAR().then: no opponent");
               }
 
+              console.log("void enterAR().then: opponent", opponent);
+
+              console.log("void enterAR().then: me", me);
+
               if (opponent.inGame) {
-                if (status !== HotnColdGameStatus.BOTHHIDING) {
-                  setGameStatus(HotnColdGameStatus.BOTHHIDING);
-                }
+                console.log(
+                  "void enterAR().then: opponent in game, setting status to SEEKING",
+                );
+                setGameStatus(HotnColdGameStatus.LOADINGROOMS);
+              } else {
+                console.log(
+                  "void enterAR().then: opponent not in game, setting status to IDLE",
+                );
+                setGameStatus(HotnColdGameStatus.IDLE);
               }
 
               // setStartSync(true);
@@ -169,9 +156,7 @@ function HotnColdGame({
               <ambientLight intensity={0.5} />
             )}
 
-            {(status === HotnColdGameStatus.BOTHHIDING ||
-              status === HotnColdGameStatus.ONEHIDING) &&
-              me.hiding && <GameSphere inGame position={[0, 2, -0.3]} />}
+            {me.hiding && <GameSphere inGame position={[0, 1, -0.3]} />}
 
             {status === HotnColdGameStatus.SEEKING &&
               opponent.objectPosition && (
@@ -184,57 +169,76 @@ function HotnColdGame({
                 />
               )}
 
+            {me.hiding && <FriendRoom />}
+
             <ImmersiveSessionOrigin>
-              {startRoomSync && (
-                <>
-                  <MeshesAndPlanesProvider>
-                    {/* {gameState && !gameState.me.isHiding && (
+              <MeshesAndPlanesProvider>
+                {/* {gameState && !gameState.me.isHiding && (
                       <BuildRoom inGame={true} />
                     )} */}
 
-                    {(status === HotnColdGameStatus.BOTHHIDING ||
-                      status === HotnColdGameStatus.ONEHIDING) &&
-                    me.roomLayout &&
-                    opponent.roomLayout ? (
-                      <FriendRoom />
-                    ) : (
-                      <BuildRoom inGame={true} />
-                    )}
-                    {/* {gameState &&
-                      gameState.isGameStarted &&
-                      gameState.me.isHiding && <FriendRoom />} */}
-                  </MeshesAndPlanesProvider>
-                </>
-              )}
-              {(status === HotnColdGameStatus.BOTHHIDING ||
-                status === HotnColdGameStatus.ONEHIDING) &&
-              me.hiding
-                ? inputSources.map((inputSource: XRInputSource) => {
-                    if (inputSource.handedness === "left") {
-                      return (
-                        <TeleportController
-                          onTeleport={setTeleportLocation}
-                          key={getInputSourceId(inputSource)}
-                          id={getInputSourceId(inputSource)}
-                          inputSource={inputSource}
-                        />
-                      );
-                    } else
-                      return (
-                        <GameControllers
-                          key={getInputSourceId(inputSource)}
-                          id={getInputSourceId(inputSource)}
-                          inputSource={inputSource}
-                        />
-                      );
-                  })
-                : inputSources.map((inputSource: XRInputSource) => (
-                    <GameControllers
-                      key={getInputSourceId(inputSource)}
-                      id={getInputSourceId(inputSource)}
-                      inputSource={inputSource}
-                    />
-                  ))}
+                {/* {status === HotnColdGameStatus.IDLE && (
+                    <BuildRoom inGame={true} />
+                  )} */}
+
+                {status === HotnColdGameStatus.SEEKING && (
+                  <BuildRoom inGame={true} />
+                )}
+
+                {status === HotnColdGameStatus.LOADINGROOMS &&
+                  startRoomSync && <BuildRoom syncingRoom inGame={true} />}
+              </MeshesAndPlanesProvider>
+
+              {(me.hiding ||
+                (me.hidObject && status === HotnColdGameStatus.ONEHIDING)) &&
+                inputSources.map((inputSource: XRInputSource) => (
+                  <GameControllers
+                    key={getInputSourceId(inputSource)}
+                    id={getInputSourceId(inputSource)}
+                    inputSource={inputSource}
+                  />
+                ))}
+
+              {/* {me.hidObject &&
+                status === HotnColdGameStatus.ONEHIDING &&
+                inputSources.map((inputSource: XRInputSource) => (
+                  <GameControllers
+                    key={getInputSourceId(inputSource)}
+                    id={getInputSourceId(inputSource)}
+                    inputSource={inputSource}
+                  />
+                ))} */}
+
+              {me.hidObject &&
+                me.seeking &&
+                inputSources.map((inputSource: XRInputSource) => {
+                  if (inputSource.handedness === "left") {
+                    return (
+                      <TeleportController
+                        onTeleport={setTeleportLocation}
+                        key={getInputSourceId(inputSource)}
+                        id={getInputSourceId(inputSource)}
+                        inputSource={inputSource}
+                      />
+                    );
+                  } else
+                    return (
+                      <GameControllers
+                        key={getInputSourceId(inputSource)}
+                        id={getInputSourceId(inputSource)}
+                        inputSource={inputSource}
+                      />
+                    );
+                })}
+
+              {/* // : inputSources.map((inputSource: XRInputSource) => (
+                //     <GameControllers
+                //       key={getInputSourceId(inputSource)}
+                //       id={getInputSourceId(inputSource)}
+                //       inputSource={inputSource}
+                //     />
+                //   ))} */}
+
               <Hands />
             </ImmersiveSessionOrigin>
           </XRPhysics>

@@ -1,4 +1,4 @@
-import type { Pointers } from "@/lib/types";
+import type { CarouselGameInfo, GameNames, Pointers } from "@/lib/types";
 
 export const initialPointerState: Pointers = {
   left: {
@@ -21,25 +21,12 @@ export const realWorldHiddenObject = {
   radius: 0.02,
 };
 
-export type GameNames =
-  | "Hot 'n Cold"
-  | "zkBattleship"
-  | "zkTicTacToe"
-  | "Sandbox";
-
 export const gameNames: GameNames[] = [
   "Hot 'n Cold",
   "zkBattleship",
   "zkTicTacToe",
   "Sandbox",
 ];
-
-export interface CarouselGameInfo {
-  name: GameNames;
-  mainDescription: string;
-  zkDescription: string;
-  imageUrl: string;
-}
 
 export const carouselGamesInfo: CarouselGameInfo[] = [
   {

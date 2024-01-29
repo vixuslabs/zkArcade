@@ -4,9 +4,10 @@
 import React, { forwardRef, useCallback, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
-import { useHotnCold } from "@/components/client/stores";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
+import { useHotnCold } from "@/lib/stores";
 import type { GrabProps, ObjectHeldCheck, RigidAndMeshRefs } from "@/lib/types";
+import { HotnColdGameStatus } from "@/lib/types";
 import { ButtonState } from "@coconut-xr/natuerlich/react";
 import { isXIntersection } from "@coconut-xr/xinteraction";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -20,7 +21,8 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
-    const { me, setObjectPosition, getGameChannel } = useHotnCold();
+    const { me, setObjectPosition, getGameChannel, setGameStatus } =
+      useHotnCold();
 
     const [isObjectSet, setIsObjectSet] = React.useState(false);
     const [isAnchored, setIsAnchored] = React.useState(false);
@@ -118,10 +120,6 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
 
       if (me && me.hiding && !isObjectSet) {
         setIsObjectSet(true);
-        // setGameState((prev) => {
-        //   if (!prev) {
-        //     return prev;
-        //   }
 
         const _myObjectPosition = meshRef.current.getWorldPosition(
           meshRef.current.position,
@@ -139,21 +137,43 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
 
         const channel = getGameChannel();
 
-        channel.trigger("client-game-hiding-done", {
+        const opponent = useHotnCold.getState().opponent;
+
+        if (!opponent) {
+          throw new Error("void handleAnchor(): no opponent");
+        }
+
+        if (opponent.hidObject && !opponent.hiding) {
+          console.log("opponent hid object");
+          setGameStatus(HotnColdGameStatus.SEEKING);
+        } else {
+          console.log("opponent did not hide object yet");
+          setGameStatus(HotnColdGameStatus.ONEHIDING);
+        }
+
+        channel.trigger("client-set-object", {
           objectPosition: _myObjectPosition,
           // objectMatrix: objMatrix,
         });
       }
-    }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet, getGameChannel]);
+    }, [
+      rigidRef,
+      meshRef,
+      me,
+      setObjectPosition,
+      isObjectSet,
+      getGameChannel,
+      setGameStatus,
+    ]);
 
-    const handleUnanchor = useCallback(() => {
-      if (!rigidRef?.current) return;
-      rigidRef.current.setBodyType(0, true);
-      rigidRef.current.setGravityScale(1, true);
-      rigidRef.current.resetTorques(true);
-      rigidRef.current.resetForces(true);
-      setIsAnchored(false);
-    }, [rigidRef]);
+    // const handleUnanchor = useCallback(() => {
+    //   if (!rigidRef?.current) return;
+    //   rigidRef.current.setBodyType(0, true);
+    //   rigidRef.current.setGravityScale(1, true);
+    //   rigidRef.current.resetTorques(true);
+    //   rigidRef.current.resetForces(true);
+    //   setIsAnchored(false);
+    // }, [rigidRef]);
 
     return (
       <mesh
@@ -216,7 +236,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             rightController.gamepad.buttons["b-button"] === ButtonState.PRESSED
           ) {
             console.log('unanchoring from "b" button press');
-            handleUnanchor();
+            // handleUnanchor();
             return;
           }
 
@@ -241,7 +261,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
               ButtonState.PRESSED &&
             isAnchorable
           ) {
-            console.log("setting object pressed");
+            console.log("setting object");
             downState.current = undefined;
             handleAnchor();
             return;
