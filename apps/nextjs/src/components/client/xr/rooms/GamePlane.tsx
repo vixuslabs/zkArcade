@@ -66,7 +66,7 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
         ];
       });
     })();
-  }, [ref, init, plane, setMyPlanes, name]);
+  }, [ref, init, plane, setMyPlanes, name, status]);
 
   return (
     <>

@@ -7,7 +7,7 @@ import { useControllerStateContext } from "@/components/client/providers/Control
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
 import { useHotnCold } from "@/lib/stores";
 import type { GrabProps, ObjectHeldCheck, RigidAndMeshRefs } from "@/lib/types";
-import { HotnColdGameStatus } from "@/lib/types";
+// import { HotnColdGameStatus } from "@/lib/types";
 import { ButtonState } from "@coconut-xr/natuerlich/react";
 import { isXIntersection } from "@coconut-xr/xinteraction";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -21,8 +21,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
-    const { me, setObjectPosition, getGameChannel, setGameStatus } =
-      useHotnCold();
+    const { me, setObjectPosition } = useHotnCold();
 
     const [isObjectSet, setIsObjectSet] = React.useState(false);
     const [isAnchored, setIsAnchored] = React.useState(false);
@@ -121,40 +120,32 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
       if (me && me.hiding && !isObjectSet) {
         setIsObjectSet(true);
 
-        const _myObjectPosition = meshRef.current.getWorldPosition(
+        const myObjectPosition = meshRef.current.getWorldPosition(
           meshRef.current.position,
         );
 
-        // const myObjectPosition = _myObjectPosition.divideScalar(2);
+        setObjectPosition(myObjectPosition, "me");
 
-        // console.log("myObjectPosition before", myObjectPosition);
+        // const channel = getGameChannel();
 
-        // const t = myObjectPosition.applyMatrix4(objMatrix);
+        // const opponent = useHotnCold.getState().opponent;
 
-        // console.log("myObjectPosition after", t);
+        // if (!opponent) {
+        //   throw new Error("void handleAnchor(): no opponent");
+        // }
 
-        setObjectPosition(_myObjectPosition, "me");
+        // if (opponent.hidObject && !opponent.hiding) {
+        //   console.log("opponent hid object");
+        //   setGameStatus(HotnColdGameStatus.SEEKING);
+        // } else {
+        //   console.log("opponent did not hide object yet");
+        //   setGameStatus(HotnColdGameStatus.ONEHIDING);
+        // }
 
-        const channel = getGameChannel();
-
-        const opponent = useHotnCold.getState().opponent;
-
-        if (!opponent) {
-          throw new Error("void handleAnchor(): no opponent");
-        }
-
-        if (opponent.hidObject && !opponent.hiding) {
-          console.log("opponent hid object");
-          setGameStatus(HotnColdGameStatus.SEEKING);
-        } else {
-          console.log("opponent did not hide object yet");
-          setGameStatus(HotnColdGameStatus.ONEHIDING);
-        }
-
-        channel.trigger("client-set-object", {
-          objectPosition: _myObjectPosition,
-          // objectMatrix: objMatrix,
-        });
+        // channel.trigger("client-set-object", {
+        //   objectPosition: myObjectPosition,
+        //   // objectMatrix: objMatrix,
+        // });
       }
     }, [
       rigidRef,
@@ -162,8 +153,8 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
       me,
       setObjectPosition,
       isObjectSet,
-      getGameChannel,
-      setGameStatus,
+      // getGameChannel,
+      // setGameStatus,
     ]);
 
     // const handleUnanchor = useCallback(() => {

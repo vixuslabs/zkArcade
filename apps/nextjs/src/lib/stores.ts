@@ -573,7 +573,8 @@ export const useHotnCold = create(
         const {
           me: gameMe,
           opponent: gameOpponent,
-          setMe: setGameMe,
+          // setMe: setGameMe,
+          // setOpponent: setGameOpponent,
           // setGameStatus,
         } = useHotnCold.getState();
 
@@ -798,24 +799,6 @@ export const useHotnCold = create(
 
             setRoomLayout({ meshes: updatedMeshes }, "opponent");
           },
-          // "client-roomLayout-complete": ({
-          //   roomLayout,
-          // }: {
-          //   roomLayout: { meshes: MeshInfo[]; planes: PlaneInfo[] };
-          // }) => {
-          //   console.log("client-roomLayout-complete", roomLayout);
-
-          //   const { setRoomLayout } = useHotnCold.getState();
-          //   const { opponent } = get();
-
-          //   if (!opponent) {
-          //     throw new Error(
-          //       "client-roomLayout-complete: Opponent is not set",
-          //     );
-          //   }
-
-          //   setRoomLayout(roomLayout, "opponent");
-          // },
           "client-hiding": () => {
             console.log("client-hiding");
           },
@@ -872,19 +855,27 @@ export const useHotnCold = create(
 
             const { opponent } = get();
 
+            const { setObjectPosition } = useHotnCold.getState();
+
             if (!opponent) {
               throw new Error("client-set-object: Opponent is not set");
             }
 
-            set({
-              opponent: {
-                ...opponent,
-                objectPosition,
-                // seeking: true,
-                hidObject: true,
-                hiding: false,
-              },
-            });
+            console.log("before set - opponent", opponent);
+
+            setObjectPosition(objectPosition, "opponent");
+
+            // set({
+            //   opponent: {
+            //     ...opponent,
+            //     objectPosition,
+            //     // seeking: true,
+            //     hidObject: true,
+            //     hiding: false,
+            //   },
+            // });
+
+            console.log("after set - opponent", opponent);
           },
           "client-found-object": ({
             objectPosition,
@@ -955,11 +946,13 @@ export const useHotnCold = create(
         };
 
         if (!gameMe) {
-          setGameMe({ ...newGameMe });
+          // setGameMe({ ...newGameMe });
+          set({ me: { ...newGameMe } });
         }
 
         if (!gameOpponent) {
           set({ opponent: { ...newGameOpponent } });
+          // setGameOpponent(newGameOpponent);
         }
 
         // setGameStatus(HotnColdGameStatus.PREGAME);
@@ -976,57 +969,7 @@ export const useHotnCold = create(
         );
 
         set({ gameEventsInitialized: true });
-
-        // gameOpponent
-        //   ? set({ gameEventsInitialized: true })
-        //   : set({ gameEventsInitialized: false });
       },
-      // updatePlayers: () => {
-      //   const me = useLobbyStore.getState().me;
-
-      //   if (!me) {
-      //     throw new Error("assignStateValues: Me is not set in lobby store");
-      //   }
-
-      //   const players = useLobbyStore.getState().players;
-
-      //   if (players.length < 1) {
-      //     throw new Error(
-      //       "assignStateValues: 2 players are required to play the game",
-      //     );
-      //   }
-
-      //   const opponent = players.find((p) => p.id !== me.id);
-
-      //   if (!opponent) {
-      //     throw new Error(
-      //       "assignStateValues: Opponent is not found in players",
-      //     );
-      //   }
-
-      //   set({
-      //     me: {
-      //       ...me,
-      //       hiding: false,
-      //       foundObject: false,
-      //       playerPosition: null,
-      //       playerProximity: null,
-      //       objectPosition: null,
-      //       objectMatrix: null,
-      //       roomLayout: null,
-      //     },
-      //     opponent: {
-      //       ...opponent,
-      //       hiding: false,
-      //       foundObject: false,
-      //       playerPosition: null,
-      //       playerProximity: null,
-      //       objectPosition: null,
-      //       objectMatrix: null,
-      //       roomLayout: null,
-      //     },
-      //   });
-      // },
       setGameStatus: (status: HotnColdGameStatus) => {
         const { me, opponent, status: currentStatus } = get();
 
@@ -1120,6 +1063,8 @@ export const useHotnCold = create(
           case HotnColdGameStatus.SEEKING:
             console.log("setGameStatus: Seeking");
             if (me.hiding || opponent.hiding) {
+              console.log("me.hiding", me.hiding);
+              console.log("opponent.hiding", opponent.hiding);
               throw new Error(
                 "setGameStatus: One player is still hiding the object, cannot set to seeking yet",
               );
@@ -1174,6 +1119,7 @@ export const useHotnCold = create(
             }
 
             return {
+              ...state,
               me: {
                 ...state.me,
                 roomLayout: {
@@ -1190,6 +1136,7 @@ export const useHotnCold = create(
             }
 
             return {
+              ...state,
               opponent: {
                 ...state.opponent,
                 roomLayout: {
@@ -1279,70 +1226,146 @@ export const useHotnCold = create(
           });
         }
       },
-      setObjectPosition: (
-        position: THREE.Vector3 | null,
-        user: "me" | "opponent",
-      ) => {
+      setObjectPosition: (position: THREE.Vector3, user: "me" | "opponent") => {
+        const { setGameStatus, getGameChannel } = useHotnCold.getState();
+
+        const channel = getGameChannel();
+
         if (user === "me") {
           set((state) => {
+            console.log("setObjectPosition - me: state", state);
             if (!state.me) {
               throw new Error("setObjectPosition: Me is not set");
             }
-            return {
-              me: {
-                ...state.me,
-                hidObject: true,
-                hiding: false,
-                objectPosition: position,
-              },
-            };
-          });
-        } else {
-          set((state) => {
+
             if (!state.opponent) {
               throw new Error("setObjectPosition: Opponent is not set");
             }
+
+            channel.trigger("client-set-object", {
+              objectPosition: position,
+            });
+
+            // const seeking =
+            //   state.opponent.hidObject && !state.opponent.hiding ? true : false;
+
+            // if (
+            //   seeking &&
+            //   (status === HotnColdGameStatus.BOTHHIDING ||
+            //     status === HotnColdGameStatus.ONEHIDING)
+            // ) {
+            //   setGameStatus(HotnColdGameStatus.SEEKING);
+            // }
+
+            return {
+              me: {
+                ...state.me,
+                hidObject: true,
+                hiding: false,
+                objectPosition: position,
+                // seeking,
+              },
+              // opponent: {
+              //   ...state.opponent,
+              //   seeking,
+              // },
+            };
+          });
+        } else if (user === "opponent") {
+          set((state) => {
+            console.log("setObjectPosition - opp: state", state);
+            if (!state.me) {
+              throw new Error("setObjectPosition - opp: Me is not set");
+            }
+
+            if (!state.opponent) {
+              throw new Error("setObjectPosition - opp: Opponent is not set");
+            }
+
+            // const seeking =
+            //   state.me.hidObject && !state.me.hiding ? true : false;
+
             return {
               opponent: {
                 ...state.opponent,
                 hidObject: true,
                 hiding: false,
                 objectPosition: position,
+                // seeking,
               },
-            };
-          });
-        }
-      },
-      setObjectMatrix: (
-        matrix: THREE.Matrix4 | null,
-        user: "me" | "opponent",
-      ) => {
-        if (user === "me") {
-          set((state) => {
-            if (!state.me) {
-              throw new Error("setObjectMatrix: Me is not set");
-            }
-            return {
-              me: {
-                ...state.me,
-                objectMatrix: matrix,
-              },
+              // me: {
+              //   ...state.me,
+              //   seeking,
+              // },
             };
           });
         } else {
-          set((state) => {
-            if (!state.opponent) {
-              throw new Error("setObjectMatrix: Opponent is not set");
-            }
-            return {
-              opponent: {
-                ...state.opponent,
-                objectMatrix: matrix,
-              },
-            };
+          throw new Error("setObjectPosition: Invalid user");
+        }
+
+        const { me, opponent, status } = get();
+
+        if (!me) {
+          throw new Error("setObjectPosition: Me is not set");
+        }
+
+        if (!opponent) {
+          throw new Error("setObjectPosition: Opponent is not set");
+        }
+
+        console.log("after setObjectPos if me, else if opp checks");
+        console.log("me", me);
+        console.log("opponent", opponent);
+
+        if (
+          !me.hiding &&
+          me.hidObject &&
+          opponent.hidObject &&
+          !opponent.hiding
+        ) {
+          setGameStatus(HotnColdGameStatus.SEEKING);
+        } else {
+          console.log("both players are not hiding and hid object ");
+          console.log({
+            meHiding: me.hiding,
+            meHidObject: me.hidObject,
+            oppHidObject: opponent.hidObject,
+            oppHiding: opponent.hiding,
           });
+          status !== HotnColdGameStatus.ONEHIDING &&
+            setGameStatus(HotnColdGameStatus.ONEHIDING);
         }
       },
+      // setObjectMatrix: (
+      //   matrix: THREE.Matrix4 | null,
+      //   user: "me" | "opponent",
+      // ) => {
+      //   if (user === "me") {
+      //     set((state) => {
+      //       if (!state.me) {
+      //         throw new Error("setObjectMatrix: Me is not set");
+      //       }
+      //       return {
+      //         me: {
+      //           ...state.me,
+      //           objectMatrix: matrix,
+      //         },
+      //       };
+      //     });
+      //   } else {
+      //     set((state) => {
+      //       if (!state.opponent) {
+      //         throw new Error("setObjectMatrix: Opponent is not set");
+      //       }
+      //       return {
+      //         opponent: {
+      //           ...state.opponent,
+      //           objectMatrix: matrix,
+      //         },
+      //       };
+      //     });
+      //   }
+      // },
       getGameChannel: () => {
         const channel = useLobbyStore.getState().channel;
 

@@ -2,10 +2,6 @@
 
 import React, { useMemo, useRef } from "react";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
-// // @ts-expect-error - will fix type error later
-// import fragment from "@/lib/shaders/roomShadow/fragment.glsl";
-// // @ts-expect-error - will fix type error later
-// import vertex from "@/lib/shaders/roomShadow/vertex.glsl";
 import { TrackedMesh } from "@coconut-xr/natuerlich/react";
 import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
 import { useFrame } from "@react-three/fiber";
@@ -14,7 +10,7 @@ import type { Mesh } from "three";
 
 /**
  *
- * @param mesh - The global mesh which we will be using to create the dark room
+ * @param mesh - The global mesh which we will be using to create the dark room + flashlight effect
  * @returns
  */
 function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
@@ -62,7 +58,6 @@ function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
     <TrackedMesh ref={ref} mesh={mesh}>
       <shaderMaterial
         uniforms={shaderUniforms}
-        // vertexShader={vertex as string}
         vertexShader={`varying vec3 vPosition;
         varying vec3 vWorldPosition;
             
@@ -71,7 +66,6 @@ function RoomShadow({ mesh }: { mesh: ExtendedXRMesh }) {
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
         }`}
-        // fragmentShader={fragment as string}
         fragmentShader={`uniform vec3 flashlightPosition;
         uniform vec3 flashlightDirection;
         uniform float circleRadius;
