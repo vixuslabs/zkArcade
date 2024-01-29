@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { usePusher } from "@/components/client/stores";
+import { usePusher } from "@/lib/stores";
 import { useUser } from "@clerk/nextjs";
 import type Pusher from "pusher-js";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/react/shallow";
 
 interface PusherContextValues {
   pusher: Pusher | null;
@@ -38,8 +38,7 @@ export function PusherClientProvider(props: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const { initPusher, removePusher, pusher } = usePusher();
   const pusherInitialized = usePusher(
-    (state) => state.pusherInitialized,
-    shallow,
+    useShallow((state) => state.pusherInitialized),
   );
   const { user, isSignedIn } = useUser();
 
