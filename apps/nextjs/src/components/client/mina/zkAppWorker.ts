@@ -45,24 +45,45 @@ const functions = {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     state.zkapp = new state.HotnCold!(publicKey);
   },
-  getObjectHash: async (args: {}) => {
-    const currentObjectHash = await state.zkapp!.objectHash.get();
+  getPlayer1ObjectHash: async (args: {}) => {
+    const currentObjectHash = await state.zkapp!.player1ObjectHash.get();
     return JSON.stringify(currentObjectHash.toJSON());
   },
-  createCommitObjectTransaction: async (args: { object: string }) => {
+  getPlayer2ObjectHash: async (args: {}) => {
+    const currentObjectHash = await state.zkapp!.player2ObjectHash.get();
+    return JSON.stringify(currentObjectHash.toJSON());
+  },
+  createcommitPlayer1ObjectTransaction: async (args: { object: string }) => {
     const transaction = await Mina.transaction(() => {
-      state.zkapp!.commitObject(Object3D.createFromJSON(args.object));
+      state.zkapp!.commitPlayer1Object(Object3D.createFromJSON(args.object));
     });
     state.transaction = transaction;
   },
-  createValidateRoomTransaction: async (args: {
+  createcommitPlayer2ObjectTransaction: async (args: { object: string }) => {
+    const transaction = await Mina.transaction(() => {
+      state.zkapp!.commitPlayer2Object(Object3D.createFromJSON(args.object));
+    });
+    state.transaction = transaction;
+  },
+  createvalidatePlayer1RoomTransaction: async (args: {
     room: string;
     object: string;
   }) => {
     const room = Room.createFromJSON(args.room);
     const object = Object3D.createFromJSON(args.object);
     const transaction = await Mina.transaction(() => {
-      state.zkapp!.validateRoom(room, object);
+      state.zkapp!.validatePlayer1Room(room, object);
+    });
+    state.transaction = transaction;
+  },
+  createvalidatePlayer2RoomTransaction: async (args: {
+    room: string;
+    object: string;
+  }) => {
+    const room = Room.createFromJSON(args.room);
+    const object = Object3D.createFromJSON(args.object);
+    const transaction = await Mina.transaction(() => {
+      state.zkapp!.validatePlayer2Room(room, object);
     });
     state.transaction = transaction;
   },

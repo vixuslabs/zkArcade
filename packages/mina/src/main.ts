@@ -94,7 +94,8 @@ if ((realWorldHiddenObject.coords[0] !== undefined)
   const deployTxn = await Mina.transaction(deployerAccount, () => {
     AccountUpdate.fundNewAccount(deployerAccount);
     zkAppInstance.deploy();
-    zkAppInstance.commitObject(object);
+    zkAppInstance.commitPlayer1Object(object);
+    zkAppInstance.commitPlayer2Object(object);
   });
   await deployTxn.prove();
   await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
@@ -102,7 +103,8 @@ if ((realWorldHiddenObject.coords[0] !== undefined)
   // ----------------------------------------------------
 
   const txn = await Mina.transaction(senderAccount, () => {
-      zkAppInstance.validateRoom(room, object);
+      zkAppInstance.validatePlayer1Room(room, object);
+      zkAppInstance.validatePlayer2Room(room, object);
   });
   await txn.prove();
   await txn.sign([senderKey]).send();
