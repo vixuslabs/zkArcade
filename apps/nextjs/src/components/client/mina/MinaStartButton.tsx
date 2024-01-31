@@ -6,6 +6,7 @@ import { useMinaContext } from "@/components/client/providers/MinaProvider";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import type { PublicKey } from "o1js";
+import { useLobbyStore } from "../stores";
 
 import { LoadingSpinner } from "../ui";
 import type ZkappWorkerClient from "./zkAppWorkerClient";
@@ -13,15 +14,18 @@ import type ZkappWorkerClient from "./zkAppWorkerClient";
 function MinaStartButton({
   children,
   setToXR,
-  publicKey,
-  privateKey,
+  // isPlayerOne,
+  // publicKey,
+  // privateKey,
 }: {
   children: React.ReactNode;
   setToXR: React.Dispatch<React.SetStateAction<boolean>>;
-  publicKey?: string;
-  privateKey?: string;
+  // isPlayerOne: boolean;
+  // publicKey?: string;
+  // privateKey?: string;
 }) {
   const { initiateMina, initialized } = useMinaContext();
+  const { me } = useLobbyStore();
   const [gameReady, setGameReady] = React.useState<boolean>(false);
 
   const handleLoadContract = useCallback(
@@ -34,6 +38,12 @@ function MinaStartButton({
     }) => {
       console.log("---- handleLoadContract ----");
       console.log("fetching Account");
+
+      if (!me) {
+        console.log("handleLoadContract - me not set in lobbyStore")
+        return;
+      }
+
       const fetchedAccount = await zkAppClient.fetchAccount({
         publicKey: zkAppPublicKey,
       });
@@ -50,18 +60,26 @@ function MinaStartButton({
       await zkAppClient.initZkappInstance(zkAppPublicKey);
       console.log("inited");
 
-      const hash = await zkAppClient.getObjectHash();
+      const hash = me.host ? await zkAppClient.getPlayer1ObjectHash() : await zkAppClient.getPlayer2ObjectHash();
 
-      console.log("hash", hash);
+      console.log(`Hash for player ${me.host ? "One: " : "Two"}`, hash);
     },
-    [],
+    [me],
   );
 
   useEffect(() => {
     void (async () => {
-      if (publicKey && privateKey && !initialized) {
+
+      if (!me) {
+        console.log("useEffect - me not set in lobbyStore")
+        return;
+      }
+
+      const { host, publicKey, privateKey } = me;
+      if (publicKey && privateKey && typeof host === "boolean" && !initialized) {
         console.log("THIS SHOULD BE FIRST");
         const mina = await initiateMina({
+          isPlayerOne: host,
           publicKey,
           privateKey,
         });
