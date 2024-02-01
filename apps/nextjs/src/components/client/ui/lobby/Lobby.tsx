@@ -85,7 +85,6 @@ function Lobby({
     setIsMinaOn,
     setStarting,
     starting,
-    me: lobbyMe,
     players,
   } = useLobbyStore();
   const [lobbyChannel, setLobbyChannel] =
@@ -138,15 +137,15 @@ function Lobby({
       initPusher(
         me
           ? {
-              userId: me.id,
-              username: me.username ?? "",
-              imageUrl: me.imageUrl,
-            }
+            userId: me.id,
+            username: me.username ?? "",
+            imageUrl: me.imageUrl,
+          }
           : {
-              userId: user.id,
-              username: user.username ?? "",
-              imageUrl: user.imageUrl,
-            },
+            userId: user.id,
+            username: user.username ?? "",
+            imageUrl: user.imageUrl,
+          },
       );
     }
 
@@ -303,8 +302,6 @@ function Lobby({
         ) : isMinaOn ? (
           <MinaStartButton
             setToXR={setToXR}
-            publicKey={lobbyMe?.publicKey}
-            privateKey={lobbyMe?.privateKey}
           >
             <Button
               variant={"default"}

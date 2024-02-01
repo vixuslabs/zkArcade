@@ -42,19 +42,37 @@ export default class ZkappWorkerClient {
     });
   }
 
-  async getObjectHash(): Promise<Field> {
-    const result = await this._call("getObjectHash", {});
+  async getPlayer1ObjectHash(): Promise<Field> {
+    const result = await this._call("getPlayer1ObjectHash", {});
     return Field.fromJSON(JSON.parse(result as string));
   }
 
-  createCommitObjectTransaction(objectHash: string) {
-    return this._call("createCommitObjectTransaction", {
+  async getPlayer2ObjectHash(): Promise<Field> {
+    const result = await this._call("getPlayer2ObjectHash", {});
+    return Field.fromJSON(JSON.parse(result as string));
+  }
+
+  createcommitPlayer1ObjectTransaction(objectHash: string) {
+    return this._call("createcommitPlayer1ObjectTransaction", {
       objectHash: objectHash,
     });
   }
 
-  createValidateRoomTransaction(room: string, object: string) {
-    return this._call("createValidateRoomTransaction", {
+  createcommitPlayer2ObjectTransaction(objectHash: string) {
+    return this._call("createcommitPlayer2ObjectTransaction", {
+      objectHash: objectHash,
+    });
+  }
+
+  createvalidatePlayer1RoomTransaction(room: string, object: string) {
+    return this._call("createvalidatePlayer1RoomTransaction", {
+      room: room,
+      object: object,
+    });
+  }
+
+  createvalidatePlayer2RoomTransaction(room: string, object: string) {
+    return this._call("createvalidatePlayer2RoomTransaction", {
       room: room,
       object: object,
     });

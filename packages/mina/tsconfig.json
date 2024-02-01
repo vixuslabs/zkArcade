@@ -1,7 +1,8 @@
 {
   "extends": "@zkarcade/tsconfig/base.json",
   "compilerOptions": {
-    "target": "es2020",
+    "tsBuildInfoFile": "build/tsconfig.tsbuildinfo",
+    "target": "es2022",
     "module": "es2022",
     "lib": ["dom", "esnext"],
     "outDir": "./build",
@@ -20,6 +21,6 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["./src"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

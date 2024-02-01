@@ -17,6 +17,7 @@ interface MinaState {
   initialized: boolean;
   pubKey: string;
   privKey: string;
+  isPlayerOne: boolean;
   zkAppPublicKey?: PublicKey;
   zkAppPrivateKey?: PrivateKey;
 }
@@ -30,9 +31,11 @@ interface MinaContextValues {
   mina: MinaState | null;
   setMina: React.Dispatch<React.SetStateAction<MinaState | null>> | null;
   initiateMina: ({
+    isPlayerOne,
     publicKey,
     privateKey,
   }: {
+    isPlayerOne: boolean;
     publicKey: string;
     privateKey: string;
   }) => Promise<InitiateMinaReturn | null>;
@@ -81,9 +84,11 @@ function MinaProvider({
 
   const initiateMina = useCallback(
     async ({
+      isPlayerOne,
       publicKey,
       privateKey,
     }: {
+      isPlayerOne: boolean;
       publicKey: string;
       privateKey: string;
     }): Promise<InitiateMinaReturn | null> => {
@@ -119,6 +124,7 @@ function MinaProvider({
           zkappWorkerClient: zkappWorkerClient,
           zkAppPublicKey,
           initialized: true,
+          isPlayerOne,
           pubKey: publicKey,
           privKey: privateKey,
         });
