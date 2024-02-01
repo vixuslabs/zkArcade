@@ -2,7 +2,7 @@ export const realWorldHiddenObject = {
   // "coords": [-0.5, 0.5, -0.5], // valid
   // coords: [0.5, 0.5, -0.5], // invalid (inside furniture)
   // "coords": [5, 0.5, -0.5], // invalid (outside room)
-  "coords": [0.5, -0.5, -0.2],
+  coords: [0.5, -0.5, -0.2],
   // Tests with Tito's room:
   // "coords": [-0.1, 0.1, -0.1], // object on floor (valid)
   // "coords": [0.5, 0.5, -0.5], // object inside furniture (invalid)

@@ -8,31 +8,76 @@ import { Room, Object3D } from "./structs.js";
 // 3. There are no collisions with any of the room's boxes.
 export class HotnCold extends SmartContract {
   // The object hash is the hash of the object's center and radius.
-  @state(Field) objectHash = State<Field>();
+  @state(Field) player1ObjectHash = State<Field>();
+  @state(Field) player2ObjectHash = State<Field>();
 
   // Commit the object hash on-chain.
-  @method commitObject(object: Object3D) {
-    this.objectHash.set(Poseidon.hash([ object.center.x.toField(), object.center.y.toField(), object.center.z.toField() ]))
+  @method commitPlayer1Object(object: Object3D) {
+    this.player1ObjectHash.set(
+      Poseidon.hash([
+        object.center.x.toField(),
+        object.center.y.toField(),
+        object.center.z.toField(),
+      ]),
+    );
+  }
+
+  @method commitPlayer2Object(object: Object3D) {
+    this.player2ObjectHash.set(
+      Poseidon.hash([
+        object.center.x.toField(),
+        object.center.y.toField(),
+        object.center.z.toField(),
+      ]),
+    );
   }
 
   // Validate that the object matches the previously commited hash and that it is inside the room.
-  @method validateRoom(room: Room, object: Object3D) {
+  @method validatePlayer1Room(room: Room, player2Object: Object3D) {
     // Get the object hash from the contract state
-    const onChainObjectHash = this.objectHash.get();
-    this.objectHash.assertEquals(onChainObjectHash);
+    const onChainObjectHash = this.player1ObjectHash.get();
+    this.player1ObjectHash.assertEquals(onChainObjectHash);
 
     // Check that this object's hash matches the previously commited object hash.
-    const objectHash = Poseidon.hash([ object.center.x.toField(), object.center.y.toField(), object.center.z.toField() ]);
+    const objectHash = Poseidon.hash([
+      player2Object.center.x.toField(),
+      player2Object.center.y.toField(),
+      player2Object.center.z.toField(),
+    ]);
     objectHash.assertEquals(onChainObjectHash);
 
     // Check that an object is on the inner side of every plane
     room.planes.forEach((plane) => {
-      plane.assertObjectIsOnInnerSide(object);
+      plane.assertObjectIsOnInnerSide(player2Object);
     });
 
     // Check that an object does not collide with a any of the boxes
     room.boxes.forEach((box) => {
-      box.assertObjectIsOutside(object);
+      box.assertObjectIsOutside(player2Object);
+    });
+  }
+
+  @method validatePlayer2Room(room: Room, player1Object: Object3D) {
+    // Get the object hash from the contract state
+    const onChainObjectHash = this.player2ObjectHash.get();
+    this.player2ObjectHash.assertEquals(onChainObjectHash);
+
+    // Check that this object's hash matches the previously commited object hash.
+    const objectHash = Poseidon.hash([
+      player1Object.center.x.toField(),
+      player1Object.center.y.toField(),
+      player1Object.center.z.toField(),
+    ]);
+    objectHash.assertEquals(onChainObjectHash);
+
+    // Check that an object is on the inner side of every plane
+    room.planes.forEach((plane) => {
+      plane.assertObjectIsOnInnerSide(player1Object);
+    });
+
+    // Check that an object does not collide with a any of the boxes
+    room.boxes.forEach((box) => {
+      box.assertObjectIsOutside(player1Object);
     });
   }
 }

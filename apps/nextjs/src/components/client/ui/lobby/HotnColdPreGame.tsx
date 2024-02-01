@@ -4,12 +4,13 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useHotnCold } from "@/lib/stores";
 
-import { HotnColdGame } from "../../xr";
+import { HotnColdGame } from "@/components/client/xr";
 
 const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
   const { gameEventsInitialized } = useHotnCold();
@@ -46,7 +47,11 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
           </Badge>
           <p className="text-sm">
             You will be given an object to hide in your opponent&apos;s room.{" "}
-            <span className="font-bold">Do not move in real life.</span>
+            <span className="font-bold underline underline-offset-4">
+              Do not move in real life.
+            </span>{" "}
+            You the thumbstick to change the length of the pointer. Click X and
+            Y at the same time, while hold the object, to anchor the ball.
           </p>
           <Badge className="max-w-fit text-black hover:cursor-default">
             Seeking
@@ -54,8 +59,12 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
           <p className="text-sm">
             Both of your now need to find the object hidden in your room. You
             will be in passthrough mode, so you can see your room and the
-            digital object in it. <span className="font-bold">Be quick</span>,
-            your opponent is also seeking the object you hid in their room!
+            digital object in it.{" "}
+            <span className="font-bold underline underline-offset-4">
+              Be the first to find the ball
+            </span>
+            , your opponent is also trying to find the ball you hid in their
+            room!
           </p>
           <Badge className="max-w-fit text-black hover:cursor-default">
             Ending
@@ -65,8 +74,11 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
             play again.
           </p>
         </CardContent>
+        <div className="grid text-center justify-center">
+          <CardFooter>Good luck, be safe, and have fun!</CardFooter>
+        </div>
       </Card>
-      <HotnColdGame gameEventsInitialized={gameEventsInitialized} />
+      {/* <HotnColdGame gameEventsInitialized={gameEventsInitialized} /> */}
     </>
   );
 });

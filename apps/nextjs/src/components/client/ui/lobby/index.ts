@@ -7,3 +7,4 @@ export { default as PlayersContainer } from "./PlayersContainer";
 
 // Will move eventually
 export { default as HotnColdPreGame } from "./HotnColdPreGame";
+export { default as BackButton } from "./BackButton";

@@ -201,7 +201,7 @@ function SettingsForm() {
               className="
                         absolute inset-0 flex items-center justify-center
                         rounded-full text-center
-                        font-bold text-white 
+                        font-bold text-white
                         opacity-0 transition-all duration-300
                         ease-in-out group-hover:cursor-pointer group-hover:bg-black group-hover:opacity-50
                     "

@@ -79,7 +79,11 @@ function useTrackControllers(): useTrackControllersReturn {
         if (handedness === "left") {
           newLeftController = {
             visible: true,
-            position: leftControllerPosition.current.set(position.x, position.y, position.z),
+            position: leftControllerPosition.current.set(
+              position.x,
+              position.y,
+              position.z,
+            ),
             orientation: leftControllerOrientation.current.set(
               orientation.x,
               orientation.y,
@@ -97,7 +101,11 @@ function useTrackControllers(): useTrackControllersReturn {
         } else if (handedness === "right") {
           newRightController = {
             visible: true,
-            position: rightControllerPosition.current.set(position.x, position.y, position.z),
+            position: rightControllerPosition.current.set(
+              position.x,
+              position.y,
+              position.z,
+            ),
             orientation: rightControllerOrientation.current.set(
               orientation.x,
               orientation.y,

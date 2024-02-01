@@ -23,6 +23,7 @@ function Lobby({
 }) {
   const [showInstructions, setShowInstructions] =
     React.useState<boolean>(false);
+  const [mounted, setMounted] = React.useState(false);
 
   const { user, isSignedIn } = useUser();
 
@@ -171,7 +172,6 @@ function Lobby({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobbyId, presenceChannelName, isSignedIn]);
 
-  const [mounted, setMounted] = React.useState(false);
   useEffect(() => {
     if (mounted || !user) {
       return;
@@ -221,7 +221,8 @@ function Lobby({
     <>
       {/* Lobby UI */}
       <Transition
-        show={!gameStarting && mounted}
+        // show={!gameStarting && mounted}
+        show={false}
         beforeEnter={() => console.log("transition starting to open")}
         afterEnter={() => console.log("transition opened")}
         beforeLeave={() => console.log("transition starting to close")}
@@ -245,7 +246,8 @@ function Lobby({
       </Transition>
 
       {/* Game Instructions */}
-      <Transition show={showInstructions}>
+      {/*<Transition show={showInstructions}> */}
+      <Transition show={true}>
         <Transition.Child
           as={Card}
           enter="transform duration-200 transition ease-out-in"
@@ -326,12 +328,7 @@ function Lobby({
           //   </Button>
           // )
         }
-
-        {/* Game */}
       </div>
-      {/* {gameStarting && (
-        <HotnColdGame gameEventsInitialized={gameEventsInitialized} />
-      )} */}
     </>
   );
 }

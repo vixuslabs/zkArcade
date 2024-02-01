@@ -10,7 +10,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 const jura = Jura({
   subsets: ["latin"],
-  weight: "600",
+  weight: ["500", "600", "700"],
   style: "normal",
   variable: "--font-jura",
 });
