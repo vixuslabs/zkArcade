@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import { Jura } from "next/font/google";
 import { ThemeProvider } from "@/components/client/providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,7 +11,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 const jura = Jura({
   subsets: ["latin"],
-  weight: "600",
+  weight: ["500", "600", "700"],
   style: "normal",
   variable: "--font-jura",
 });
@@ -42,7 +43,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <TRPCReactProvider>
-              <PusherClientProvider>{children}</PusherClientProvider>
+              <PusherClientProvider>
+                {children}
+                <Analytics />
+              </PusherClientProvider>
             </TRPCReactProvider>
           </ThemeProvider>
           <Toaster />

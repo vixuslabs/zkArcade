@@ -13,6 +13,16 @@ import type {
   Vector3,
 } from "three";
 
+/**
+ * UI Types
+ */
+export interface CarouselGameInfo {
+  name: GameNames;
+  mainDescription: string;
+  zkDescription: string;
+  imageUrl: string;
+}
+
 // XR-related types and interfaces
 export interface GamepadButtonState {
   pressed: boolean;
@@ -176,18 +186,49 @@ export interface GrabProps {
   isAnchorable?: boolean;
 }
 
-// Online Components
-export interface GeometryData {
+export interface PusherGeometryData {
   position: {
     itemSize: number;
-    array: number[];
+    array: Record<number, number>;
     normalized?: boolean;
   };
   index: {
     itemSize: number;
-    array: number[];
+    array: Record<number, number>;
     normalized?: boolean;
   } | null; // Use null if there is no index
+}
+
+// Online Components
+export interface GeometryData {
+  position: {
+    itemSize: number;
+    // array: number[];
+    array: THREE.TypedArray;
+    normalized?: boolean;
+  };
+  index: {
+    itemSize: number;
+    // array: number[];
+    array: THREE.TypedArray;
+    normalized?: boolean;
+  } | null; // Use null if there is no index
+}
+
+export interface MeshPusherData {
+  geometry: PusherGeometryData;
+  matrix: {
+    elements: number[];
+  };
+  name: string;
+}
+
+export interface PlanePusherData {
+  geometry: PusherGeometryData;
+  matrix: {
+    elements: number[];
+  };
+  name: string;
 }
 
 export interface MeshInfo {
@@ -195,7 +236,7 @@ export interface MeshInfo {
   matrix: {
     elements: number[];
   };
-  worldMatrix: {
+  worldMatrix?: {
     elements: number[];
   };
   name: string;
@@ -206,7 +247,7 @@ export interface PlaneInfo {
   matrix: {
     elements: number[];
   };
-  worldMatrix: {
+  worldMatrix?: {
     elements: number[];
   };
   name: string;
@@ -220,6 +261,12 @@ export enum GameType {
   Sandbox = "Sandbox",
 }
 
+export type GameNames =
+  | "Hot 'n Cold"
+  | "zkBattleship"
+  | "zkTicTacToe"
+  | "Sandbox";
+
 export enum GeneralGameStatus {
   LOBBY = "LOBBY",
   PREGAME = "PREGAME",
@@ -229,6 +276,7 @@ export enum HotnColdGameStatus {
   LOBBY = "lobby",
   PREGAME = "pregame",
   IDLE = "idle",
+  LOADINGROOMS = "loadingRooms",
   BOTHHIDING = "bothHiding",
   ONEHIDING = "oneHiding",
   SEEKING = "seeking",
@@ -236,10 +284,39 @@ export enum HotnColdGameStatus {
 }
 
 export interface HotnColdGameState {
+  gameEventsInitialized: boolean;
+  startRoomSync: boolean;
   status: HotnColdGameStatus;
   me: HotnColdPlayer | null;
   opponent: HotnColdPlayer | null;
 }
+
+export type HotnColdEvents =
+  | "client-status-change"
+  | "client-in-game"
+  // | "client-roomLayout-complete"
+  | "client-roomLayout-planes"
+  | "client-roomLayout-meshes"
+  | "client-hiding"
+  | "client-done-hiding"
+  | "client-seeking"
+  | "client-set-object"
+  | "client-found-object";
+
+export type HotnColdEventCallbacks =
+  | (() => void)
+  | (({ status }: { status: HotnColdGameStatus }) => void)
+  | (({ objectPosition }: { objectPosition: THREE.Vector3 }) => void)
+  | (({ inGame }: { inGame: boolean }) => void)
+  // | (({
+  //     roomLayout,
+  //   }: {
+  //     roomLayout: { meshes: MeshInfo[]; planes: PlaneInfo[] };
+  //   }) => void);
+  | (({ planes }: { planes: PlaneInfo[] }) => void)
+  | (({ meshes }: { meshes: MeshInfo[] }) => void);
+
+export type HotnColdEventMap = Record<HotnColdEvents, HotnColdEventCallbacks>;
 
 // Users
 export interface Player {
@@ -254,7 +331,10 @@ export interface Player {
 }
 
 export interface HotnColdPlayer extends Player {
+  gameEventsInitialized: boolean;
   hiding: boolean;
+  seeking: boolean;
+  hidObject: boolean;
   foundObject: boolean;
   playerPosition: Vector3 | null;
   playerProximity: number | null;
@@ -263,7 +343,7 @@ export interface HotnColdPlayer extends Player {
   roomLayout: {
     meshes: MeshInfo[];
     planes: PlaneInfo[];
-  } | null;
+  };
 }
 
 export interface UserInfo {
@@ -333,18 +413,8 @@ export interface PusherUserInfo {
 export type GeneralLobbyEvent =
   | "client-ready-toggle"
   | "client-mina-toggle"
-  | "client-game-started";
-
-export type HotnColdGameEvents =
-  | GeneralLobbyEvent
-  | "client-game-roomLayout"
-  | "client-game-hiding"
-  | "client-game-hiding-done"
-  | "client-game-seeking-start"
-  | "client-game-requestProximity"
-  | "client-game-setProximity"
-  | "client-game-setObjectPosition"
-  | "client-game-seeking-done";
+  | "client-game-started"
+  | "client-game-events-initialized";
 
 export type FriendEvents =
   | `friend-added`
@@ -367,10 +437,20 @@ export type EventCallback = (data?: Player) => void;
 
 export type FriendCallback = (data: FriendData) => void;
 
+export type SetGameEventsInitializedCallbacks = ({
+  oppInfo,
+  gameName,
+}: {
+  oppInfo: HotnColdPlayer;
+  gameName: GameNames;
+}) => void;
+
 export type LobbyCallbacks =
   | (() => void)
   | (({ ready, username }: { ready: boolean; username: string }) => void)
-  | (({ minaToggle }: { minaToggle: boolean }) => void);
+  | (({ minaToggle }: { minaToggle: boolean }) => void)
+  | SetGameEventsInitializedCallbacks
+  | (({ gameName }: { gameName: GameNames }) => void);
 
 export type FriendsEventMap = Record<FriendEvents, FriendCallback>;
 

@@ -3,13 +3,16 @@ import type {
   FriendsEventMap,
   GameState,
   GeneralEventMap,
-  HotnColdGameEvents,
+  GeneralLobbyEvent,
+  HotnColdEventMap,
   HotnColdGameState,
   HotnColdPlayer,
   LobbyEventMap,
   MeshInfo,
+  MeshPusherData,
   PartialEventMap,
   PlaneInfo,
+  PlanePusherData,
   Player,
   PusherUserInfo,
 } from "@/lib/types";
@@ -18,17 +21,21 @@ import type { Channel, PresenceChannel } from "pusher-js";
 import Pusher from "pusher-js";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { createWithEqualityFn } from "zustand/traditional";
+
+import type { GameNames } from "./types";
+
+// import { createWithEqualityFn } from "zustand/traditional";
 
 interface LobbyState {
   players: Player[];
-  starting: boolean;
+  gameStarting: boolean;
   isMinaOn: boolean;
   gameState: GameState | undefined;
   channel: PresenceChannel | null;
   me: Player | null;
   isHost: boolean;
   lobbyId: string | null;
+  lobbyEventsInitialized: boolean;
 }
 
 interface UserPusherInfo {
@@ -66,7 +73,8 @@ const initialPusherState: PusherState = {
 const initialLobbyState: LobbyState = {
   me: null,
   players: [],
-  starting: false,
+  lobbyEventsInitialized: false,
+  gameStarting: false,
   isMinaOn: false,
   channel: null,
   gameState: undefined,
@@ -76,11 +84,13 @@ const initialLobbyState: LobbyState = {
 
 export const initialHotnColdState: HotnColdGameState = {
   status: HotnColdGameStatus.LOBBY,
+  gameEventsInitialized: false,
+  startRoomSync: false,
   me: null,
   opponent: null,
 };
 
-export const usePusher = createWithEqualityFn(
+export const usePusher = create(
   combine(initialPusherState, (set, get) => ({
     initPusher: (userInfo: PusherUserInfo) => {
       if (!userInfo.imageUrl.includes("/api/imageProxy")) {
@@ -185,6 +195,8 @@ export const usePusher = createWithEqualityFn(
         throw new Error(`Channel ${channelName} does not exist`);
       }
 
+      channel.unbind_all();
+
       channel.unsubscribe();
 
       const newActiveChannels = activeChannels.filter(
@@ -240,15 +252,15 @@ export const usePusher = createWithEqualityFn(
   })),
 );
 
-export const useFriendsStore = createWithEqualityFn(
+export const useFriendsStore = create(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   combine(initialLobbyState, (set, get) => {
     return {
       pusherStore: usePusher.getState,
       //   useLobbyStore: useLobbyStore,
-      friends: (userId: string) => {
+      friends: (_: string) => {
         // get friends from db
-        console.log("userId", userId);
+        // console.log("userId", userId);
       },
       addNewFriend: (friendId: string) => {
         console.log("addNewFriend", friendId);
@@ -285,7 +297,7 @@ export const useFriendsStore = createWithEqualityFn(
   }),
 );
 
-export const useLobbyStore = createWithEqualityFn(
+export const useLobbyStore = create(
   combine(initialLobbyState, (set, get) => {
     return {
       setMe: (me: Player) => {
@@ -293,6 +305,16 @@ export const useLobbyStore = createWithEqualityFn(
       },
       setHost: (host: boolean) => {
         set({ isHost: host });
+      },
+      setPresenceChannel: (channel: PresenceChannel) => {
+        const { channel: curChannel } = get();
+
+        if (curChannel) {
+          console.log("setPresenceChannel: Channel already exists");
+          return;
+        }
+
+        set({ channel });
       },
       updatePlayer: (player: Player) => {
         const { players } = get();
@@ -310,13 +332,19 @@ export const useLobbyStore = createWithEqualityFn(
           }),
         }));
       },
-      setStarting: (starting: boolean) => {
-        set({ starting });
+      setGameStarting: (gameStarting: boolean) => {
+        const setGameStatus = useHotnCold.getState().setGameStatus;
+
+        set({ gameStarting });
+
+        if (gameStarting) {
+          setGameStatus(HotnColdGameStatus.PREGAME);
+        }
       },
       setIsMinaOn: (isMinaOn: boolean) => {
         set({ isMinaOn });
       },
-      addEventsToPresenceChannel: (
+      initLobbyEventsToPresenceChannel: (
         channelName: string,
         eventMap: LobbyEventMap,
         isLobbyHost: boolean,
@@ -338,7 +366,7 @@ export const useLobbyStore = createWithEqualityFn(
           players: state.players.length > 0 ? state.players : [me],
         }));
 
-        const channel = pusher.channel(channelName);
+        const channel = pusher.channel(channelName) as PresenceChannel;
 
         if (!channel) {
           throw new Error(
@@ -418,7 +446,7 @@ export const useLobbyStore = createWithEqualityFn(
                   }
                 });
 
-                set({ players: [...sortedPlayers] });
+                set({ players: [...sortedPlayers], channel });
               });
             },
           );
@@ -479,17 +507,60 @@ export const useLobbyStore = createWithEqualityFn(
 
             set({ players: newPlayers });
           });
+
+          set({ lobbyEventsInitialized: true, channel });
         } catch (error) {
           console.error("subscribeToPresenceChannel: ", error);
         }
+      },
+      initGameEventsToPresenceChannel: (
+        channelName: string,
+        gameName: GameNames,
+      ) => {
+        const { me, lobbyEventsInitialized } = get();
+        const pusher = usePusher.getState().pusher;
+        const initHotnColdGameEvents = useHotnCold.getState().initGameEvents;
+
+        if (!me) {
+          throw new Error("addGameEventsToPresenceChannel: Me is not set");
+        }
+
+        if (!pusher) {
+          throw new Error("addGameEventsToPresenceChannel: Pusher is not set");
+        }
+
+        if (!lobbyEventsInitialized) {
+          throw new Error(
+            "addGameEventsToPresenceChannel: Lobby events are not initialized",
+          );
+        }
+
+        const channel = pusher.channel(channelName);
+
+        if (!channel) {
+          throw new Error(
+            `addGameEventsToPresenceChannel: Channel ${channelName} was not found`,
+          );
+        }
+
+        switch (gameName) {
+          case "Hot 'n Cold":
+            initHotnColdGameEvents();
+            break;
+          default:
+            break;
+        }
+
+        // try {
+
+        // } catch (error) {
+        //   console.error("subscribeToPresenceChannel: ", error);
+        // }
       },
       unsubscribeFromPresenceChannel: (lobbyId: string) => {
         const { unsubscribeFromChannel } = usePusher.getState();
 
         unsubscribeFromChannel(`presence-lobby-${lobbyId}`);
-      },
-      onPusherEvent: (event: HotnColdGameEvents) => {
-        console.log("onPusherEvent: ", event);
       },
     };
   }),
@@ -498,77 +569,32 @@ export const useLobbyStore = createWithEqualityFn(
 export const useHotnCold = create(
   combine(initialHotnColdState, (set, get) => {
     return {
-      updatePlayers: () => {
-        const me = useLobbyStore.getState().me;
+      initGameEvents: () => {
+        const {
+          me: gameMe,
+          opponent: gameOpponent,
+          // setMe: setGameMe,
+          // setOpponent: setGameOpponent,
+          // setGameStatus,
+        } = useHotnCold.getState();
 
-        if (!me) {
-          throw new Error("assignStateValues: Me is not set in lobby store");
-        }
-
-        const players = useLobbyStore.getState().players;
-
-        if (players.length < 1) {
-          throw new Error(
-            "assignStateValues: 2 players are required to play the game",
-          );
-        }
-
-        const opponent = players.find((p) => p.id !== me.id);
-
-        if (!opponent) {
-          throw new Error(
-            "assignStateValues: Opponent is not found in players",
-          );
-        }
-
-        set({
-          me: {
-            ...me,
-            hiding: false,
-            foundObject: false,
-            playerPosition: null,
-            playerProximity: null,
-            objectPosition: null,
-            objectMatrix: null,
-            roomLayout: null,
-          },
-          opponent: {
-            ...opponent,
-            hiding: false,
-            foundObject: false,
-            playerPosition: null,
-            playerProximity: null,
-            objectPosition: null,
-            objectMatrix: null,
-            roomLayout: null,
-          },
-        });
-      },
-      addGameEvents: () => {
-        // const { channel } = useLobbyStore.getState();
+        const { me: lobbyMe, lobbyEventsInitialized } =
+          useLobbyStore.getState();
         const channel = useHotnCold.getState().getGameChannel();
+
+        if (!lobbyEventsInitialized) {
+          throw new Error(
+            "addGameEvents: Lobby events are not initialized, cannot add game events yet",
+          );
+        }
 
         if (!channel) {
           throw new Error("initGameEvents: Presence Channel is not set");
         }
 
-        // const { addEventsToPresenceChannel } = useLobbyStore.getState();
-
-        type HotnColdEvents =
-          | "client-status-change"
-          | "client-in-game"
-          | "client-hiding"
-          | "client-done-hiding"
-          | "client-seeking"
-          | "client-set-object"
-          | "client-found-object";
-
-        type HotnColdEventCallbacks =
-          | (() => void)
-          | (({ status }: { status: HotnColdGameStatus }) => void)
-          | (({ objectPosition }: { objectPosition: THREE.Vector3 }) => void);
-
-        type HotnColdEventMap = Record<HotnColdEvents, HotnColdEventCallbacks>;
+        if (!lobbyMe) {
+          throw new Error("addGameEvents: Lobby Me is not set");
+        }
 
         const eventMap: HotnColdEventMap = {
           "client-status-change": ({
@@ -578,17 +604,200 @@ export const useHotnCold = create(
           }) => {
             set({ status });
           },
-          "client-in-game": () => {
-            console.log("client-in-game");
-            const { opponent } = get();
+          "client-in-game": ({ inGame: oppInGame }: { inGame: boolean }) => {
+            // console.log("client-in-game: opp-", oppInGame);
+            const { opponent, me, status } = get();
+
+            const { setGameStatus } = useHotnCold.getState();
 
             if (!opponent) {
               throw new Error("client-in-game: Opponent is not set");
             }
 
             set({
-              opponent: { ...opponent, inGame: true },
+              opponent: { ...opponent, inGame: oppInGame },
             });
+
+            if (!me) {
+              throw new Error("client-in-game: Me is not set");
+            }
+
+            console.log("me.inGame", me.inGame);
+
+            console.log("status", status);
+
+            if (oppInGame) {
+              me.inGame && setGameStatus(HotnColdGameStatus.LOADINGROOMS);
+            }
+          },
+          "client-roomLayout-planes": ({
+            planes,
+          }: {
+            planes: PlanePusherData[];
+          }) => {
+            // console.log("client-roomLayout-planes", planes);
+
+            const { setRoomLayout } = useHotnCold.getState();
+            const { opponent } = get();
+
+            if (!opponent) {
+              throw new Error("client-roomLayout-planes: Opponent is not set");
+            }
+
+            const updatedPlanes: PlaneInfo[] = planes.map((plane) => {
+              const bufferPos = new ArrayBuffer(
+                Object.keys(plane.geometry.position.array).length * 4,
+              ); // 4 bytes per Float32
+
+              const planePosArr = new Float32Array(bufferPos);
+
+              Object.entries(plane.geometry.position.array).forEach(
+                ([key, value]) => {
+                  const index = parseInt(key, 10);
+                  if (!isNaN(index) && typeof value === "number") {
+                    planePosArr[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: ${value}`,
+                    );
+                  }
+                },
+              );
+
+              if (!plane.geometry.index) {
+                throw new Error("client-roomLayout-planes: Index is not set");
+              }
+
+              const bufferIndex = new ArrayBuffer(
+                Object.keys(plane.geometry.index.array).length * 2,
+              ); // 2 bytes per Uint16
+
+              const planeIndexArr = new Uint16Array(bufferIndex);
+
+              Object.entries(plane.geometry.index.array).forEach(
+                ([key, value]) => {
+                  // Ensure key is a number and value is within Uint16 range
+                  const index = parseInt(key, 10);
+                  if (
+                    !isNaN(index) &&
+                    typeof value === "number" &&
+                    value >= 0 &&
+                    value <= 65535
+                  ) {
+                    planeIndexArr[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: ${value}`,
+                    );
+                  }
+                },
+              );
+
+              // const iArr = plane.geometry.index
+              //   ? new Float32Array(plane.geometry.index.array)
+              //   : null;
+
+              return {
+                ...plane,
+                geometry: {
+                  ...plane.geometry,
+                  position: {
+                    ...plane.geometry.position,
+                    array: planePosArr,
+                  },
+                  index: {
+                    ...plane.geometry.index,
+                    array: planeIndexArr,
+                  },
+                },
+              };
+            });
+
+            // console.log("updatedPlanes", updatedPlanes);
+
+            setRoomLayout({ planes: updatedPlanes }, "opponent");
+          },
+          "client-roomLayout-meshes": ({
+            meshes,
+          }: {
+            meshes: MeshPusherData[];
+          }) => {
+            // console.log("client-roomLayout-meshes", meshes);
+
+            const { setRoomLayout } = useHotnCold.getState();
+            const { opponent } = get();
+
+            const updatedMeshes: MeshInfo[] = meshes.map((mesh) => {
+              const positionsBuffer = new ArrayBuffer(
+                Object.keys(mesh.geometry.position.array).length * 4,
+              ); // 4 bytes per Float32
+              const positionsView = new Float32Array(positionsBuffer);
+
+              Object.entries(mesh.geometry.position.array).forEach(
+                ([key, value]) => {
+                  // console.log("key", key);
+                  // console.log("value", value);
+                  const index = parseInt(key, 10);
+                  if (!isNaN(index) && typeof value === "number") {
+                    positionsView[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: `,
+                    );
+                  }
+                },
+              );
+
+              if (!mesh.geometry.index) {
+                throw new Error("client-roomLayout-meshes: Index is not set");
+              }
+
+              const indicesBuffer = new ArrayBuffer(
+                Object.keys(mesh.geometry.index.array).length * 4,
+              ); // 4 bytes per Uint32
+              const indicesView = new Uint32Array(indicesBuffer);
+
+              Object.entries(mesh.geometry.index.array).forEach(
+                ([key, value]) => {
+                  const index = parseInt(key, 10);
+                  if (
+                    !isNaN(index) &&
+                    typeof value === "number" &&
+                    value >= 0 &&
+                    value <= 4294967295
+                  ) {
+                    indicesView[index] = value;
+                  } else {
+                    throw new Error(
+                      `Invalid key or value at key: ${key}, value: `,
+                    );
+                  }
+                },
+              );
+
+              return {
+                ...mesh,
+                geometry: {
+                  ...mesh.geometry,
+                  position: {
+                    ...mesh.geometry.position,
+                    array: positionsView,
+                  },
+                  index: {
+                    ...mesh.geometry.index,
+                    array: indicesView,
+                  },
+                },
+              };
+            });
+
+            if (!opponent) {
+              throw new Error("client-roomLayout-meshes: Opponent is not set");
+            }
+
+            // console.log("updatedMeshes", updatedMeshes);
+
+            setRoomLayout({ meshes: updatedMeshes }, "opponent");
           },
           "client-hiding": () => {
             console.log("client-hiding");
@@ -642,24 +851,38 @@ export const useHotnCold = create(
           }: {
             objectPosition: THREE.Vector3;
           }) => {
-            console.log("client-set-object", objectPosition);
+            // console.log("client-set-object", objectPosition);
 
             const { opponent } = get();
+
+            const { setObjectPosition } = useHotnCold.getState();
 
             if (!opponent) {
               throw new Error("client-set-object: Opponent is not set");
             }
 
-            set({
-              opponent: { ...opponent, objectPosition },
-            });
+            // console.log("before set - opponent", opponent);
+
+            setObjectPosition(objectPosition, "opponent");
+
+            // set({
+            //   opponent: {
+            //     ...opponent,
+            //     objectPosition,
+            //     // seeking: true,
+            //     hidObject: true,
+            //     hiding: false,
+            //   },
+            // });
+
+            // console.log("after set - opponent", opponent);
           },
           "client-found-object": ({
             objectPosition,
           }: {
             objectPosition: THREE.Vector3;
           }) => {
-            console.log("client-found-object", objectPosition);
+            // console.log("client-found-object", objectPosition);
 
             const { opponent } = get();
             const { setGameStatus } = useHotnCold.getState();
@@ -679,16 +902,84 @@ export const useHotnCold = create(
         Object.entries(eventMap).forEach(([eventName, handler]) => {
           channel.bind(eventName, handler);
         });
+
+        const opp = useLobbyStore.getState().players.find((p) => {
+          return p.id !== lobbyMe.id;
+        });
+
+        if (!opp) {
+          throw new Error("initGameEvents: Opponent is not set");
+        }
+
+        const newGameMe: HotnColdPlayer = {
+          ...lobbyMe,
+          gameEventsInitialized: true,
+          hiding: false,
+          seeking: false,
+          hidObject: false,
+          foundObject: false,
+          playerPosition: null,
+          playerProximity: null,
+          objectPosition: null,
+          objectMatrix: null,
+          roomLayout: {
+            meshes: [],
+            planes: [],
+          },
+        };
+
+        const newGameOpponent: HotnColdPlayer = {
+          ...opp,
+          gameEventsInitialized: false,
+          hiding: false,
+          seeking: false,
+          hidObject: false,
+          foundObject: false,
+          playerPosition: null,
+          playerProximity: null,
+          objectPosition: null,
+          objectMatrix: null,
+          roomLayout: {
+            meshes: [],
+            planes: [],
+          },
+        };
+
+        if (!gameMe) {
+          // setGameMe({ ...newGameMe });
+          set({ me: { ...newGameMe } });
+        }
+
+        if (!gameOpponent) {
+          set({ opponent: { ...newGameOpponent } });
+          // setGameOpponent(newGameOpponent);
+        }
+
+        // setGameStatus(HotnColdGameStatus.PREGAME);
+
+        channel.trigger(
+          "client-game-events-initialized" as GeneralLobbyEvent,
+          {
+            oppInfo: newGameMe,
+            gameName: "Hot 'n Cold",
+          } as {
+            oppInfo: HotnColdPlayer;
+            gameName: GameNames;
+          },
+        );
+
+        set({ gameEventsInitialized: true });
       },
       setGameStatus: (status: HotnColdGameStatus) => {
         const { me, opponent, status: currentStatus } = get();
 
+        const { setMe, setOpponent } = useHotnCold.getState();
+
         if (status === currentStatus) {
-          console.log("setGameStatus: Status is already", status);
+          // console.log("setGameStatus: Status is already", status);
           throw new Error(
             `setGameStatus: Status is already ${status}, cannot set to the same status`,
           );
-          return;
         }
 
         if (!me) {
@@ -699,30 +990,70 @@ export const useHotnCold = create(
           throw new Error("setGameStatus: Opponent is not set");
         }
 
+        console.log("setGameStatus: Passed Status is", status);
+
+        // console.log("me ", me);
+        // console.log("opponent ", opponent);
+
+        if (
+          // (!opponent && status !== HotnColdGameStatus.LOBBY) ||
+          !opponent &&
+          status !== HotnColdGameStatus.PREGAME
+        ) {
+          throw new Error("setGameStatus: Opponent is not set");
+        }
+
         // test cases to make sure that the game status is being set correctly
         switch (status) {
           case HotnColdGameStatus.PREGAME:
-            if (!me.ready && !opponent.ready) {
+            console.log("setGameStatus: Pregame");
+            if (!me.ready && !opponent?.ready) {
               throw new Error(
                 "setGameStatus: Both players are not ready, cannot set to pregame yet",
               );
             }
             break;
           case HotnColdGameStatus.IDLE:
-            if (!me.inGame && !opponent.inGame) {
+            console.log("setGameStatus: Idle");
+            if (!me.inGame && !opponent?.inGame) {
               throw new Error(
                 "setGameStatus: Both players have not launched the game, cannot set to idle yet. One player must launch the game",
               );
             }
             break;
-          case HotnColdGameStatus.BOTHHIDING:
+
+          case HotnColdGameStatus.LOADINGROOMS:
+            console.log("setGameStatus: LOADINGROOMS");
             if (!me.inGame || !opponent.inGame) {
               throw new Error(
-                "setGameStatus: Both players are not in game yet, cannot set to bothHiding yet",
+                "setGameStatus: Both players are not in game yet, cannot set to loadingRooms yet",
               );
             }
+            useHotnCold.setState({ startRoomSync: true });
+            break;
+          case HotnColdGameStatus.BOTHHIDING:
+            console.log("setGameStatus: BothHiding");
+
+            console.log("me.roomLayout ", me.roomLayout);
+            console.log("opponent.roomLayout ", opponent.roomLayout);
+
+            if (
+              !me.roomLayout.meshes ||
+              !me.roomLayout.planes ||
+              !opponent.roomLayout.meshes ||
+              !opponent.roomLayout.planes
+            ) {
+              throw new Error(
+                "setGameStatus: Both players do not have there rooms synced with user, cannot set to bothHiding yet",
+              );
+            }
+            setMe({ ...me, hiding: true });
+
+            setOpponent({ ...opponent, hiding: true });
+
             break;
           case HotnColdGameStatus.ONEHIDING:
+            console.log("setGameStatus: OneHiding");
             if (me.hiding && opponent.hiding) {
               throw new Error(
                 "setGameStatus: Both players are still hiding the object, cannot set status to oneHiding until one player is no longer hiding",
@@ -730,13 +1061,17 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.SEEKING:
+            console.log("setGameStatus: Seeking");
             if (me.hiding || opponent.hiding) {
+              console.log("me.hiding", me.hiding);
+              console.log("opponent.hiding", opponent.hiding);
               throw new Error(
                 "setGameStatus: One player is still hiding the object, cannot set to seeking yet",
               );
             }
             break;
           case HotnColdGameStatus.GAMEOVER:
+            console.log("setGameStatus: GameOver");
             if (!me.foundObject && !opponent.foundObject) {
               throw new Error(
                 "setGameStatus: Neither player has found the object, cannot set to gameover yet",
@@ -757,25 +1092,40 @@ export const useHotnCold = create(
       },
       setRoomLayout: (
         roomLayout: {
-          meshes: MeshInfo[];
-          planes: PlaneInfo[];
+          meshes?: MeshInfo[];
+          planes?: PlaneInfo[];
         },
         user: "me" | "opponent",
       ) => {
-        // const { me } = get();
-        // if (!me) {
-        //   throw new Error("setRoomLayout: Me is not set");
-        // }
+        // console.log("setRoomLayout called with user", user);
+        // console.log("setRoomLayout called with roomLayout", roomLayout);
+
+        const { me, opponent } = get();
+
+        const { setGameStatus } = useHotnCold.getState();
+
+        if (!me) {
+          throw new Error("setRoomLayout: Me is not set");
+        }
+
+        if (!opponent) {
+          throw new Error("setRoomLayout: Opponent is not set");
+        }
 
         if (user === "me") {
           set((state) => {
             if (!state.me) {
               throw new Error("setRoomLayout: Me is not set");
             }
+
             return {
+              ...state,
               me: {
                 ...state.me,
-                roomLayout: { ...roomLayout },
+                roomLayout: {
+                  meshes: roomLayout.meshes ?? state.me.roomLayout.meshes,
+                  planes: roomLayout.planes ?? state.me.roomLayout?.planes,
+                },
               },
             };
           });
@@ -784,13 +1134,36 @@ export const useHotnCold = create(
             if (!state.opponent) {
               throw new Error("setRoomLayout: Opponent is not set");
             }
+
             return {
+              ...state,
               opponent: {
                 ...state.opponent,
-                roomLayout: { ...roomLayout },
+                roomLayout: {
+                  meshes: roomLayout.meshes ?? state.opponent.roomLayout.meshes,
+                  planes:
+                    roomLayout.planes ?? state.opponent.roomLayout?.planes,
+                },
               },
             };
           });
+        }
+
+        console.log("checking if roomLayout is ready");
+
+        // console.log("me.roomLayout", me.roomLayout);
+        // console.log("opponent.roomLayout", opponent.roomLayout);
+
+        // console.log(`passed in roomLayout.meshes`, roomLayout.meshes);
+        // console.log(`passed in roomLayout.planes`, roomLayout.planes);
+
+        if (
+          me.roomLayout.meshes.length > 0 &&
+          me.roomLayout.planes.length > 0 &&
+          opponent.roomLayout.planes.length > 0 &&
+          opponent.roomLayout.meshes.length > 0
+        ) {
+          setGameStatus(HotnColdGameStatus.BOTHHIDING);
         }
       },
       setPlayerPosition: (
@@ -853,64 +1226,114 @@ export const useHotnCold = create(
           });
         }
       },
-      setObjectPosition: (
-        position: THREE.Vector3 | null,
-        user: "me" | "opponent",
-      ) => {
+      setObjectPosition: (position: THREE.Vector3, user: "me" | "opponent") => {
+        const { setGameStatus, getGameChannel } = useHotnCold.getState();
+
+        const channel = getGameChannel();
+
         if (user === "me") {
           set((state) => {
+            // console.log("setObjectPosition - me: state", state);
             if (!state.me) {
               throw new Error("setObjectPosition: Me is not set");
             }
-            return {
-              me: {
-                ...state.me,
-                objectPosition: position,
-              },
-            };
-          });
-        } else {
-          set((state) => {
+
             if (!state.opponent) {
               throw new Error("setObjectPosition: Opponent is not set");
             }
-            return {
-              opponent: {
-                ...state.opponent,
-                objectPosition: position,
-              },
-            };
-          });
-        }
-      },
-      setObjectMatrix: (
-        matrix: THREE.Matrix4 | null,
-        user: "me" | "opponent",
-      ) => {
-        if (user === "me") {
-          set((state) => {
-            if (!state.me) {
-              throw new Error("setObjectMatrix: Me is not set");
-            }
+
+            channel.trigger("client-set-object", {
+              objectPosition: position,
+            });
+
+            // const seeking =
+            //   state.opponent.hidObject && !state.opponent.hiding ? true : false;
+
+            // if (
+            //   seeking &&
+            //   (status === HotnColdGameStatus.BOTHHIDING ||
+            //     status === HotnColdGameStatus.ONEHIDING)
+            // ) {
+            //   setGameStatus(HotnColdGameStatus.SEEKING);
+            // }
+
             return {
               me: {
                 ...state.me,
-                objectMatrix: matrix,
+                hidObject: true,
+                hiding: false,
+                objectPosition: position,
+                // seeking,
               },
+              // opponent: {
+              //   ...state.opponent,
+              //   seeking,
+              // },
             };
           });
-        } else {
+        } else if (user === "opponent") {
           set((state) => {
-            if (!state.opponent) {
-              throw new Error("setObjectMatrix: Opponent is not set");
+            // console.log("setObjectPosition - opp: state", state);
+            if (!state.me) {
+              throw new Error("setObjectPosition - opp: Me is not set");
             }
+
+            if (!state.opponent) {
+              throw new Error("setObjectPosition - opp: Opponent is not set");
+            }
+
+            // const seeking =
+            //   state.me.hidObject && !state.me.hiding ? true : false;
+
             return {
               opponent: {
                 ...state.opponent,
-                objectMatrix: matrix,
+                hidObject: true,
+                hiding: false,
+                objectPosition: position,
+                // seeking,
               },
+              // me: {
+              //   ...state.me,
+              //   seeking,
+              // },
             };
           });
+        } else {
+          throw new Error("setObjectPosition: Invalid user");
+        }
+
+        const { me, opponent, status } = get();
+
+        if (!me) {
+          throw new Error("setObjectPosition: Me is not set");
+        }
+
+        if (!opponent) {
+          throw new Error("setObjectPosition: Opponent is not set");
+        }
+
+        console.log("after setObjectPos if me, else if opp checks");
+        // console.log("me", me);
+        // console.log("opponent", opponent);
+
+        if (
+          !me.hiding &&
+          me.hidObject &&
+          opponent.hidObject &&
+          !opponent.hiding
+        ) {
+          setGameStatus(HotnColdGameStatus.SEEKING);
+        } else {
+          console.log("both players are not hiding and hid object ");
+          console.log({
+            meHiding: me.hiding,
+            meHidObject: me.hidObject,
+            oppHidObject: opponent.hidObject,
+            oppHiding: opponent.hiding,
+          });
+          status !== HotnColdGameStatus.ONEHIDING &&
+            setGameStatus(HotnColdGameStatus.ONEHIDING);
         }
       },
       getGameChannel: () => {

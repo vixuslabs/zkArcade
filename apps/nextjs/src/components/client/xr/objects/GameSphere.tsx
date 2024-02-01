@@ -2,6 +2,9 @@
 
 import React, { useRef } from "react";
 import { GrabPhysics } from "@/components/client/xr/physics";
+import { useHotnCold } from "@/lib/stores";
+import { HotnColdGameStatus } from "@/lib/types";
+// import { useHotnCold } from "@/lib/stores";
 import type { ThreeEvent } from "@react-three/fiber";
 import { RigidBody, vec3 } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
@@ -14,13 +17,17 @@ function GameSphere({
   position,
   color,
   inGame,
+  gameStatus,
 }: {
   name?: string;
   position?: [number, number, number];
   color?: string;
   inGame: boolean;
+  gameStatus?: "hiding" | "seeking";
 }) {
   const { pointers } = useControllerStateContext();
+  const { getGameChannel } = useHotnCold();
+  // const { me } = useHotnCold();
   const rigidRef = useRef<RapierRigidBody>(null);
   const ref = useRef<Mesh>(null);
   const rigidAndMeshRef = useRef({
@@ -30,6 +37,27 @@ function GameSphere({
 
   const handleGrab = (e: ThreeEvent<PointerEvent>) => {
     if (rigidRef.current) {
+      if (gameStatus === "seeking") {
+        const channel = getGameChannel();
+        const { setGameStatus } = useHotnCold.getState();
+
+        channel.trigger("client-found-object", {
+          objectPosition: vec3(e.point),
+        });
+
+        useHotnCold.setState((state) => {
+          if (!state.me) return state;
+          return {
+            me: {
+              ...state.me,
+              foundObject: true,
+            },
+          };
+        });
+
+        setGameStatus(HotnColdGameStatus.GAMEOVER);
+      }
+
       rigidRef.current.setTranslation(vec3(e.point), true);
       rigidRef.current.resetTorques(true);
       rigidRef.current.resetForces(true);
@@ -84,7 +112,7 @@ function GameSphere({
           ) : pointers.right.heldObject?.name === "hiddenObject" ? (
             <meshBasicMaterial color={color ?? "red"} />
           ) : (
-            <meshStandardMaterial transparent opacity={0.5} color={"black"} />
+            <meshStandardMaterial transparent opacity={0.7} color={"black"} />
           ))}
       </GrabPhysics>
     </RigidBody>

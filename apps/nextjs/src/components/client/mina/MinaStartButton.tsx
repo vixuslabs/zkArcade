@@ -6,24 +6,23 @@ import { useMinaContext } from "@/components/client/providers/MinaProvider";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import type { PublicKey } from "o1js";
-import { useLobbyStore } from "../stores";
-
+import { useLobbyStore } from "@/lib/stores";
 import { LoadingSpinner } from "../ui";
 import type ZkappWorkerClient from "./zkAppWorkerClient";
 
-function MinaStartButton({
-  children,
-  setToXR,
-  // isPlayerOne,
-  // publicKey,
-  // privateKey,
-}: {
-  children: React.ReactNode;
-  setToXR: React.Dispatch<React.SetStateAction<boolean>>;
-  // isPlayerOne: boolean;
-  // publicKey?: string;
-  // privateKey?: string;
-}) {
+// {
+//   children, // publicKey,
+// } // setToXR, // isPlayerOne,
+// // privateKey,
+// : {
+//   children?: React.ReactNode;
+//   // setToXR: React.Dispatch<React.SetStateAction<boolean>>;
+//   // isPlayerOne: boolean;
+//   // publicKey?: string;
+//   // privateKey?: string;
+// }
+
+function MinaStartButton() {
   const { initiateMina, initialized } = useMinaContext();
   const { me } = useLobbyStore();
   const [gameReady, setGameReady] = React.useState<boolean>(false);
@@ -40,7 +39,7 @@ function MinaStartButton({
       console.log("fetching Account");
 
       if (!me) {
-        console.log("handleLoadContract - me not set in lobbyStore")
+        console.log("handleLoadContract - me not set in lobbyStore");
         return;
       }
 
@@ -60,7 +59,9 @@ function MinaStartButton({
       await zkAppClient.initZkappInstance(zkAppPublicKey);
       console.log("inited");
 
-      const hash = me.host ? await zkAppClient.getPlayer1ObjectHash() : await zkAppClient.getPlayer2ObjectHash();
+      const hash = me.host
+        ? await zkAppClient.getPlayer1ObjectHash()
+        : await zkAppClient.getPlayer2ObjectHash();
 
       console.log(`Hash for player ${me.host ? "One: " : "Two"}`, hash);
     },
@@ -69,14 +70,18 @@ function MinaStartButton({
 
   useEffect(() => {
     void (async () => {
-
       if (!me) {
-        console.log("useEffect - me not set in lobbyStore")
+        console.log("useEffect - me not set in lobbyStore");
         return;
       }
 
       const { host, publicKey, privateKey } = me;
-      if (publicKey && privateKey && typeof host === "boolean" && !initialized) {
+      if (
+        publicKey &&
+        privateKey &&
+        typeof host === "boolean" &&
+        !initialized
+      ) {
         console.log("THIS SHOULD BE FIRST");
         const mina = await initiateMina({
           isPlayerOne: host,
@@ -102,7 +107,7 @@ function MinaStartButton({
           .then(() => {
             console.log("handleLoadContract resolved");
             setGameReady(true);
-            setToXR(true);
+            // setToXR(true);
             toast({
               title: "Contract successfully loaded",
               description:
@@ -136,7 +141,7 @@ function MinaStartButton({
   return (
     <Button variant={"default"} asChild disabled={!gameReady}>
       {/* change from Link to Webxr Components directly */}
-      {initialized && gameReady ? <>{children}</> : <LoadingSpinner />}
+      {initialized && gameReady ? "Launch XR" : <LoadingSpinner />}
     </Button>
   );
 }

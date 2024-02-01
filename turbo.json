@@ -25,6 +25,16 @@
         ".vercel/output/**"
       ]
     },
+    "start:dev": {
+      "dependsOn": ["^lint", "^typecheck", "lint", "build:dev"],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts",
+        ".output/**",
+        ".vercel/output/**"
+      ]
+    },
     "dev": {
       "persistent": true,
       "cache": false

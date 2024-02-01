@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useDashboardTabContext } from "@/components/client/providers/DashboardTabProvider";
-import { usePusher } from "@/components/client/stores";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePusher } from "@/lib/stores";
 import { RedirectToSignIn, SignedOut, useClerk, useUser } from "@clerk/nextjs";
 
 function UserAvatar() {

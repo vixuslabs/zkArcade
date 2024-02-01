@@ -7,12 +7,15 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useHotnCold } from "@/components/client/stores";
+import { useHotnCold } from "@/lib/stores";
 import type {
   MeshesAndPlanesContextValue,
+  MeshInfo,
   MyMeshInfo,
   MyPlaneInfo,
+  PlaneInfo,
 } from "@/lib/types";
+import { HotnColdGameStatus } from "@/lib/types";
 import {
   useTrackedMeshes,
   useTrackedPlanes,
@@ -39,44 +42,169 @@ export const useMeshesAndPlanesContext = () => {
 
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
   const channel = useHotnCold().getGameChannel();
+  const { setRoomLayout, me, opponent, setGameStatus, status } = useHotnCold();
   const meshes = useTrackedMeshes();
   const planes = useTrackedPlanes();
   const [myMeshes, setMyMeshes] = useState<MyMeshInfo[]>([]);
   const [myPlanes, setMyPlanes] = useState<MyPlaneInfo[]>([]);
 
   useEffect(() => {
+    if (!me || !opponent) return;
+
+    if (status !== HotnColdGameStatus.LOADINGROOMS) return;
+
+    if (
+      opponent.roomLayout.meshes.length === 0 ||
+      opponent.roomLayout.planes.length === 0
+    ) {
+      console.log(
+        "MeshesAndPlanesProvider: opponent.roomLayout exists already",
+      );
+      return;
+    }
+
+    if (
+      me.roomLayout.meshes.length === 0 ||
+      me.roomLayout.planes.length === 0
+    ) {
+      console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
+      return;
+    }
+
+    console.log("------ ROOM SYNC COMPLETE ------");
+    // console.log("me.roomLayout", me.roomLayout);
+    // console.log("opponent.roomLayout", opponent.roomLayout);
+    console.log("--------------------------------");
+
+    setGameStatus(HotnColdGameStatus.BOTHHIDING);
+  }, [me, opponent, setGameStatus, status]);
+
+  useEffect(() => {
+    if (!me) return;
+
+    if (me.roomLayout.meshes.length > 0 && me.roomLayout.planes.length > 0) {
+      console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
+      return;
+    }
+
     if (!meshes || !planes) return;
-    if (meshes.length > 0 && planes.length > 0) {
-      const formatedMeshes = myMeshes.map(({ mesh, name }) => {
+    // if (meshes.length > 0 && planes.length > 0) {
+
+    console.log("------MeshesAndPlanesProvider: useEffect------");
+    // console.log("meshes.length", meshes.length);
+    // console.log("myMeshes.length", myMeshes.length);
+    // console.log("planes.length", planes.length);
+    // console.log("myPlanes.length", myPlanes.length);
+    console.log("------------");
+
+    /**
+     * The reasoning for this is that we are not including the global mesh inside of myMeshes, and planes does not have a global mesh, so it should be the same size
+     * Revisiting this, much of this is uneeded, since we can just use the meshes and planes from the useTracked hooks and send them to the server
+     * We do not need to store them inside of meshes and planes context
+     */
+    if (
+      meshes.length - 1 === myMeshes.length &&
+      planes.length === myPlanes.length &&
+      meshes.length > 0 &&
+      planes.length > 0
+    ) {
+      const formatedMeshes: MeshInfo[] = myMeshes.map(({ mesh, name }) => {
+        if (!mesh.geometry.attributes.position) {
+          throw new Error("MeshesAndPlanesProvider: no position attribute");
+        }
+
+        if (!mesh.geometry.index) {
+          throw new Error("MeshesAndPlanesProvider: no index attribute");
+        }
+
+        if (!mesh.matrix) {
+          throw new Error("MeshesAndPlanesProvider: no matrix attribute");
+        }
+
         return {
           geometry: {
-            position: mesh.geometry.attributes.position,
-            index: mesh.geometry.index,
+            position: {
+              array: mesh.geometry.attributes.position.array,
+              itemSize: mesh.geometry.attributes.position.itemSize,
+            },
+            index: {
+              array: mesh.geometry.index.array,
+              itemSize: mesh.geometry.index.itemSize,
+            },
           },
-          matrix: mesh.matrix,
+          matrix: {
+            elements: mesh.matrix.elements,
+          },
           name: name,
         };
       });
 
-      const formatedPlanes = myPlanes.map(({ plane, name }) => {
+      const formatedPlanes: PlaneInfo[] = myPlanes.map(({ plane, name }) => {
         // const { plane, name } = _plane;
 
+        if (!plane.geometry.attributes.position) {
+          throw new Error(
+            "MeshesAndPlanesProvider - planes: no position attribute",
+          );
+        }
+
+        if (!plane.geometry.index) {
+          throw new Error(
+            "MeshesAndPlanesProvider - planes: no index attribute",
+          );
+        }
+
+        if (!plane.matrix) {
+          throw new Error(
+            "MeshesAndPlanesProvider - planes: no matrix attribute",
+          );
+        }
+
         return {
           geometry: {
-            position: plane.geometry.attributes.position,
-            index: plane.geometry.index,
+            position: {
+              array: plane.geometry.attributes.position.array,
+              itemSize: plane.geometry.attributes.position.itemSize,
+            },
+            index: {
+              array: plane.geometry.index.array,
+              itemSize: plane.geometry.index.itemSize,
+            },
           },
-          matrix: plane.matrix,
+          matrix: {
+            elements: plane.matrix.elements,
+          },
           name: name,
         };
       });
 
-      channel?.trigger("client-game-roomLayout", {
-        roomLayout: {
+      setRoomLayout(
+        {
           meshes: formatedMeshes,
           planes: formatedPlanes,
         },
+        "me",
+      );
+
+      console.log("MeshesAndPlanesProvider: sending roomLayout to server");
+
+      // console.log("formatedMeshes", formatedMeshes);
+      // console.log("formatedPlanes", formatedPlanes);
+
+      channel.trigger("client-roomLayout-meshes", {
+        meshes: formatedMeshes,
       });
+
+      channel.trigger("client-roomLayout-planes", {
+        planes: formatedPlanes,
+      });
+
+      // channel?.trigger("client-roomLayout-complete", {
+      //   roomLayout: {
+      //     meshes: formatedMeshes,
+      //     planes: formatedPlanes,
+      //   },
+      // });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myMeshes, myPlanes]);

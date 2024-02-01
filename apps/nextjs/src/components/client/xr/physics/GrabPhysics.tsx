@@ -4,9 +4,10 @@
 import React, { forwardRef, useCallback, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
-import { useHotnCold } from "@/components/client/stores";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
+import { useHotnCold } from "@/lib/stores";
 import type { GrabProps, ObjectHeldCheck, RigidAndMeshRefs } from "@/lib/types";
+// import { HotnColdGameStatus } from "@/lib/types";
 import { ButtonState } from "@coconut-xr/natuerlich/react";
 import { isXIntersection } from "@coconut-xr/xinteraction";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -20,7 +21,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     { children, handleGrab, handleRelease, id, isAnchorable = false },
     rigidAndMeshRef,
   ) => {
-    const { me, setObjectPosition, getGameChannel } = useHotnCold();
+    const { me, setObjectPosition } = useHotnCold();
 
     const [isObjectSet, setIsObjectSet] = React.useState(false);
     const [isAnchored, setIsAnchored] = React.useState(false);
@@ -118,42 +119,16 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
 
       if (me && me.hiding && !isObjectSet) {
         setIsObjectSet(true);
-        // setGameState((prev) => {
-        //   if (!prev) {
-        //     return prev;
-        //   }
 
-        const _myObjectPosition = meshRef.current.getWorldPosition(
+        downState.current = undefined;
+
+        const myObjectPosition = meshRef.current.getWorldPosition(
           meshRef.current.position,
         );
 
-        // const myObjectPosition = _myObjectPosition.divideScalar(2);
-
-        // console.log("myObjectPosition before", myObjectPosition);
-
-        // const t = myObjectPosition.applyMatrix4(objMatrix);
-
-        // console.log("myObjectPosition after", t);
-
-        setObjectPosition(_myObjectPosition, "me");
-
-        const channel = getGameChannel();
-
-        channel.trigger("client-game-hiding-done", {
-          objectPosition: _myObjectPosition,
-          // objectMatrix: objMatrix,
-        });
+        setObjectPosition(myObjectPosition, "me");
       }
-    }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet, getGameChannel]);
-
-    const handleUnanchor = useCallback(() => {
-      if (!rigidRef?.current) return;
-      rigidRef.current.setBodyType(0, true);
-      rigidRef.current.setGravityScale(1, true);
-      rigidRef.current.resetTorques(true);
-      rigidRef.current.resetForces(true);
-      setIsAnchored(false);
-    }, [rigidRef]);
+    }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet]);
 
     return (
       <mesh
@@ -164,8 +139,9 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             meshRef.current != null &&
             meshRef.current.visible &&
             downState.current == null &&
-            isXIntersection(e) &&
-            !isAnchored
+            isXIntersection(e)
+            // isXIntersection(e) &&
+            // !isAnchored
           ) {
             e.stopPropagation();
             (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -216,7 +192,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             rightController.gamepad.buttons["b-button"] === ButtonState.PRESSED
           ) {
             console.log('unanchoring from "b" button press');
-            handleUnanchor();
+            // handleUnanchor();
             return;
           }
 
@@ -241,7 +217,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
               ButtonState.PRESSED &&
             isAnchorable
           ) {
-            console.log("setting object pressed");
+            console.log("setting object");
             downState.current = undefined;
             handleAnchor();
             return;

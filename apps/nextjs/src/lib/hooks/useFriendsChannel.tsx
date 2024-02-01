@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useFriendsStore, usePusher } from "@/components/client/stores";
+import { useFriendsStore, usePusher } from "@/lib/stores";
 import type { FriendsEventMap } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
 

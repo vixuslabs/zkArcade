@@ -1,9 +1,28 @@
 import React from "react";
 import Image from "next/image";
-import type { GameNames } from "@/lib/constants";
+import hotnColdImage from "@/../public/thumbnails/hotnCold.png";
+import sandboxImage from "@/../public/thumbnails/sandbox.png";
+import zkBattleshipsImage from "@/../public/thumbnails/zkBattleship.png";
+import zkTicTacToeImage from "@/../public/thumbnails/zkTicTacToe.png";
+import type { GameNames } from "@/lib/types";
+
+const chooseImage = (gameName: GameNames) => {
+  switch (gameName) {
+    case "Hot 'n Cold":
+      return hotnColdImage;
+    case "Sandbox":
+      return sandboxImage;
+    case "zkBattleship":
+      return zkBattleshipsImage;
+    case "zkTicTacToe":
+      return zkTicTacToeImage;
+    default:
+      return hotnColdImage;
+  }
+};
 
 function CarouselImage({
-  imageUrl,
+  imageUrl: _,
   altText,
   height = 200,
   width = 200,
@@ -18,8 +37,9 @@ function CarouselImage({
       priority={altText === "Hot 'n Cold" ? true : false}
       width={width}
       height={height}
-      src={imageUrl}
+      src={chooseImage(altText)}
       alt={altText}
+      placeholder="blur"
     />
   );
 }

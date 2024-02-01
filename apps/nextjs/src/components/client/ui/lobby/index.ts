@@ -6,4 +6,6 @@ export { default as LobbySettings } from "./LobbySettings";
 export { default as PlayersContainer } from "./PlayersContainer";
 
 // Will move eventually
-export { default as HotnColdInstructions } from "./HotnColdInstructions";
+export { default as HotnColdPreGame } from "./HotnColdPreGame";
+export { default as BackButton } from "./BackButton";
+export { default as GameBugsTooltip } from "./GameBugsTooltip";

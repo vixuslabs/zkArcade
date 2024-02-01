@@ -1,45 +1,69 @@
 "use client";
 
-import { useHotnCold } from "@/components/client/stores";
+import React, { useId } from "react";
 import { FriendMesh, FriendPlane } from "@/components/client/xr/rooms";
+import { useHotnCold } from "@/lib/stores";
+import { useShallow } from "zustand/react/shallow";
 
 function FriendRoom() {
-  const { opponent } = useHotnCold();
+  const opponent = useHotnCold(useShallow((state) => state.opponent));
+  const id = useId();
 
-  if (!opponent || !opponent.roomLayout !== null) return null;
+  if (!opponent) {
+    throw new Error("FriendRoom: opponent is null");
+    return;
+  }
+
+  if (opponent.roomLayout === null) {
+    throw new Error("FriendRoom: opponent.roomLayout is null");
+    return;
+  }
+
+  if (opponent.roomLayout.meshes === null) {
+    throw new Error("FriendRoom: opponent.roomLayout.meshes is null");
+    return;
+  }
+
+  if (opponent.roomLayout.planes === null) {
+    throw new Error("FriendRoom: opponent.roomLayout.planes is null");
+    return;
+  }
+
+  console.log("\n-------------\n");
+
+  console.log(
+    "Inside FriendRoom component with opp roomlayout:",
+    opponent.roomLayout,
+  );
 
   return (
     <>
       <group key="meshes">
-        {opponent.roomLayout?.meshes.map(
-          ({ geometry, matrix, name }, index) => (
-            <FriendMesh
-              key={name + `${index}`}
-              positionData={geometry.position}
-              indexData={geometry.index!}
-              matrixData={matrix}
-              name={name}
-            />
-          ),
-        )}
+        {opponent.roomLayout.meshes.map(({ geometry, matrix, name }) => (
+          <FriendMesh
+            key={id}
+            position={geometry.position}
+            index={geometry.index}
+            matrix={matrix}
+            name={name}
+          />
+        ))}
       </group>
 
       <group key={"planes"}>
         {/* <SpacialPlane /> */}
-        {opponent.roomLayout?.planes.map(
-          ({ geometry, matrix, name }, index) => (
-            <FriendPlane
-              key={name + `${index}`}
-              positionData={geometry.position}
-              indexData={geometry.index!}
-              matrixData={matrix}
-              name={name}
-            />
-          ),
-        )}
+        {opponent.roomLayout.planes.map(({ geometry, matrix, name }) => (
+          <FriendPlane
+            key={id}
+            position={geometry.position}
+            index={geometry.index}
+            matrix={matrix}
+            name={name}
+          />
+        ))}
       </group>
     </>
   );
 }
 
-export default FriendRoom;
+export default React.memo(FriendRoom);

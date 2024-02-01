@@ -1,27 +1,28 @@
 import type { CarouselApi } from "@/components/ui/carousel";
-import type { CarouselGameInfo, GameNames } from "@/lib/constants";
 import { gameInfoMap } from "@/lib/constants";
+import type { CarouselGameInfo, GameNames } from "@/lib/types";
 import { create } from "zustand";
 
 interface ZkArcadeState {
   carouselApi: CarouselApi;
   activeGame: CarouselGameInfo;
+  matchPath: string;
   setCarouselApi: (api: CarouselApi) => void;
   getCarouselApi: () => [CarouselApi, (api: CarouselApi) => void];
   setActiveGame: (game: GameNames) => void;
+  setMatchPath: (username: string, id: string) => void;
 }
 
 export const useZkArcade = create<ZkArcadeState>()((set, get) => ({
   carouselApi: undefined,
   activeGame: gameInfoMap.get("Hot 'n Cold")!,
   games: gameInfoMap,
+  matchPath: "",
   setCarouselApi: (api: CarouselApi) => {
     set({ carouselApi: api });
   },
   getCarouselApi: () => {
     const { carouselApi, setCarouselApi } = get();
-    // carouselApi.carouselApi;
-    // const setCarouselApi = useZkArcade.getState().setCarouselApi;
 
     return [carouselApi, setCarouselApi];
   },
@@ -35,5 +36,10 @@ export const useZkArcade = create<ZkArcadeState>()((set, get) => ({
       console.log(`gameInfo.name: ${gameInfo.name}`);
       set({ activeGame: gameInfo });
     }
+  },
+  setMatchPath: (username: string, id: string) => {
+    const path = `/play/${username}/${id}`;
+
+    set({ matchPath: path });
   },
 }));

@@ -1,66 +1,86 @@
 "use client";
 
+import type { GeometryData } from "@/lib/types";
 import {
-  BufferGeometry,
+  BufferAttribute,
   Float32BufferAttribute,
   Matrix4,
   Mesh,
-  MeshLambertMaterial,
-  // MeshPhongMaterial,
-  Uint16BufferAttribute,
+  // MeshLambertMaterial,
+  MeshStandardMaterial,
+  ShapeGeometry,
 } from "three";
 
-function FriendPlane({
-  positionData,
-  indexData,
-  matrixData,
-  name,
-}: {
-  positionData: { itemSize: number; array: number[] };
-  indexData: { itemSize: number; array: number[] };
-  matrixData: { elements: number[] };
-  worldMatrixData?: { elements: number[] };
-  name?: string;
-}) {
-  // Use Three.js constructors to convert raw data to Three.js data types
-  const positionAttribute = new Float32BufferAttribute(
-    positionData.array,
-    positionData.itemSize,
-  );
-  const indexAttribute = new Uint16BufferAttribute(
-    indexData.array,
-    indexData.itemSize,
-  );
-  const matrix = new Matrix4().fromArray(matrixData.elements);
+interface FriendPlaneProps extends GeometryData {
+  name: string;
+  matrix: {
+    elements: number[];
+  };
+}
 
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", positionAttribute);
-  geometry.setIndex(indexAttribute);
+const renderablePlanesArr = ["wall", "ceiling", "floor"];
 
-  // let material = new MeshLambertMaterial({
-  //   color: "blue",
-  //   side: 2,
-  // });
+const ignorablePlane = (name: string) => {
+  return !renderablePlanesArr.includes(name);
+};
+
+function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
+  // console.log("\n-------------\n");
+  // console.log("inside FriendPlane component");
+  // console.log("name:", name);
+  // console.log("position:", position);
+  // console.log("index:", index);
+  // console.log("matrixData:", matrix);
+
+  if (ignorablePlane(name)) {
+    return null;
+  }
+
+  const matrixFour = new Matrix4().fromArray(matrix.elements);
+
+  const geometry = new ShapeGeometry();
+
+  geometry.setAttribute(
+    "position",
+    new Float32BufferAttribute(position.array, 3),
+  );
+
+  index && geometry.setIndex(new BufferAttribute(index.array, 1));
 
   let color = "#FAF9F6"; // off-white default
 
   switch (name) {
     case "floor":
-      color = "#C0C0C0"; // silverish
+      color = "#2b2d42"; // silverish
       break;
     case "ceiling":
-      color = "#F5F5F5"; // very lightlight grey
+      color = "#8d99ae"; // very lightlight grey
+      break;
+    case "wall":
+      color = "#edf2f4"; // off-white
+      break;
+    default:
+      color = "#FAF9F6"; // off-white default
       break;
   }
 
-  const material = new MeshLambertMaterial({
+  const material = new MeshStandardMaterial({
     color,
     side: 2,
   });
 
+  // const material = new MeshBasicMaterial({
+  //   color,
+  //   side: 2,
+  // });
+
   const mesh = new Mesh(geometry, material);
 
-  mesh.applyMatrix4(matrix);
+  mesh.matrixAutoUpdate = false;
+
+  mesh.applyMatrix4(matrixFour);
+
+  // console.log("FriendPlane - friend generated mesh:", mesh);
 
   return <primitive object={mesh} />;
 }

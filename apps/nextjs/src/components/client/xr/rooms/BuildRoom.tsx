@@ -1,20 +1,26 @@
 "use client";
 
-import {
-  useTrackedMeshes,
-  useTrackedPlanes,
-} from "@coconut-xr/natuerlich/react";
 import { useId } from "react";
-
 import {
   GameMesh,
   GamePlane,
   SandboxMesh,
   SandboxPlane,
 } from "@/components/client/xr/rooms";
+import {
+  useTrackedMeshes,
+  useTrackedPlanes,
+} from "@coconut-xr/natuerlich/react";
+
 import RoomShadow from "../RoomShadow";
 
-function BuildRoom({ inGame }: { inGame: boolean }) {
+function BuildRoom({
+  inGame,
+  syncingRoom,
+}: {
+  inGame: boolean;
+  syncingRoom?: boolean;
+}) {
   const meshes = useTrackedMeshes();
   const planes = useTrackedPlanes();
   // ik this is a bad idea im sorry
@@ -28,8 +34,12 @@ function BuildRoom({ inGame }: { inGame: boolean }) {
         <group key="meshes">
           {meshes.map((mesh, index) => {
             if (mesh.semanticLabel === "global mesh") {
+              if (syncingRoom) {
+                return null;
+              }
+
               return <RoomShadow key={mesh.semanticLabel} mesh={mesh} />;
-            } else
+            } else {
               return (
                 <GameMesh
                   key={key + `${index}`}
@@ -37,6 +47,7 @@ function BuildRoom({ inGame }: { inGame: boolean }) {
                   name={mesh.semanticLabel}
                 />
               );
+            }
           })}
         </group>
 

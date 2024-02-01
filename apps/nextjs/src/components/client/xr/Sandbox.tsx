@@ -31,12 +31,8 @@ import {
 import GameSphere from "./objects/GameSphere";
 
 const sessionOptions: XRSessionInit = {
-  requiredFeatures: [
-    "local-floor",
-    "mesh-detection",
-    "plane-detection",
-    "hand-tracking",
-  ],
+  requiredFeatures: ["local-floor", "hand-tracking"],
+  optionalFeatures: ["mesh-detection", "plane-detection"],
 };
 
 function Sandbox({ username }: SandboxProps) {
