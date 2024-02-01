@@ -48,11 +48,10 @@ function Lobby({
   const {
     initLobbyEventsToPresenceChannel,
     updatePlayer,
-    isMinaOn,
-    setIsMinaOn,
     setGameStarting,
     gameStarting,
     players,
+    setIsMinaOn,
     initGameEventsToPresenceChannel,
     setPresenceChannel,
     channel: presenceChannel,
@@ -221,8 +220,8 @@ function Lobby({
     <>
       {/* Lobby UI */}
       <Transition
-        // show={!gameStarting && mounted}
-        show={false}
+        show={!gameStarting && mounted}
+        // show={false}
         beforeEnter={() => console.log("transition starting to open")}
         afterEnter={() => console.log("transition opened")}
         beforeLeave={() => console.log("transition starting to close")}
@@ -246,8 +245,7 @@ function Lobby({
       </Transition>
 
       {/* Game Instructions */}
-      {/*<Transition show={showInstructions}> */}
-      <Transition show={true}>
+      <Transition show={showInstructions}>
         <Transition.Child
           as={Card}
           enter="transform duration-200 transition ease-out-in"
@@ -264,70 +262,40 @@ function Lobby({
 
       {/* Start and Settings Buttons, always anchored at the bottom */}
       <div className="absolute bottom-16 flex items-center gap-x-12">
-        {
-          !gameStarting ? (
-            <>
-              <Button
-                variant="default"
-                className="relative"
-                disabled={
-                  useLobbyStore.getState().players.some((p) => !p.ready) ||
-                  hostUsername !== me?.username ||
-                  gameStarting
+        {!gameStarting && (
+          <>
+            <Button
+              variant="default"
+              className="relative"
+              disabled={
+                useLobbyStore.getState().players.some((p) => !p.ready) ||
+                hostUsername !== me?.username ||
+                gameStarting
+              }
+              onClick={() => {
+                if (hostUsername === me?.username) {
+                  presenceChannel?.trigger("client-game-started", {
+                    starting: true,
+                    gameName: "Hot 'n Cold",
+                  });
+
+                  initGameEventsToPresenceChannel(
+                    presenceChannelName,
+                    "Hot 'n Cold",
+                  );
+
+                  setGameStarting(true);
                 }
-                onClick={() => {
-                  if (hostUsername === me?.username) {
-                    presenceChannel?.trigger("client-game-started", {
-                      starting: true,
-                      gameName: "Hot 'n Cold",
-                    });
-
-                    initGameEventsToPresenceChannel(
-                      presenceChannelName,
-                      "Hot 'n Cold",
-                    );
-
-                    setGameStarting(true);
-                  }
-                }}
-              >
-                Start Game
-              </Button>
-              <LobbySettings
-                isMinaOn={isMinaOn}
-                setIsMinaOn={setIsMinaOn}
-                isHost={me?.username === hostUsername}
-                channel={presenceChannel}
-              />
-            </>
-          ) : null
-          // isMinaOn ? (
-          //   <MinaStartButton
-          //     setToXR={setToXR}
-          //     publicKey={lobbyMe?.publicKey}
-          //     privateKey={lobbyMe?.privateKey}
-          //   >
-          //     <Button
-          //       variant={"default"}
-          //       onPointerDown={() => {
-          //         // setLaunchXR(true);
-          //         void enterAR();
-          //       }}
-          //       disabled={launchXR || !gameEventsInitialized || !xrSupported}
-          //     >
-          //       {!xrSupported ? "XR Not Supported" : "Launch XR"}
-          //     </Button>
-          //   </MinaStartButton>
-          // ) : (
-          //   <Button
-          //     variant={"default"}
-          //     onPointerDown={() => setLaunchXR(true)}
-          //     disabled={!isXRSupported || !gameEventsInitialized || !xrSupported}
-          //   >
-          //     {!isXRSupported ? "XR Not Supported" : "Launch XR"}
-          //   </Button>
-          // )
-        }
+              }}
+            >
+              Start Game
+            </Button>
+            <LobbySettings
+              isHost={me?.username === hostUsername}
+              channel={presenceChannel}
+            />
+          </>
+        )}
       </div>
     </>
   );

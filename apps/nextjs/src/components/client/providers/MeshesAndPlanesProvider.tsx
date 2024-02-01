@@ -72,8 +72,8 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
     }
 
     console.log("------ ROOM SYNC COMPLETE ------");
-    console.log("me.roomLayout", me.roomLayout);
-    console.log("opponent.roomLayout", opponent.roomLayout);
+    // console.log("me.roomLayout", me.roomLayout);
+    // console.log("opponent.roomLayout", opponent.roomLayout);
     console.log("--------------------------------");
 
     setGameStatus(HotnColdGameStatus.BOTHHIDING);
@@ -91,10 +91,10 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
     // if (meshes.length > 0 && planes.length > 0) {
 
     console.log("------MeshesAndPlanesProvider: useEffect------");
-    console.log("meshes.length", meshes.length);
-    console.log("myMeshes.length", myMeshes.length);
-    console.log("planes.length", planes.length);
-    console.log("myPlanes.length", myPlanes.length);
+    // console.log("meshes.length", meshes.length);
+    // console.log("myMeshes.length", myMeshes.length);
+    // console.log("planes.length", planes.length);
+    // console.log("myPlanes.length", myPlanes.length);
     console.log("------------");
 
     /**
@@ -188,8 +188,8 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
 
       console.log("MeshesAndPlanesProvider: sending roomLayout to server");
 
-      console.log("formatedMeshes", formatedMeshes);
-      console.log("formatedPlanes", formatedPlanes);
+      // console.log("formatedMeshes", formatedMeshes);
+      // console.log("formatedPlanes", formatedPlanes);
 
       channel.trigger("client-roomLayout-meshes", {
         meshes: formatedMeshes,

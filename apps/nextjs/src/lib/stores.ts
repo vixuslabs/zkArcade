@@ -258,9 +258,9 @@ export const useFriendsStore = create(
     return {
       pusherStore: usePusher.getState,
       //   useLobbyStore: useLobbyStore,
-      friends: (userId: string) => {
+      friends: (_: string) => {
         // get friends from db
-        console.log("userId", userId);
+        // console.log("userId", userId);
       },
       addNewFriend: (friendId: string) => {
         console.log("addNewFriend", friendId);
@@ -605,7 +605,7 @@ export const useHotnCold = create(
             set({ status });
           },
           "client-in-game": ({ inGame: oppInGame }: { inGame: boolean }) => {
-            console.log("client-in-game: opp-", oppInGame);
+            // console.log("client-in-game: opp-", oppInGame);
             const { opponent, me, status } = get();
 
             const { setGameStatus } = useHotnCold.getState();
@@ -635,7 +635,7 @@ export const useHotnCold = create(
           }: {
             planes: PlanePusherData[];
           }) => {
-            console.log("client-roomLayout-planes", planes);
+            // console.log("client-roomLayout-planes", planes);
 
             const { setRoomLayout } = useHotnCold.getState();
             const { opponent } = get();
@@ -713,7 +713,7 @@ export const useHotnCold = create(
               };
             });
 
-            console.log("updatedPlanes", updatedPlanes);
+            // console.log("updatedPlanes", updatedPlanes);
 
             setRoomLayout({ planes: updatedPlanes }, "opponent");
           },
@@ -722,7 +722,7 @@ export const useHotnCold = create(
           }: {
             meshes: MeshPusherData[];
           }) => {
-            console.log("client-roomLayout-meshes", meshes);
+            // console.log("client-roomLayout-meshes", meshes);
 
             const { setRoomLayout } = useHotnCold.getState();
             const { opponent } = get();
@@ -735,8 +735,8 @@ export const useHotnCold = create(
 
               Object.entries(mesh.geometry.position.array).forEach(
                 ([key, value]) => {
-                  console.log("key", key);
-                  console.log("value", value);
+                  // console.log("key", key);
+                  // console.log("value", value);
                   const index = parseInt(key, 10);
                   if (!isNaN(index) && typeof value === "number") {
                     positionsView[index] = value;
@@ -795,7 +795,7 @@ export const useHotnCold = create(
               throw new Error("client-roomLayout-meshes: Opponent is not set");
             }
 
-            console.log("updatedMeshes", updatedMeshes);
+            // console.log("updatedMeshes", updatedMeshes);
 
             setRoomLayout({ meshes: updatedMeshes }, "opponent");
           },
@@ -851,7 +851,7 @@ export const useHotnCold = create(
           }: {
             objectPosition: THREE.Vector3;
           }) => {
-            console.log("client-set-object", objectPosition);
+            // console.log("client-set-object", objectPosition);
 
             const { opponent } = get();
 
@@ -861,7 +861,7 @@ export const useHotnCold = create(
               throw new Error("client-set-object: Opponent is not set");
             }
 
-            console.log("before set - opponent", opponent);
+            // console.log("before set - opponent", opponent);
 
             setObjectPosition(objectPosition, "opponent");
 
@@ -875,14 +875,14 @@ export const useHotnCold = create(
             //   },
             // });
 
-            console.log("after set - opponent", opponent);
+            // console.log("after set - opponent", opponent);
           },
           "client-found-object": ({
             objectPosition,
           }: {
             objectPosition: THREE.Vector3;
           }) => {
-            console.log("client-found-object", objectPosition);
+            // console.log("client-found-object", objectPosition);
 
             const { opponent } = get();
             const { setGameStatus } = useHotnCold.getState();
@@ -976,7 +976,7 @@ export const useHotnCold = create(
         const { setMe, setOpponent } = useHotnCold.getState();
 
         if (status === currentStatus) {
-          console.log("setGameStatus: Status is already", status);
+          // console.log("setGameStatus: Status is already", status);
           throw new Error(
             `setGameStatus: Status is already ${status}, cannot set to the same status`,
           );
@@ -992,8 +992,8 @@ export const useHotnCold = create(
 
         console.log("setGameStatus: Passed Status is", status);
 
-        console.log("me ", me);
-        console.log("opponent ", opponent);
+        // console.log("me ", me);
+        // console.log("opponent ", opponent);
 
         if (
           // (!opponent && status !== HotnColdGameStatus.LOBBY) ||
@@ -1097,8 +1097,8 @@ export const useHotnCold = create(
         },
         user: "me" | "opponent",
       ) => {
-        console.log("setRoomLayout called with user", user);
-        console.log("setRoomLayout called with roomLayout", roomLayout);
+        // console.log("setRoomLayout called with user", user);
+        // console.log("setRoomLayout called with roomLayout", roomLayout);
 
         const { me, opponent } = get();
 
@@ -1151,11 +1151,11 @@ export const useHotnCold = create(
 
         console.log("checking if roomLayout is ready");
 
-        console.log("me.roomLayout", me.roomLayout);
-        console.log("opponent.roomLayout", opponent.roomLayout);
+        // console.log("me.roomLayout", me.roomLayout);
+        // console.log("opponent.roomLayout", opponent.roomLayout);
 
-        console.log(`passed in roomLayout.meshes`, roomLayout.meshes);
-        console.log(`passed in roomLayout.planes`, roomLayout.planes);
+        // console.log(`passed in roomLayout.meshes`, roomLayout.meshes);
+        // console.log(`passed in roomLayout.planes`, roomLayout.planes);
 
         if (
           me.roomLayout.meshes.length > 0 &&
@@ -1233,7 +1233,7 @@ export const useHotnCold = create(
 
         if (user === "me") {
           set((state) => {
-            console.log("setObjectPosition - me: state", state);
+            // console.log("setObjectPosition - me: state", state);
             if (!state.me) {
               throw new Error("setObjectPosition: Me is not set");
             }
@@ -1273,7 +1273,7 @@ export const useHotnCold = create(
           });
         } else if (user === "opponent") {
           set((state) => {
-            console.log("setObjectPosition - opp: state", state);
+            // console.log("setObjectPosition - opp: state", state);
             if (!state.me) {
               throw new Error("setObjectPosition - opp: Me is not set");
             }
@@ -1314,8 +1314,8 @@ export const useHotnCold = create(
         }
 
         console.log("after setObjectPos if me, else if opp checks");
-        console.log("me", me);
-        console.log("opponent", opponent);
+        // console.log("me", me);
+        // console.log("opponent", opponent);
 
         if (
           !me.hiding &&
@@ -1336,36 +1336,6 @@ export const useHotnCold = create(
             setGameStatus(HotnColdGameStatus.ONEHIDING);
         }
       },
-      // setObjectMatrix: (
-      //   matrix: THREE.Matrix4 | null,
-      //   user: "me" | "opponent",
-      // ) => {
-      //   if (user === "me") {
-      //     set((state) => {
-      //       if (!state.me) {
-      //         throw new Error("setObjectMatrix: Me is not set");
-      //       }
-      //       return {
-      //         me: {
-      //           ...state.me,
-      //           objectMatrix: matrix,
-      //         },
-      //       };
-      //     });
-      //   } else {
-      //     set((state) => {
-      //       if (!state.opponent) {
-      //         throw new Error("setObjectMatrix: Opponent is not set");
-      //       }
-      //       return {
-      //         opponent: {
-      //           ...state.opponent,
-      //           objectMatrix: matrix,
-      //         },
-      //       };
-      //     });
-      //   }
-      // },
       getGameChannel: () => {
         const channel = useLobbyStore.getState().channel;
 

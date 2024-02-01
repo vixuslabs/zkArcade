@@ -120,51 +120,15 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
       if (me && me.hiding && !isObjectSet) {
         setIsObjectSet(true);
 
+        downState.current = undefined;
+
         const myObjectPosition = meshRef.current.getWorldPosition(
           meshRef.current.position,
         );
 
         setObjectPosition(myObjectPosition, "me");
-
-        // const channel = getGameChannel();
-
-        // const opponent = useHotnCold.getState().opponent;
-
-        // if (!opponent) {
-        //   throw new Error("void handleAnchor(): no opponent");
-        // }
-
-        // if (opponent.hidObject && !opponent.hiding) {
-        //   console.log("opponent hid object");
-        //   setGameStatus(HotnColdGameStatus.SEEKING);
-        // } else {
-        //   console.log("opponent did not hide object yet");
-        //   setGameStatus(HotnColdGameStatus.ONEHIDING);
-        // }
-
-        // channel.trigger("client-set-object", {
-        //   objectPosition: myObjectPosition,
-        //   // objectMatrix: objMatrix,
-        // });
       }
-    }, [
-      rigidRef,
-      meshRef,
-      me,
-      setObjectPosition,
-      isObjectSet,
-      // getGameChannel,
-      // setGameStatus,
-    ]);
-
-    // const handleUnanchor = useCallback(() => {
-    //   if (!rigidRef?.current) return;
-    //   rigidRef.current.setBodyType(0, true);
-    //   rigidRef.current.setGravityScale(1, true);
-    //   rigidRef.current.resetTorques(true);
-    //   rigidRef.current.resetForces(true);
-    //   setIsAnchored(false);
-    // }, [rigidRef]);
+    }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet]);
 
     return (
       <mesh
@@ -175,8 +139,9 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             meshRef.current != null &&
             meshRef.current.visible &&
             downState.current == null &&
-            isXIntersection(e) &&
-            !isAnchored
+            isXIntersection(e)
+            // isXIntersection(e) &&
+            // !isAnchored
           ) {
             e.stopPropagation();
             (e.target as HTMLElement).setPointerCapture(e.pointerId);

@@ -112,7 +112,7 @@ function GameSphere({
           ) : pointers.right.heldObject?.name === "hiddenObject" ? (
             <meshBasicMaterial color={color ?? "red"} />
           ) : (
-            <meshStandardMaterial transparent opacity={0.5} color={"black"} />
+            <meshStandardMaterial transparent opacity={0.7} color={"black"} />
           ))}
       </GrabPhysics>
     </RigidBody>

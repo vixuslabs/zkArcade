@@ -18,7 +18,7 @@ interface GameMeshProps {
   name?: string;
 }
 
-function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
+function GameMesh({ mesh, color = "black", name = "" }: GameMeshProps) {
   const { setMyMeshes } = useMeshesAndPlanesContext();
   const ref = useRef<Mesh>(null);
   const rigidRef = useRef<RapierRigidBody>(null);
@@ -71,6 +71,10 @@ function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
     return <RoomShadow mesh={mesh} />;
   }
 
+  if (status === HotnColdGameStatus.SEEKING) {
+    return null;
+  }
+
   return (
     <RigidBody
       name={name}
@@ -83,7 +87,7 @@ function GameMesh({ mesh, color = "red", name = "" }: GameMeshProps) {
         <meshBasicMaterial
           transparent
           opacity={0}
-          wireframe
+          // wireframe
           color={color ?? "black"}
         />
       </TrackedMesh>

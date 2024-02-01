@@ -11,18 +11,17 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import type { PresenceChannel } from "pusher-js";
+import { useLobbyStore } from "@/lib/stores";
 
 function LobbySettings({
-  isMinaOn,
-  setIsMinaOn,
   isHost,
   channel,
 }: {
-  isMinaOn: boolean;
-  setIsMinaOn: (isMinaOn: boolean) => void;
   isHost: boolean | undefined;
   channel: PresenceChannel | null;
 }) {
+  const { isMinaOn, setIsMinaOn } = useLobbyStore();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -33,8 +32,10 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            className={!isHost ? "hover:cursor-not-allowed" : ""}
-            disabled={!isHost}
+            // className={!isHost ? "hover:cursor-not-allowed" : ""}
+            className={"hover:cursor-not-allowed"}
+            // disabled={!isHost}
+            disabled={true}
             checked={isMinaOn}
             onCheckedChange={() => {
               console.log("isHost", isHost);

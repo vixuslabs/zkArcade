@@ -152,8 +152,6 @@ function FriendsWS() {
       });
     },
     "invite-accepted": (data) => {
-      console.log("invite accepted", data);
-
       const { friendId, gameId } = data;
 
       if (!friendId || !gameId) {

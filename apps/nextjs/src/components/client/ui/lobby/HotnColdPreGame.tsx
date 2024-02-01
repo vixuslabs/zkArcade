@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useHotnCold } from "@/lib/stores";
-
 import { HotnColdGame } from "@/components/client/xr";
+import { GameBugsTooltip } from "./";
 
 const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
   const { gameEventsInitialized } = useHotnCold();
@@ -50,8 +50,16 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
             <span className="font-bold underline underline-offset-4">
               Do not move in real life.
             </span>{" "}
-            You the thumbstick to change the length of the pointer. Click X and
-            Y at the same time, while hold the object, to anchor the ball.
+            You the thumbstick to change the length of the pointer. Click{" "}
+            <span className="font-bold text-md underline underline-offset-2">
+              X
+            </span>{" "}
+            and{" "}
+            <span className="font-bold text-md underline underline-offset-2">
+              Y
+            </span>{" "}
+            at the same time, while hold the object, to set the ball&apos;s
+            hiding position.
           </p>
           <Badge className="max-w-fit text-black hover:cursor-default">
             Seeking
@@ -75,10 +83,13 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
           </p>
         </CardContent>
         <div className="grid text-center justify-center">
-          <CardFooter>Good luck, be safe, and have fun!</CardFooter>
+          <CardFooter className="flex flex-col justify-center gap-y-2">
+            <p>Good luck, be safe, and have fun!</p>
+            <GameBugsTooltip />
+          </CardFooter>
         </div>
       </Card>
-      {/* <HotnColdGame gameEventsInitialized={gameEventsInitialized} /> */}
+      <HotnColdGame gameEventsInitialized={gameEventsInitialized} />
     </>
   );
 });

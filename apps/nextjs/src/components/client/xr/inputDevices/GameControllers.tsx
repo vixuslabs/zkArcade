@@ -198,7 +198,7 @@ function GameControllers({
       !activePointer.heldObject ||
       capturedObject.uuid !== activePointer.heldObject.uuid
     ) {
-      console.log(`setting held object: `, capturedObject);
+      // console.log(`setting held object: `, capturedObject);
       setHeldObject({
         uuid: capturedObject.uuid,
         name: capturedObject.name || undefined,

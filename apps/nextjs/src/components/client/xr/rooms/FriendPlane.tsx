@@ -6,24 +6,35 @@ import {
   Float32BufferAttribute,
   Matrix4,
   Mesh,
-  MeshLambertMaterial,
+  // MeshLambertMaterial,
+  MeshStandardMaterial,
   ShapeGeometry,
 } from "three";
 
 interface FriendPlaneProps extends GeometryData {
-  name?: string;
+  name: string;
   matrix: {
     elements: number[];
   };
 }
 
+const renderablePlanesArr = ["wall", "ceiling", "floor"];
+
+const ignorablePlane = (name: string) => {
+  return !renderablePlanesArr.includes(name);
+};
+
 function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
-  console.log("\n-------------\n");
-  console.log("inside FriendPlane component");
-  console.log("name:", name);
-  console.log("position:", position);
-  console.log("index:", index);
-  console.log("matrixData:", matrix);
+  // console.log("\n-------------\n");
+  // console.log("inside FriendPlane component");
+  // console.log("name:", name);
+  // console.log("position:", position);
+  // console.log("index:", index);
+  // console.log("matrixData:", matrix);
+
+  if (ignorablePlane(name)) {
+    return null;
+  }
 
   const matrixFour = new Matrix4().fromArray(matrix.elements);
 
@@ -40,14 +51,20 @@ function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
 
   switch (name) {
     case "floor":
-      color = "#C0C0C0"; // silverish
+      color = "#2b2d42"; // silverish
       break;
     case "ceiling":
-      color = "#F5F5F5"; // very lightlight grey
+      color = "#8d99ae"; // very lightlight grey
+      break;
+    case "wall":
+      color = "#edf2f4"; // off-white
+      break;
+    default:
+      color = "#FAF9F6"; // off-white default
       break;
   }
 
-  const material = new MeshLambertMaterial({
+  const material = new MeshStandardMaterial({
     color,
     side: 2,
   });
@@ -63,7 +80,7 @@ function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
 
   mesh.applyMatrix4(matrixFour);
 
-  console.log("FriendPlane - friend generated mesh:", mesh);
+  // console.log("FriendPlane - friend generated mesh:", mesh);
 
   return <primitive object={mesh} />;
 }

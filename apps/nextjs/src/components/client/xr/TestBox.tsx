@@ -2,10 +2,8 @@
 
 "use client";
 
-
 import React, { useRef } from "react";
 import { vec3 } from "@react-three/rapier";
-
 
 import type { ThreeEvent } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";

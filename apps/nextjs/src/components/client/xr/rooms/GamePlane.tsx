@@ -68,6 +68,10 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
     })();
   }, [ref, init, plane, setMyPlanes, name, status]);
 
+  if (status === HotnColdGameStatus.SEEKING) {
+    return null;
+  }
+
   return (
     <>
       <RigidBody
@@ -81,7 +85,7 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
           <meshPhongMaterial
             transparent
             opacity={0}
-            wireframe
+            // wireframe
             color={color ?? "black"}
           />
         </TrackedPlane>
