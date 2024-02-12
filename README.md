@@ -16,11 +16,15 @@ The private nature of the Mina blockchain makes it possible to build games of in
 
   🔦 _Are you ready to search in the shadows?_ [Learn more](./docs/HotnCold.md)
 
-- ### [zkBattleship](./docs/HotnCold.md)
+- ### [zkBattleship](./)
+
+  More to come in the near future!
 
 ## Sandbox Mode
 
-Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that don't have anyone to play with.
+Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that don't have anyone to play with. 
+
+**Note**: this is a work in progress so expect some bugs. If the sandbox seems to break just refresh the page!
 
 ## What's Next?
 
