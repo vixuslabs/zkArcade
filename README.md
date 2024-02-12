@@ -14,7 +14,7 @@ The private nature of the Mina blockchain makes it possible to build games of in
 
   Welcome to **Hot 'n Cold**, the latest [WebXR](https://immersive-web.github.io/webxr-samples/) sensation for the Meta Quest 3. Dive into a world where your room transforms into a virtual playground. Get ready to hide and seek like never before - in the dark, with a twist!
 
-  🔦 _Are you ready to search in the shadows?_
+  🔦 _Are you ready to search in the shadows?_ [Learn more](./docs/HotnCold.md)
 
 - ### [zkBattleship](./docs/HotnCold.md)
 
