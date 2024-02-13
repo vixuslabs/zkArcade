@@ -27,7 +27,7 @@
 - Players can create an account using their email, GitHub, or Discord.
 - Inviting a friend is easy. Start a new game and let the fun begin!
 
-  [<img width="400" alt="logo" src="./img/HotnCold-Thumbnail-02.png"/>](https://youtu.be/zaE0gExhPO8)
+  [<img width="400" alt="logo" src="./img/HotnCold-Thumbnail-02.png"/>](https://youtu.be/g0xg-7yLXS4)
 
 ### Join the Fun
 
