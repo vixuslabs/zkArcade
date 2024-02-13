@@ -12,11 +12,11 @@
 
 1. **Room Scanning**: Each player uses their Meta Quest 3 headset to scan their room. The advanced depth sensor maps out the space, creating an accurate virtual representation.
 
-   <img width="500" alt="logo" src="./img/HotnCold-Architecture-Step1-Room-Scanning.jpg"/>
+   <img width="650" alt="logo" src="./img/HotnCold-Architecture-Step1-Room-Scanning.jpg"/>
 
 2. **Hiding the Object**: Players select a virtual object and hide it in their opponent's virtual room. It's a game of wits and strategy - where will you hide your object?
 
-   <img width="500" alt="logo" src="./img/HotnCold-Architecture-Step2-Object-Hiding.jpg"/>
+   <img width="650" alt="logo" src="./img/HotnCold-Architecture-Step2-Object-Hiding.jpg"/>
 
 3. **The Search Begins**: In a dark virtual version of your room, use your virtual flashlight to find the hidden object. The first to find it wins!
 
