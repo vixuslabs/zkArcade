@@ -1,6 +1,6 @@
 # Hot 'n Cold
 
-<img width="300" height="300" alt="logo" src="./img/HotnCold-Banner.png"/>
+<img width="400" height="400" alt="logo" src="./img/HotnCold-Banner.png"/>
 
 ## Features
 
@@ -12,22 +12,22 @@
 
 1. **Room Scanning**: Each player uses their Meta Quest 3 headset to scan their room. The advanced depth sensor maps out the space, creating an accurate virtual representation.
 
-   ![Room Scanning Process](./img/HotnCold-Architecture-Step1-Room-Scanning.jpg)
+   <img width="500" alt="logo" src="./img/HotnCold-Architecture-Step1-Room-Scanning.jpg"/>
 
 2. **Hiding the Object**: Players select a virtual object and hide it in their opponent's virtual room. It's a game of wits and strategy - where will you hide your object?
 
-   ![Hiding the Object](./img/HotnCold-Architecture-Step2-Object-Hiding.jpg)
+   <img width="500" alt="logo" src="./img/HotnCold-Architecture-Step2-Object-Hiding.jpg"/>
 
 3. **The Search Begins**: In a dark virtual version of your room, use your virtual flashlight to find the hidden object. The first to find it wins!
 
-   [![Gameplay Video](./img/HotnCold-Thumbnail-01.png)](https://youtu.be/0D224V3nmfM)
+   [<img width="400" alt="logo" src="./img/HotnCold-Thumbnail-01.png"/>](https://youtu.be/0D224V3nmfM)
 
 ### Account Creation and Invitations
 
 - Players can create an account using their email, GitHub, or Discord.
 - Inviting a friend is easy. Start a new game and let the fun begin!
 
-  [![Account Creation Video](./img/HotnCold-Thumbnail-02.png)](https://youtu.be/zaE0gExhPO8)
+  [<img width="400" alt="logo" src="./img/HotnCold-Thumbnail-02.png"/>](https://youtu.be/zaE0gExhPO8)
 
 ### Join the Fun
 
