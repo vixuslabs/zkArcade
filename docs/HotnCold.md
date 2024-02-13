@@ -20,14 +20,14 @@
 
 3. **The Search Begins**: In a dark virtual version of your room, use your virtual flashlight to find the hidden object. The first to find it wins!
 
-   [![Gameplay Video](https://img.youtube.com/vi/0D224V3nmfM/0.jpg)](https://youtu.be/0D224V3nmfM)
+   [![Gameplay Video](./img/HotnCold-Thumbnail-01.png)](https://youtu.be/0D224V3nmfM)
 
 ### Account Creation and Invitations
 
 - Players can create an account using their email, GitHub, or Discord.
 - Inviting a friend is easy. Start a new game and let the fun begin!
 
-  [![Account Creation Video](https://img.youtube.com/vi/zaE0gExhPO8/0.jpg)](https://youtu.be/zaE0gExhPO8)
+  [![Account Creation Video](./img/HotnCold-Thumbnail-02.png)](https://youtu.be/zaE0gExhPO8)
 
 ### Join the Fun
 
