@@ -34,7 +34,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "o1js": "^0.14.0",
+    "o1js": "^0.14.2",
     "zk3d": "^0.12.0"
   },
   "eslintConfig": {

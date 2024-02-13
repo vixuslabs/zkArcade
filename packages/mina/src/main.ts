@@ -1,6 +1,4 @@
-import { AccountUpdate, Int64, Mina, PrivateKey } from "o1js";
-
-import { HotnCold } from "./HotnCold.js";
+import { Int64, verify } from "o1js";
 import { boxes, planes, realWorldHiddenObject } from "./scene.js";
 import {
   AffineTransformationMatrix,
@@ -11,6 +9,7 @@ import {
   SCALE,
   Vector3,
 } from "./structs.js";
+import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram.js";
 
 // Import the hidden object coordinates
 if (
@@ -30,7 +29,7 @@ if (
 
   const sceneBoxes: Box[] = [];
   boxes.forEach((b) => {
-    const vertices = new Array(Object.values(b.vertices));
+    const vertices = Object.values(b.vertices);
     // Scale the original box so that all its vertices are integers
     const scaledVertices = vertices.map((v) => {
       if (typeof v === "number") {
@@ -63,7 +62,7 @@ if (
 
   const scenePlanes: Plane[] = [];
   planes.forEach((p) => {
-    const vertices = new Float32Array(Object.values(p.position));
+    const vertices = Object.values(p.position);
     // Scale the original plane so that all its vertices are integers
     const scaledVertices = vertices.map((v) => Math.round(v * SCALE));
     // Create an array of 4 Vector3 objects from the scaled vertices
@@ -91,40 +90,20 @@ if (
   // Instantiate the room from the planes and boxes
   const room = Room.fromPlanesAndBoxes(scenePlanes, sceneBoxes);
 
-  // ----------------------------------------------------
+  const { verificationKey } = await ValidateRoom.compile();
 
-  const useProof = false;
-  const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
-  Mina.setActiveInstance(Local);
-  const { privateKey: deployerKey, publicKey: deployerAccount } =
-    Local.testAccounts[0]!;
-  const { privateKey: senderKey, publicKey: senderAccount } =
-    Local.testAccounts[1]!;
+  const roomAndObjectCommitment = new RoomAndObjectCommitment({ room: room, objectCommitment: object.getHash() });
 
-  // ----------------------------------------------------
+  const begin = performance.now();
+  const proof = await ValidateRoom.run(roomAndObjectCommitment, object);
+  const end = performance.now();
+  console.log("proof generation took: ", end - begin, " ms");
 
-  // create a destination we will deploy the smart contract to
-  const zkAppPrivateKey = PrivateKey.random();
-  const zkAppAddress = zkAppPrivateKey.toPublicKey();
+  const ok = await verify(proof, verificationKey);
 
-  const zkAppInstance = new HotnCold(zkAppAddress);
-  const deployTxn = await Mina.transaction(deployerAccount, () => {
-    AccountUpdate.fundNewAccount(deployerAccount);
-    zkAppInstance.deploy();
-    zkAppInstance.commitPlayer1Object(object);
-    zkAppInstance.commitPlayer2Object(object);
-  });
-  await deployTxn.prove();
-  await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
-
-  // ----------------------------------------------------
-
-  const txn = await Mina.transaction(senderAccount, () => {
-    zkAppInstance.validatePlayer1Room(room, object);
-    zkAppInstance.validatePlayer2Room(room, object);
-  });
-  await txn.prove();
-  await txn.sign([senderKey]).send();
+  if (ok) {
+    console.log("proof is valid");
+  }
 } else {
   throw new Error("Object coordinates are undefined");
 }

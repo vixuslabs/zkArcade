@@ -202,7 +202,7 @@ export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
     const planeNormalVector = this.normalVector();
     const planePoint = this.a;
     const planeToCenterVector = objectCenter.sub(planePoint);
-    planeNormalVector.dotProduct(planeToCenterVector).isPositive().not().assertTrue();
+    planeNormalVector.dotProduct(planeToCenterVector).isPositive().not().assertTrue("Object must be on the inner side of the plane");
   }
 }
 
@@ -265,7 +265,7 @@ export class Box extends Struct({ minX: Int64, maxX: Int64, minY: Int64, maxY: I
       .or(object.minX().sub(this.maxX).isPositive())
       .or(object.minY().sub(this.maxY).isPositive())
       .or(object.minZ().sub(this.maxZ).isPositive())
-      .assertTrue();
+      .assertTrue("Object must be outside the box");
   }
 }
 
