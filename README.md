@@ -1,41 +1,40 @@
-<img width="50" height="50" alt="logo" src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/logo.png"/>
-
-# Hot 'n Cold
-
-<p float="left">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/one.png" alt="chart 1" width="75">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/two.png" alt="chart 2" width="75">
-  <img src="https://raw.githubusercontent.com/0xtito/hot-n-cold/main/apps/nextjs/public/readme/third.png" alt="chart 3" width="75">
-</p>
+# zkArcade
 
 ## Welcome!
 
-Hey there! Thanks for checking out our Navigator's Hackathon final submission.
+Hey there! Thanks for checking out zkArcade, our project submission for the [Mina Navigators Program](https://minafoundation.notion.site/Mina-Navigators-Program-Information-e8d0490aa0e04c28b061887a8cc22f9a).
 
-Hot 'n Cold is a mixed reality project where we mix up WebXR with Mina's Zero Knowledge Blockchain. It has been awesome building this out, and only a hint at what is to come. You can find more about Mina and WebXR in the links below.
+zkArcade is an online marketplace for games of incomplete information (also known as fog-of-war games) built on top of [Mina](https://minaprotocol.com/)'s zero knowledge technology. Mina blockchain uses zero knowledge proofs to create a private and secure infrastructure to run zero-knowledge applications or "zkApps".
 
-[Link to Mina](https://minaprotocol.com/) | [Link to WebXR](https://immersive-web.github.io/webxr-samples/)
+The private nature of the Mina blockchain makes it possible to build games of incomplete information that don't rely on trust between the players, but instead use the power of zero knowledge proofs to enforce the rules of the game.
 
-## Features
+## Games
 
-- **Hide and Seek, but Cooler**: Ever wanted to hide stuff in your friend's room without messing it up? Well, now you can. Hide an object in their virtual room and watch them find it.
-- **User Management System (kinda)**: We've got this neat system where you can sign up, make friends, and invite them over for a virtual game, all thanks to [Clerk](https://clerk.com/). Not fully fleshed out (adding friends on a live link seems to bug out but that will get fixed).
-- **Blockchain Magic with Mina**: We use Mina's blockchain to make sure the game is fair. No cheating by hiding objects in furniture!
+- ### [Hot 'n Cold](./docs/HotnCold.md): A Thrilling XR Hide-and-Seek Game
+
+  Welcome to **Hot 'n Cold**, the latest [WebXR](https://immersive-web.github.io/webxr-samples/) sensation for the Meta Quest 3. Dive into a world where your room transforms into a virtual playground. Get ready to hide and seek like never before - in the dark, with a twist!
+
+  🔦 _Are you ready to search in the shadows?_ [Learn more](./docs/HotnCold.md)
+
+- ### [zkBattleship](./)
+
+  More to come in the near future!
 
 ## Sandbox Mode
 
-Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that don't have anyone to play with.
+Wanna just mess around? Jump into our sandbox mode. Play with a virtual ball, check out how cool WebXR is, and just have fun with the physics in your own space. Also for people that don't have anyone to play with. 
+
+**Note**: this is a work in progress so expect some bugs. If the sandbox seems to break just refresh the page!
 
 ## What's Next?
 
 - **Making Things Smoother**: We're working on making everything look and feel nicer. A slick user interface is on the way!
 - **More Sandbox Fun**: We're beefing up our sandbox so you can do even more cool stuff.
-- **Mina and Threejs Integration**: Getting Mina and threesjs to work together seamlessly is our next big thing.
-- **Sneaky Features Coming Up**: Soon, you won't know where your friend is until you're right next to them. Stay tuned!
+- **More Games**: We're cooking up some new games that will blow your mind away! 🤯
 
-## Wanna Try?
+### Wanna Try?
 
-Go [here](https://hot-n-cold.vercel.app/) - again some features tend to break so please forgive us (done in about 3ish weeks). It will get better :)
+Head to [https://zkarcade.vixuslabs.com](https://zkarcade.vixuslabs.com/) to try out Hot 'n Cold and our Sandbox. Again, some features tend to break so please forgive us. It will get better :)
 
 ## Projects That Made this Possible
 
