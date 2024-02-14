@@ -1,5 +1,5 @@
 import { Field, ZkProgram, Struct } from 'o1js';
-import { Room, Object3D } from "./structs.js";
+import { Room, Object3D } from "./structs";
 
 export class RoomAndObjectCommitment extends Struct({ room: Room, objectCommitment: Field}) {
   constructor(value: { room: Room, objectCommitment: Field }) {

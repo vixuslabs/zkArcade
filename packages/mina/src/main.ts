@@ -1,5 +1,5 @@
 import { Int64, verify } from "o1js";
-import { boxes, planes, realWorldHiddenObject } from "./scene.js";
+import { boxes, planes, realWorldHiddenObject } from "./scene";
 import {
   AffineTransformationMatrix,
   Box,
@@ -8,8 +8,8 @@ import {
   Room,
   SCALE,
   Vector3,
-} from "./structs.js";
-import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram.js";
+} from "./structs";
+import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
 
 // Import the hidden object coordinates
 if (
