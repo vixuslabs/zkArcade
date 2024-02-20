@@ -78,6 +78,7 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.158.0",
     "three-stdlib": "^2.29.1",
+    "zk3d": "^0.19.0",
     "zod": "^3.22.4",
     "zustand": "^4.4.7"
   },

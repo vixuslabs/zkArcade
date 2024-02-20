@@ -215,6 +215,9 @@ importers:
       three-stdlib:
         specifier: ^2.29.1
         version: 2.29.1(three@0.158.0)
+      zk3d:
+        specifier: ^0.19.0
+        version: 0.19.0(encoding@0.1.13)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -367,7 +370,7 @@ importers:
         version: 0.15.3(encoding@0.1.13)
       zk3d:
         specifier: ^0.19.0
-        version: 0.19.0
+        version: 0.19.0(encoding@0.1.13)
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.16.4
@@ -9625,7 +9628,7 @@ packages:
     resolution: {integrity: sha512-N+d4UJSJbt/R3wqY7Coqs5pcV0aUj2j9IaQ3rNj9bVCLld8tTGKRa2USARjnvZJWVx1NDmQev8EknoczaOQDOA==}
     dev: false
 
-  /zk3d@0.19.0:
+  /zk3d@0.19.0(encoding@0.1.13):
     resolution: {integrity: sha512-In9mXNm0PG9Dn9+5i+407FOc2u1hEKqY9letsqsDSD8oxvZa2F2kw4bJdtqmPltw3VpKZ0X9RSiISULNRaW+1w==}
     dependencies:
       o1js: 0.15.3(encoding@0.1.13)
