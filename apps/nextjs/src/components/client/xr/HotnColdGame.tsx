@@ -1,12 +1,17 @@
 "use client";
 
-import { ControllerStateProvider } from "@/components/client/providers";
+// import dynamic from "next/dynamic";
+import {
+  ControllerStateProvider,
+  MinaProvider,
+} from "@/components/client/providers";
 import { BuildRoom } from "@/components/client/xr";
 import { GameControllers } from "@/components/client/xr/inputDevices";
 import GameSphere from "@/components/client/xr/objects/GameSphere";
 import { FriendRoom } from "@/components/client/xr/rooms";
 import { Button } from "@/components/ui/button";
-import { useHotnCold, useLobbyStore } from "@/lib/stores";
+// import { useHotnCold, useLobbyStore } from "@/lib/stores";
+import { useHotnCold } from "@/lib/stores";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { HotnColdEvents } from "@/lib/types";
 import { clippingEvents } from "@coconut-xr/koestlich";
@@ -23,13 +28,6 @@ import {
 } from "@coconut-xr/natuerlich/react";
 import { XRPhysics } from "@vixuslabs/newtonxr";
 import { useShallow } from "zustand/react/shallow";
-
-import dynamic from "next/dynamic";
-
-const MinaStartButton = dynamic(
-  () => import("@/components/client/mina/MinaStartButton"),
-  { ssr: false },
-);
 
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
 
@@ -50,7 +48,7 @@ function HotnColdGame({
   const setGameStatus = useHotnCold(useShallow((state) => state.setGameStatus));
 
   const { me, setMe, opponent, status, startRoomSync } = useHotnCold();
-  const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
+  // const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
 
   const inputSources = useInputSources();
 
@@ -66,56 +64,48 @@ function HotnColdGame({
   }
 
   return (
-    <>
+    <MinaProvider>
       <div className="relative z-30 mt-4 flex items-center justify-center">
-        {isMinaOn ? (
-          <MinaStartButton />
-        ) : (
-          <Button
-            variant={"default"}
-            onClick={() => {
-              console.log("clicked!");
-              void enterAR().then(() => {
-                console.log("entered");
+        <Button
+          variant={"default"}
+          onClick={() => {
+            console.log("clicked!");
+            void enterAR().then(() => {
+              console.log("entered");
 
-                const channel = getGameChannel();
+              const channel = getGameChannel();
 
-                const { opponent } = useHotnCold.getState();
+              const { opponent } = useHotnCold.getState();
 
-                channel.trigger("client-in-game" as HotnColdEvents, {
-                  inGame: true,
-                });
-
-                setMe({ ...me, inGame: true });
-
-                if (!opponent) {
-                  throw new Error("void enterAR().then: no opponent");
-                }
-
-                // console.log("void enterAR().then: opponent", opponent);
-
-                // console.log("void enterAR().then: me", me);
-
-                if (opponent.inGame) {
-                  console.log(
-                    "void enterAR().then: opponent in game, setting status to SEEKING",
-                  );
-                  setGameStatus(HotnColdGameStatus.LOADINGROOMS);
-                } else {
-                  console.log(
-                    "void enterAR().then: opponent not in game, setting status to IDLE",
-                  );
-                  setGameStatus(HotnColdGameStatus.IDLE);
-                }
-
-                // setStartSync(true);
+              channel.trigger("client-in-game" as HotnColdEvents, {
+                inGame: true,
               });
-            }}
-            disabled={!isSupported || !gameEventsInitialized}
-          >
-            {!isSupported ? "XR Not Supported" : "Launch XR"}
-          </Button>
-        )}
+
+              setMe({ ...me, inGame: true });
+
+              if (!opponent) {
+                throw new Error("void enterAR().then: no opponent");
+              }
+
+              if (opponent.inGame) {
+                console.log(
+                  "void enterAR().then: opponent in game, setting status to SEEKING",
+                );
+                setGameStatus(HotnColdGameStatus.LOADINGROOMS);
+              } else {
+                console.log(
+                  "void enterAR().then: opponent not in game, setting status to IDLE",
+                );
+                setGameStatus(HotnColdGameStatus.IDLE);
+              }
+
+              // setStartSync(true);
+            });
+          }}
+          disabled={!isSupported || !gameEventsInitialized}
+        >
+          {!isSupported ? "XR Not Supported" : "Launch XR"}
+        </Button>
       </div>
 
       <XRCanvas
@@ -183,7 +173,7 @@ function HotnColdGame({
           </XRPhysics>
         </ControllerStateProvider>
       </XRCanvas>
-    </>
+    </MinaProvider>
   );
 }
 

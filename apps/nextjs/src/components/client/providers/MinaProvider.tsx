@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { GAME_VERIFICATION_KEYS } from "@/lib/constants";
-import type { HotnColdPlayer } from "@/lib/types";
+import type { HotnColdPlayer, MeshInfo, PlaneInfo } from "@/lib/types";
 import type { Vector3Object } from "@react-three/rapier";
 import type { PrivateKey, Proof, PublicKey } from "o1js";
 import { verify } from "o1js";
@@ -33,8 +33,8 @@ interface MinaState {
 }
 
 interface InitializeRoomProps {
-  boxes: THREE.Mesh[];
-  planes: THREE.Mesh[];
+  boxes: MeshInfo[];
+  planes: PlaneInfo[];
 }
 
 interface HotnColdMinaState extends MinaState {
@@ -102,7 +102,7 @@ function MinaProvider({
   const initializeRoom = useCallback(
     ({ boxes, planes }: InitializeRoomProps) => {
       const zkBoxes: Box[] = boxes.map((box) => {
-        const vertices = box.geometry.attributes.position?.array;
+        const vertices = box.geometry.position.array;
 
         if (!vertices) {
           console.error("No vertices found for box: ", box);
@@ -135,7 +135,7 @@ function MinaProvider({
       });
 
       const zkPlanes: Plane[] = planes.map((plane) => {
-        const vertices = plane.geometry.attributes.position?.array;
+        const vertices = plane.geometry.position.array;
 
         if (!vertices) {
           console.error("No vertices found for plane: ", plane);
