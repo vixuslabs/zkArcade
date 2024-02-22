@@ -36,12 +36,12 @@ export function ThemeToggle() {
         >
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           className="hover:cursor-pointer"
           onClick={() => setTheme("system")}
         >
           System
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );
