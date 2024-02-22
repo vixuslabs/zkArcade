@@ -35,7 +35,7 @@ const sessionOptions: XRSessionInit = {
   optionalFeatures: ["mesh-detection", "plane-detection"],
 };
 
-function Sandbox({ username }: SandboxProps) {
+function Sandbox({ username: _ }: SandboxProps) {
   const [startSync, setStartSync] = useState(false);
   const inputSources = useInputSources();
 
@@ -56,7 +56,7 @@ function Sandbox({ username }: SandboxProps) {
     <>
       <div className="absolute z-10 flex flex-col items-center justify-center gap-y-2">
         <h2 className="relative text-center text-2xl font-bold">
-          Hey {username}! Press below to launch WebXR
+          Welcome! Press below to launch WebXR
         </h2>
         <p className="relative text-center text-2xl font-bold">
           Enjoy this sandbox environment, more to come!
