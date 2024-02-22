@@ -2,36 +2,40 @@
 
 import ProgressiveFeature from "@/components/client/landingPage/ProgressiveFeature";
 import {
-  ArrowPathIcon,
-  CloudArrowUpIcon,
-  FingerPrintIcon,
+  // GlobeAltIcon,
+  HomeIcon,
+  // HomeModernIcon,
+  KeyIcon,
   LockClosedIcon,
+  UserGroupIcon,
+  // VideoCameraIcon,
+  // VideoCameraSlashIcon,
 } from "@heroicons/react/24/outline";
 
 const features = [
   {
-    name: "Push to deploy",
+    name: "All Augmented Reality",
     description:
       "Morbi viverra dui mi arcu sed. Tellus semper adipiscing suspendisse semper morbi. Odio urna massa nunc massa.",
-    icon: CloudArrowUpIcon,
+    icon: HomeIcon,
   },
   {
-    name: "SSL certificates",
+    name: "Provably fair games",
     description:
       "Sit quis amet rutrum tellus ullamcorper ultricies libero dolor eget. Sem sodales gravida quam turpis enim lacus amet.",
-    icon: LockClosedIcon,
+    icon: KeyIcon,
   },
   {
-    name: "Simple queues",
+    name: "Multiplayer games",
     description:
       "Quisque est vel vulputate cursus. Risus proin diam nunc commodo. Lobortis auctor congue commodo diam neque.",
-    icon: ArrowPathIcon,
+    icon: UserGroupIcon,
   },
   {
-    name: "Advanced security",
+    name: "Privacy first",
     description:
       "Arcu egestas dolor vel iaculis in ipsum mauris. Tincidunt mattis aliquet hac quis. Id hac maecenas ac donec pharetra eget.",
-    icon: FingerPrintIcon,
+    icon: LockClosedIcon,
   },
 ];
 
