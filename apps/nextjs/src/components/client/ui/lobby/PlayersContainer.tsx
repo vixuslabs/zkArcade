@@ -40,7 +40,7 @@ const PlayersContainer = forwardRef<HTMLDivElement, PlayersContainerProps>(
               />
             </div>
             {index === 0 && (
-              <Separator className="h-24 text-white" orientation="vertical" />
+              <Separator className="h-24" orientation="vertical" />
             )}
           </Fragment>
         ))}
