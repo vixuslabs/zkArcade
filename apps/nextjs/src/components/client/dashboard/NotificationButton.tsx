@@ -17,7 +17,7 @@ import NotificationData from "./NotificationsData";
 
 function NotificationButton() {
   return (
-    <div className="mb-6 text-gray-400 hover:text-gray-300">
+    <div className="my-6">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="rounded-full">

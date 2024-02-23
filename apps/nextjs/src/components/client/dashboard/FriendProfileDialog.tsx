@@ -151,7 +151,10 @@ export default function FriendProfileDialog({
         <Badge
           variant="secondary"
           className="rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm hover:cursor-pointer"
-          onPointerDown={() => setOpen(true)}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            setOpen(true);
+          }}
         >
           View
         </Badge>
@@ -164,6 +167,7 @@ export default function FriendProfileDialog({
         }}
         onEscapeKeyDown={() => setOpen(false)}
         onDialogCloseButton={() => setOpen(false)}
+        className="outline-none"
       >
         <DialogHeader>
           <div className="flex items-center justify-start gap-4">
@@ -176,7 +180,7 @@ export default function FriendProfileDialog({
             </div>
           </div>
         </DialogHeader>
-        <DialogFooter className="flex justify-between">
+        <DialogFooter className="flex justify-between ring-0">
           <AlertDialog>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

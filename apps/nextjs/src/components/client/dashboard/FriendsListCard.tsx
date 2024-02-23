@@ -1,12 +1,11 @@
 "use client";
 
-import React, { Fragment, Suspense } from "react";
+import React, { Suspense } from "react";
 import { FriendRowSkeleton } from "@/components/client/skeletons";
 import {
   Card,
   CardContent,
   CardDescription,
-  // CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -22,9 +21,8 @@ function FriendsListCard() {
           <CardTitle>Friends</CardTitle>
           <CardDescription>Challenge friends to play!</CardDescription>
         </CardHeader>
-        <Separator />
+        {/* <Separator /> */}
         <CardContent className="min-h-96">
-          {/* <ScrollArea className="max-h-48 w-full"> */}
           <Suspense
             fallback={
               <>
