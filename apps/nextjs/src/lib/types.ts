@@ -115,7 +115,7 @@ export type AppUser = {
 } | null;
 
 export interface SandboxProps {
-  username: string;
+  username?: string;
 }
 
 export interface MyMeshInfo {
