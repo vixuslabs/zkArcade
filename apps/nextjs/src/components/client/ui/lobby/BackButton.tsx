@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 function BackButton() {
   const router = useRouter();
@@ -14,7 +13,7 @@ function BackButton() {
       onClick={() => {
         router.push("/dashboard");
       }}
-      className="fixed top-5 left-5 z-10"
+      className="fixed left-5 top-5 z-10"
     >
       Back
     </Button>
