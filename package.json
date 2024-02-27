@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@zkarcade/prettier-config": "workspace:^0.1.0",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.10.0",
     "turbo": "^1.10.16",
     "@turbo/gen": "^1.10.16",
