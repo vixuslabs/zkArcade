@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ControllerStateProvider } from "@/components/client/providers";
-import { BuildRoom } from "@/components/client/xr";
+// import { BuildRoom } from "@/components/client/xr";
 import { SandboxControllers } from "@/components/client/xr/inputDevices";
 import { Button } from "@/components/ui/button";
 import type { SandboxProps } from "@/lib/types";
@@ -20,19 +20,24 @@ import {
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
-// import { Physics } from "@react-three/rapier";
 import {
   BuildPhysicalMeshes,
   BuildPhysicalPlanes,
-  PhysHand,
+  PhysicalObject,
+  TrueHand,
   XRPhysics,
 } from "@vixuslabs/newtonxr";
 
 import GameSphere from "./objects/GameSphere";
 
 const sessionOptions: XRSessionInit = {
-  requiredFeatures: ["local-floor", "hand-tracking"],
-  optionalFeatures: ["mesh-detection", "plane-detection"],
+  requiredFeatures: [
+    "local-floor",
+    "hand-tracking",
+    "mesh-detection",
+    "plane-detection",
+  ],
+  // optionalFeatures: ["mesh-detection", "plane-detection"],
 };
 
 function Sandbox({ username: _ }: SandboxProps) {
@@ -90,11 +95,9 @@ function Sandbox({ username: _ }: SandboxProps) {
         <FocusStateGuard>
           <ControllerStateProvider>
             <XRPhysics
-              // debug
+              debug
               // colliders={false}
-              gravity={[0, -5, 0]}
-              // interpolate={false}
-              timeStep={"vary"}
+              gravity={[0, 0, 0]}
             >
               <NonImmersiveCamera />
 
@@ -106,27 +109,28 @@ function Sandbox({ username: _ }: SandboxProps) {
                     position={[0, 2, -0.3]}
                   />
                   <GameSphere inGame={false} position={[0, 1, -0.3]} />
+
+                  <Boxes />
                 </>
               )}
 
               <ImmersiveSessionOrigin>
                 {startSync && (
                   <>
-                    <BuildRoom inGame={false} />
+                    {/* <BuildRoom inGame={false} /> */}
                     {/* <BuildPhysicalMeshes excludeGlobalMesh debug />
                     <BuildPhysicalPlanes debug /> */}
                   </>
                 )}
-                <BuildPhysicalMeshes debug />
-                <BuildPhysicalPlanes debug />
+                <BuildPhysicalMeshes excludeGlobalMesh />
+                <BuildPhysicalPlanes />
                 {inputSources?.map((inputSource) =>
                   inputSource.hand ? (
-                    <PhysHand
+                    <TrueHand
                       key={getInputSourceId(inputSource)}
                       inputSource={inputSource}
                       id={getInputSourceId(inputSource)}
-                      hand={inputSource.hand}
-                      withDigitalHand
+                      XRHand={inputSource.hand}
                     />
                   ) : (
                     <SandboxControllers
@@ -146,3 +150,55 @@ function Sandbox({ username: _ }: SandboxProps) {
 }
 
 export default Sandbox;
+
+function Boxes() {
+  return (
+    <>
+      <PhysicalObject
+        colliders="cuboid"
+        restitution={0.2}
+        position={[-0.1, 2, -0.2]}
+      >
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color={"orange"} />
+      </PhysicalObject>
+
+      {/* Boxes */}
+      <PhysicalObject
+        colliders="cuboid"
+        restitution={0.2}
+        position={[-0.05, 2, -0.2]}
+      >
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color={"pink"} />
+      </PhysicalObject>
+
+      <PhysicalObject
+        colliders="cuboid"
+        restitution={0.2}
+        position={[0, 2, -0.2]}
+      >
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color={"green"} />
+      </PhysicalObject>
+
+      <PhysicalObject
+        colliders="cuboid"
+        restitution={0.2}
+        position={[0.05, 2, -0.2]}
+      >
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color={"blue"} />
+      </PhysicalObject>
+
+      <PhysicalObject
+        colliders="cuboid"
+        restitution={0.2}
+        position={[0.1, 2, -0.2]}
+      >
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color={"red"} />
+      </PhysicalObject>
+    </>
+  );
+}

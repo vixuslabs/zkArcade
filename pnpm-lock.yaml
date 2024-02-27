@@ -111,8 +111,8 @@ importers:
         specifier: ^2.15.10
         version: 2.15.11(@react-three/fiber@8.15.11)(@types/three@0.158.3)(react@18.2.0)(three@0.158.0)
       '@react-three/rapier':
-        specifier: 1.1.1
-        version: 1.1.1(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
+        specifier: 1.3.0
+        version: 1.3.0(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.3.2)(zod@3.22.4)
@@ -135,8 +135,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       '@vixuslabs/newtonxr':
-        specifier: ^0.2.1
-        version: 0.2.1(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
+        specifier: ^1.0.0
+        version: 1.0.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
       '@zkarcade/api':
         specifier: workspace:^0.1.0
         version: link:../../packages/api
@@ -2003,8 +2003,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@dimforge/rapier3d-compat@0.11.2:
-    resolution: {integrity: sha512-vdWmlkpS3G8nGAzLuK7GYTpNdrkn/0NKCe0l1Jqxc7ZZOB3N0q9uG/Ap9l9bothWuAvxscIt0U97GVLr0lXWLg==}
+  /@dimforge/rapier3d-compat@0.12.0:
+    resolution: {integrity: sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow==}
     dev: false
 
   /@drizzle-team/studio@0.0.39:
@@ -3839,14 +3839,14 @@ packages:
       - '@types/three'
     dev: false
 
-  /@react-three/rapier@1.1.1(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0):
-    resolution: {integrity: sha512-DlMHJRIErr9753C4CO3V06rgrP4b5/LyDnwzeNOCPrWgasILbkjYIe37RcQ+MZN2n6YpmQNSFD3WpnU9XD/QxA==}
+  /@react-three/rapier@1.3.0(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0):
+    resolution: {integrity: sha512-nQor1pbGFu1mp585bGR719yAEnEYeu2LvsxP4RaWXP7XHBqv2p0l9/ttDQBZzivqRT142icut2tdo6vgtW+XyA==}
     peerDependencies:
       '@react-three/fiber': '>=8.9.0'
       react: '>=18.0.0'
       three: '>=0.139.0'
     dependencies:
-      '@dimforge/rapier3d-compat': 0.11.2
+      '@dimforge/rapier3d-compat': 0.12.0
       '@react-three/fiber': 8.15.11(react-dom@18.2.0)(react@18.2.0)(three@0.158.0)
       react: 18.2.0
       three: 0.158.0
@@ -4500,16 +4500,17 @@ packages:
       server-only: 0.0.1
     dev: false
 
-  /@vixuslabs/newtonxr@0.2.1(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
-    resolution: {integrity: sha512-GNJPWabXxqZ+XUn6RAdgiMzfVDPiM1aeEF/XOZ/ojDMELMNoMb6gdEXsKgvqdV3x7tE9u8mw8ewE0Ez/JQtTRg==}
+  /@vixuslabs/newtonxr@1.0.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
+    resolution: {integrity: sha512-+Iw5qrmrpCW1JJExx6gw06mzgpq8tZ+ny1Rml5qWr7ECfk0PVJTiqjA4SCK49xhNprjVpsvILVpJXM5fEIVhJA==}
     peerDependencies:
       '@react-three/fiber': '*'
       react: '*'
       three: '*'
     dependencies:
       '@coconut-xr/natuerlich': 0.0.48(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
+      '@dimforge/rapier3d-compat': 0.12.0
       '@react-three/fiber': 8.15.11(react-dom@18.2.0)(react@18.2.0)(three@0.158.0)
-      '@react-three/rapier': 1.1.1(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
+      '@react-three/rapier': 1.3.0(@react-three/fiber@8.15.11)(react@18.2.0)(three@0.158.0)
       react: 18.2.0
       three: 0.158.0
       zustand: 4.4.7(@types/react@18.2.39)(react@18.2.0)
