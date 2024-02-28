@@ -1,3 +1,3 @@
-import { HotnCold } from "./HotnCold";
+import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
 
-export { HotnCold };
+export { ValidateRoom,  RoomAndObjectCommitment };

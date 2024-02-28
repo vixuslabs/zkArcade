@@ -1,1 +1,1 @@
-export { default as MinaStartButton } from "./MinaStartButton";
+// export { default as MinaStartButton } from "./MinaStartButton";

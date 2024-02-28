@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useHotnCold } from "@/lib/stores";
+import { useHotnCold, useLobbyStore } from "@/lib/stores";
 import type {
   MeshesAndPlanesContextValue,
   MeshInfo,
@@ -20,6 +20,9 @@ import {
   useTrackedMeshes,
   useTrackedPlanes,
 } from "@coconut-xr/natuerlich/react";
+import { useShallow } from "zustand/react/shallow";
+
+import { useMinaContext } from "./MinaProvider";
 
 const MeshesAndPlanesContext = createContext<MeshesAndPlanesContextValue>({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -43,6 +46,8 @@ export const useMeshesAndPlanesContext = () => {
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
   const channel = useHotnCold().getGameChannel();
   const { setRoomLayout, me, opponent, setGameStatus, status } = useHotnCold();
+  const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
+  const { initializeRoom } = useMinaContext();
   const meshes = useTrackedMeshes();
   const planes = useTrackedPlanes();
   const [myMeshes, setMyMeshes] = useState<MyMeshInfo[]>([]);
@@ -178,6 +183,15 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
         };
       });
 
+      if (isMinaOn && initializeRoom) {
+        const room = initializeRoom({
+          boxes: formatedMeshes,
+          planes: formatedPlanes,
+        });
+
+        console.log("MeshesAndPlanesProvider: initialized Room", room);
+      }
+
       setRoomLayout(
         {
           meshes: formatedMeshes,
@@ -188,9 +202,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
 
       console.log("MeshesAndPlanesProvider: sending roomLayout to server");
 
-      // console.log("formatedMeshes", formatedMeshes);
-      // console.log("formatedPlanes", formatedPlanes);
-
       channel.trigger("client-roomLayout-meshes", {
         meshes: formatedMeshes,
       });
@@ -198,13 +209,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       channel.trigger("client-roomLayout-planes", {
         planes: formatedPlanes,
       });
-
-      // channel?.trigger("client-roomLayout-complete", {
-      //   roomLayout: {
-      //     meshes: formatedMeshes,
-      //     planes: formatedPlanes,
-      //   },
-      // });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myMeshes, myPlanes]);
