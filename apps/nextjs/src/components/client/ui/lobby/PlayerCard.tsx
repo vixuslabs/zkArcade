@@ -35,7 +35,7 @@ function PlayerCard({
   const user = useUser();
 
   return (
-    <Card className={cn("dark w-[380px]", className)}>
+    <Card className={cn("w-[380px]", className)}>
       <CardHeader className="items-center">
         <CardTitle
           className={cn("text-sm", isReady ? "text-green-500" : "text-red-500")}
@@ -63,15 +63,20 @@ function PlayerCard({
       <CardFooter className="flex w-full flex-col items-center">
         <Button
           variant="default"
+          className={cn(
+            user.user?.username !== username
+              ? `hover:cursor-not-allowed`
+              : "hover:auto",
+          )}
           onClick={() => {
-            console.log("ready");
             if (user.user?.username === username && username) {
+              console.log("ready");
               handleReady(username);
             } else {
               console.log("cant ready somebody else silly");
             }
           }}
-          disabled={starting || user.user?.username !== username}
+          disabled={starting}
         >
           Ready Up
         </Button>
