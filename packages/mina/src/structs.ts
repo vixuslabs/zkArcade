@@ -1,6 +1,6 @@
 import { Field, Poseidon, Struct, Provable } from "o1js";
 
-import { Vector3, Real64, Matrix4 } from 'zk3d';
+import { Vector3, Real64, Matrix4 } from './zk3d';
 
 // An object is a sphere.
 export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {

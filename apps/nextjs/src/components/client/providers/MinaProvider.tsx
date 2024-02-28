@@ -12,7 +12,7 @@ import type { HotnColdPlayer, MeshInfo, PlaneInfo } from "@/lib/types";
 import type { Vector3Object } from "@react-three/rapier";
 import type { PrivateKey, Proof, PublicKey } from "o1js";
 import { verify } from "o1js";
-import { Real64, Matrix4 as zkMatrix4, Vector3 as ZkVector3 } from "zk3d";
+import { Real64, Matrix4 as zkMatrix4, Vector3 as ZkVector3 } from "@zkarcade/mina/src/zk3d";
 
 import { RoomAndObjectCommitment, ValidateRoom } from "@zkarcade/mina";
 import { Box, Object3D, Plane, Room } from "@zkarcade/mina/src/structs";

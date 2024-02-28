@@ -4,7 +4,7 @@ import {
   Plane,
   Room,
 } from "../src/structs";
-import { Vector3, Real64 } from 'zk3d';
+import { Vector3, Real64 } from '../src/zk3d';
 import { ValidateRoom, RoomAndObjectCommitment } from "../src/zkprogram";
 
 describe('Basic Functionality', () => {

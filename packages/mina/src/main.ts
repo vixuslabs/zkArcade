@@ -6,7 +6,7 @@ import {
   Plane,
   Room,
 } from "./structs";
-import { Vector3, Real64, Matrix4 } from 'zk3d';
+import { Vector3, Real64, Matrix4 } from './zk3d';
 import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
 
 // Import the hidden object coordinates
