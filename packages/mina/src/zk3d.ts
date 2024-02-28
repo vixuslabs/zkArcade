@@ -57,7 +57,7 @@ export class Real64 extends Struct({ integer: Int64 }) implements Real64Class {
   }
 
   toString() {
-    return `Real64( ${parseInt(this.integer.toString())/Real64.SCALE} )`;
+    return `Real64( ${parseInt(this.integer.toString()) / Real64.SCALE} )`;
   }
 
   clone() {
@@ -65,19 +65,19 @@ export class Real64 extends Struct({ integer: Int64 }) implements Real64Class {
   }
 
   add(other: Real64) {
-    return new Real64({ integer : this.integer.add(other.integer) });
+    return new Real64({ integer: this.integer.add(other.integer) });
   }
 
   sub(other: Real64) {
-    return new Real64({ integer : this.integer.sub(other.integer) });
+    return new Real64({ integer: this.integer.sub(other.integer) });
   }
 
   mul(other: Real64) {
-    return new Real64({ integer : this.integer.mul(other.integer).div(Real64.SCALE) });
+    return new Real64({ integer: this.integer.mul(other.integer).div(Real64.SCALE) });
   }
 
   div(other: Real64) {
-    return new Real64({ integer : this.integer.mul(Real64.SCALE).div(other.integer) });
+    return new Real64({ integer: this.integer.mul(Real64.SCALE).div(other.integer) });
   }
 
   isPositive() {
@@ -129,12 +129,12 @@ interface Vector3Class {
 }
 
 export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) implements Vector3Class {
-  constructor(value: { x: Real64; y: Real64; z: Real64 }) { 
+  constructor(value: { x: Real64; y: Real64; z: Real64 }) {
     super(value);
   }
 
-  static fromNumbers(x: number , y: number, z: number) {
-    return new Vector3({ 
+  static fromNumbers(x: number, y: number, z: number) {
+    return new Vector3({
       x: Real64.from(x),
       y: Real64.from(y),
       z: Real64.from(z),
@@ -145,7 +145,7 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     return `Vector3( ${this.x.toString()}, ${this.y.toString()}, ${this.z.toString()} )`;
   }
 
-  set(x: Real64, y: Real64, z: Real64 ) {
+  set(x: Real64, y: Real64, z: Real64) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -289,8 +289,8 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     const x = this.x;
     const y = this.y;
     const z = this.z;
-    
-    const w = m.n14.mul(x) .add(m.n24.mul(y)) .add(m.n34.mul(z)) .add(m.n44);
+
+    const w = m.n14.mul(x).add(m.n24.mul(y)).add(m.n34.mul(z)).add(m.n44);
     const invw = w.inv();
 
     this.x = m.n11.mul(x).add(m.n21.mul(y)).add(m.n31.mul(z)).add(m.n41).mul(invw);
@@ -365,7 +365,7 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     const dz = this.z.sub(v.z);
     return dx.mul(dx).add(dy.mul(dy)).add(dz.mul(dz));
   }
-  
+
 }
 
 export class Matrix4 extends Struct({
@@ -556,7 +556,7 @@ export class Matrix4 extends Struct({
     );
     return this;
   }
-  
+
   multiply(m: Matrix4) {
     return this.multiplyMatrices(this, m);
   }
@@ -628,40 +628,40 @@ export class Matrix4 extends Struct({
     return (
       n41.mul(
         n14.mul(n23.mul(n32)
-        .sub(n13.mul(n24.mul(n32)))
-        .sub(n14.mul(n22.mul(n33)))
-        .add(n12.mul(n24.mul(n33)))
-        .add(n13.mul(n22.mul(n34)))
-        .sub(n12.mul(n23.mul(n34)))
+          .sub(n13.mul(n24.mul(n32)))
+          .sub(n14.mul(n22.mul(n33)))
+          .add(n12.mul(n24.mul(n33)))
+          .add(n13.mul(n22.mul(n34)))
+          .sub(n12.mul(n23.mul(n34)))
         )
       )
-      .add(n42.mul(
-        n11.mul(n23.mul(n34)
-        .sub(n11.mul(n24.mul(n33)))
-        .add(n14.mul(n21.mul(n33)))
-        .sub(n13.mul(n21.mul(n34)))
-        .add(n13.mul(n24.mul(n31)))
-        .sub(n14.mul(n23.mul(n31)))
+        .add(n42.mul(
+          n11.mul(n23.mul(n34)
+            .sub(n11.mul(n24.mul(n33)))
+            .add(n14.mul(n21.mul(n33)))
+            .sub(n13.mul(n21.mul(n34)))
+            .add(n13.mul(n24.mul(n31)))
+            .sub(n14.mul(n23.mul(n31)))
+          )
+        ))
+        .add(n43.mul(
+          n11.mul(n24.mul(n32)
+            .sub(n11.mul(n22.mul(n34)))
+            .sub(n14.mul(n21.mul(n32)))
+            .add(n12.mul(n21.mul(n34)))
+            .add(n14.mul(n22.mul(n31)))
+            .sub(n12.mul(n24.mul(n31)))
+          )
+        ))
+        .add(n44.mul(
+          Real64.zero.sub(n13.mul(n22.mul(n31)))
+            .sub(n11.mul(n23.mul(n32)))
+            .add(n11.mul(n22.mul(n33)))
+            .add(n13.mul(n21.mul(n32)))
+            .sub(n12.mul(n21.mul(n33)))
+            .add(n12.mul(n23.mul(n31)))
         )
-      ))
-      .add(n43.mul(
-        n11.mul(n24.mul(n32)
-        .sub(n11.mul(n22.mul(n34)))
-        .sub(n14.mul(n21.mul(n32)))
-        .add(n12.mul(n21.mul(n34)))
-        .add(n14.mul(n22.mul(n31)))
-        .sub(n12.mul(n24.mul(n31)))
-        )
-      ))
-      .add(n44.mul(
-        Real64.zero.sub(n13.mul(n22.mul(n31)))
-        .sub(n11.mul(n23.mul(n32)))
-        .add(n11.mul(n22.mul(n33)))
-        .add(n13.mul(n21.mul(n32)))
-        .sub(n12.mul(n21.mul(n33)))
-        .add(n12.mul(n23.mul(n31)))
-        )
-      ))
+        ))
   }
 
   transpose() {
@@ -688,12 +688,12 @@ export class Matrix4 extends Struct({
     const n31 = this.n31, n32 = this.n32, n33 = this.n33, n34 = this.n34;
     const n41 = this.n41, n42 = this.n42, n43 = this.n43, n44 = this.n44;
 
-    const t11 = n23.mul(n34.mul(n42)) .sub(n24.mul(n33.mul(n42))) .add(n24.mul(n32.mul(n43))) .sub(n22.mul(n34.mul(n43))) .sub(n23.mul(n32.mul(n44))) .add(n22.mul(n33.mul(n44)));
-    const t12 = n14.mul(n33.mul(n42)) .sub(n13.mul(n34.mul(n42))) .sub(n14.mul(n32.mul(n43))) .add(n12.mul(n34.mul(n43))) .add(n13.mul(n32.mul(n44))) .sub(n12.mul(n33.mul(n44)));
-    const t13 = n13.mul(n24.mul(n42)) .sub(n14.mul(n23.mul(n42))) .add(n14.mul(n22.mul(n43))) .sub(n12.mul(n24.mul(n43))) .sub(n13.mul(n22.mul(n44))) .add(n12.mul(n23.mul(n44)));
-    const t14 = n14.mul(n23.mul(n32)) .sub(n13.mul(n24.mul(n32))) .sub(n14.mul(n22.mul(n33))) .add(n12.mul(n24.mul(n33))) .add(n13.mul(n22.mul(n34))) .sub(n12.mul(n23.mul(n34)));
+    const t11 = n23.mul(n34.mul(n42)).sub(n24.mul(n33.mul(n42))).add(n24.mul(n32.mul(n43))).sub(n22.mul(n34.mul(n43))).sub(n23.mul(n32.mul(n44))).add(n22.mul(n33.mul(n44)));
+    const t12 = n14.mul(n33.mul(n42)).sub(n13.mul(n34.mul(n42))).sub(n14.mul(n32.mul(n43))).add(n12.mul(n34.mul(n43))).add(n13.mul(n32.mul(n44))).sub(n12.mul(n33.mul(n44)));
+    const t13 = n13.mul(n24.mul(n42)).sub(n14.mul(n23.mul(n42))).add(n14.mul(n22.mul(n43))).sub(n12.mul(n24.mul(n43))).sub(n13.mul(n22.mul(n44))).add(n12.mul(n23.mul(n44)));
+    const t14 = n14.mul(n23.mul(n32)).sub(n13.mul(n24.mul(n32))).sub(n14.mul(n22.mul(n33))).add(n12.mul(n24.mul(n33))).add(n13.mul(n22.mul(n34))).sub(n12.mul(n23.mul(n34)));
 
-    const det = n11.mul(t11) .add(n21.mul(t12)) .add(n31.mul(t13)) .add(n41.mul(t14));
+    const det = n11.mul(t11).add(n21.mul(t12)).add(n31.mul(t13)).add(n41.mul(t14));
     if (det.equals(Real64.zero)) {
       return this.set(
         Real64.zero, Real64.zero, Real64.zero, Real64.zero,
@@ -708,20 +708,20 @@ export class Matrix4 extends Struct({
     this.n31 = t13.mul(det.inv());
     this.n41 = t14.mul(det.inv());
 
-    this.n12 = n24.mul(n33.mul(n41)) .sub(n23.mul(n34.mul(n41))) .sub(n24.mul(n31.mul(n43))) .add(n21.mul(n34.mul(n43))) .add(n23.mul(n31.mul(n44))) .sub(n21.mul(n33.mul(n44))) .mul(det.inv());
-    this.n22 = n13.mul(n34.mul(n41)) .sub(n14.mul(n33.mul(n41))) .add(n14.mul(n31.mul(n43))) .sub(n11.mul(n34.mul(n43))) .sub(n13.mul(n31.mul(n44))) .add(n11.mul(n33.mul(n44))) .mul(det.inv());
-    this.n32 = n14.mul(n23.mul(n41)) .sub(n13.mul(n24.mul(n41))) .sub(n14.mul(n21.mul(n43))) .add(n11.mul(n24.mul(n43))) .add(n13.mul(n21.mul(n44))) .sub(n11.mul(n23.mul(n44))) .mul(det.inv());
-    this.n42 = n13.mul(n24.mul(n31)) .sub(n14.mul(n23.mul(n31))) .add(n14.mul(n21.mul(n33))) .sub(n11.mul(n24.mul(n33))) .sub(n13.mul(n21.mul(n34))) .add(n11.mul(n23.mul(n34))) .mul(det.inv());
+    this.n12 = n24.mul(n33.mul(n41)).sub(n23.mul(n34.mul(n41))).sub(n24.mul(n31.mul(n43))).add(n21.mul(n34.mul(n43))).add(n23.mul(n31.mul(n44))).sub(n21.mul(n33.mul(n44))).mul(det.inv());
+    this.n22 = n13.mul(n34.mul(n41)).sub(n14.mul(n33.mul(n41))).add(n14.mul(n31.mul(n43))).sub(n11.mul(n34.mul(n43))).sub(n13.mul(n31.mul(n44))).add(n11.mul(n33.mul(n44))).mul(det.inv());
+    this.n32 = n14.mul(n23.mul(n41)).sub(n13.mul(n24.mul(n41))).sub(n14.mul(n21.mul(n43))).add(n11.mul(n24.mul(n43))).add(n13.mul(n21.mul(n44))).sub(n11.mul(n23.mul(n44))).mul(det.inv());
+    this.n42 = n13.mul(n24.mul(n31)).sub(n14.mul(n23.mul(n31))).add(n14.mul(n21.mul(n33))).sub(n11.mul(n24.mul(n33))).sub(n13.mul(n21.mul(n34))).add(n11.mul(n23.mul(n34))).mul(det.inv());
 
-    this.n13 = n22.mul(n34.mul(n41)) .sub(n24.mul(n32.mul(n41))) .add(n24.mul(n31.mul(n42))) .sub(n21.mul(n34.mul(n42))) .sub(n22.mul(n31.mul(n44))) .add(n21.mul(n32.mul(n44))) .mul(det.inv());
-    this.n23 = n14.mul(n32.mul(n41)) .sub(n12.mul(n34.mul(n41))) .sub(n14.mul(n31.mul(n42))) .add(n11.mul(n34.mul(n42))) .add(n12.mul(n31.mul(n44))) .sub(n11.mul(n32.mul(n44))) .mul(det.inv());
-    this.n33 = n12.mul(n24.mul(n41)) .sub(n14.mul(n22.mul(n41))) .add(n14.mul(n21.mul(n42))) .sub(n11.mul(n24.mul(n42))) .sub(n12.mul(n21.mul(n44))) .add(n11.mul(n22.mul(n44))) .mul(det.inv());
-    this.n43 = n14.mul(n22.mul(n31)) .sub(n12.mul(n24.mul(n31))) .sub(n14.mul(n21.mul(n32))) .add(n11.mul(n24.mul(n32))) .add(n12.mul(n21.mul(n34))) .sub(n11.mul(n22.mul(n34))) .mul(det.inv());
+    this.n13 = n22.mul(n34.mul(n41)).sub(n24.mul(n32.mul(n41))).add(n24.mul(n31.mul(n42))).sub(n21.mul(n34.mul(n42))).sub(n22.mul(n31.mul(n44))).add(n21.mul(n32.mul(n44))).mul(det.inv());
+    this.n23 = n14.mul(n32.mul(n41)).sub(n12.mul(n34.mul(n41))).sub(n14.mul(n31.mul(n42))).add(n11.mul(n34.mul(n42))).add(n12.mul(n31.mul(n44))).sub(n11.mul(n32.mul(n44))).mul(det.inv());
+    this.n33 = n12.mul(n24.mul(n41)).sub(n14.mul(n22.mul(n41))).add(n14.mul(n21.mul(n42))).sub(n11.mul(n24.mul(n42))).sub(n12.mul(n21.mul(n44))).add(n11.mul(n22.mul(n44))).mul(det.inv());
+    this.n43 = n14.mul(n22.mul(n31)).sub(n12.mul(n24.mul(n31))).sub(n14.mul(n21.mul(n32))).add(n11.mul(n24.mul(n32))).add(n12.mul(n21.mul(n34))).sub(n11.mul(n22.mul(n34))).mul(det.inv());
 
-    this.n14 = n23.mul(n32.mul(n41)) .sub(n22.mul(n33.mul(n41))) .sub(n23.mul(n31.mul(n42))) .add(n21.mul(n33.mul(n42))) .add(n22.mul(n31.mul(n43))) .sub(n21.mul(n32.mul(n43))) .mul(det.inv());
-    this.n24 = n12.mul(n33.mul(n41)) .sub(n13.mul(n32.mul(n41))) .add(n13.mul(n31.mul(n42))) .sub(n11.mul(n33.mul(n42))) .sub(n12.mul(n31.mul(n43))) .add(n11.mul(n32.mul(n43))) .mul(det.inv());
-    this.n34 = n13.mul(n22.mul(n41)) .sub(n12.mul(n23.mul(n41))) .sub(n13.mul(n21.mul(n42))) .add(n11.mul(n23.mul(n42))) .add(n12.mul(n21.mul(n43))) .sub(n11.mul(n22.mul(n43))) .mul(det.inv());
-    this.n44 = n12.mul(n23.mul(n31)) .sub(n13.mul(n22.mul(n31))) .add(n13.mul(n21.mul(n32))) .sub(n11.mul(n23.mul(n32))) .sub(n12.mul(n21.mul(n33))) .add(n11.mul(n22.mul(n33))) .mul(det.inv());
+    this.n14 = n23.mul(n32.mul(n41)).sub(n22.mul(n33.mul(n41))).sub(n23.mul(n31.mul(n42))).add(n21.mul(n33.mul(n42))).add(n22.mul(n31.mul(n43))).sub(n21.mul(n32.mul(n43))).mul(det.inv());
+    this.n24 = n12.mul(n33.mul(n41)).sub(n13.mul(n32.mul(n41))).add(n13.mul(n31.mul(n42))).sub(n11.mul(n33.mul(n42))).sub(n12.mul(n31.mul(n43))).add(n11.mul(n32.mul(n43))).mul(det.inv());
+    this.n34 = n13.mul(n22.mul(n41)).sub(n12.mul(n23.mul(n41))).sub(n13.mul(n21.mul(n42))).add(n11.mul(n23.mul(n42))).add(n12.mul(n21.mul(n43))).sub(n11.mul(n22.mul(n43))).mul(det.inv());
+    this.n44 = n12.mul(n23.mul(n31)).sub(n13.mul(n22.mul(n31))).add(n13.mul(n21.mul(n32))).sub(n11.mul(n23.mul(n32))).sub(n12.mul(n21.mul(n33))).add(n11.mul(n22.mul(n33))).mul(det.inv());
 
     return this;
   }
@@ -815,21 +815,21 @@ export class Matrix4 extends Struct({
   equals(m: Matrix4) {
     return (
       m.n11.equals(this.n11)
-      .and(m.n12.equals(this.n12))
-      .and(m.n13.equals(this.n13))
-      .and(m.n14.equals(this.n14))
-      .and(m.n21.equals(this.n21))
-      .and(m.n22.equals(this.n22))
-      .and(m.n23.equals(this.n23))
-      .and(m.n24.equals(this.n24))
-      .and(m.n31.equals(this.n31))
-      .and(m.n32.equals(this.n32))
-      .and(m.n33.equals(this.n33))
-      .and(m.n34.equals(this.n34))
-      .and(m.n41.equals(this.n41))
-      .and(m.n42.equals(this.n42))
-      .and(m.n43.equals(this.n43))
-      .and(m.n44.equals(this.n44))
+        .and(m.n12.equals(this.n12))
+        .and(m.n13.equals(this.n13))
+        .and(m.n14.equals(this.n14))
+        .and(m.n21.equals(this.n21))
+        .and(m.n22.equals(this.n22))
+        .and(m.n23.equals(this.n23))
+        .and(m.n24.equals(this.n24))
+        .and(m.n31.equals(this.n31))
+        .and(m.n32.equals(this.n32))
+        .and(m.n33.equals(this.n33))
+        .and(m.n34.equals(this.n34))
+        .and(m.n41.equals(this.n41))
+        .and(m.n42.equals(this.n42))
+        .and(m.n43.equals(this.n43))
+        .and(m.n44.equals(this.n44))
     );
   }
 
@@ -851,7 +851,7 @@ export class Matrix4 extends Struct({
       n42: array[13],
       n43: array[14],
       n44: array[15]
-      });
+    });
   }
 
   toArray() {

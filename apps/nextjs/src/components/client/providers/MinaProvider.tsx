@@ -7,24 +7,25 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { GAME_VERIFICATION_KEYS } from "@/lib/constants";
+// import { GAME_VERIFICATION_KEYS } from "@/lib/constants";
 import type { HotnColdPlayer, MeshInfo, PlaneInfo } from "@/lib/types";
 import type { Vector3Object } from "@react-three/rapier";
-import type { PrivateKey, Proof, PublicKey } from "o1js";
-import { verify } from "o1js";
-import { Real64, Matrix4 as zkMatrix4, Vector3 as ZkVector3 } from "@zkarcade/mina/src/zk3d";
+import type { PrivateKey, PublicKey, VerificationKey } from "o1js";
+import type { Vector3 as ZkVector3 } from "@zkarcade/mina/src/zk3d";
 
-import { RoomAndObjectCommitment, ValidateRoom } from "@zkarcade/mina";
-import { Box, Object3D, Plane, Room } from "@zkarcade/mina/src/structs";
+import type { RoomAndObjectCommitment, ValidateRoom } from "@zkarcade/mina";
+import type { Box as BoxType, Object3D as Object3DType, Plane as PlaneType, Room as RoomType } from "@zkarcade/mina/src/structs";
+
 
 interface CommitRoomAndObjectProps {
-  room: Room;
+  room: RoomType;
   objectPosition: Vector3Object;
   objectRadius: number;
 }
 
 interface MinaState {
-  verificationKey: string;
+  zkProgram: typeof ValidateRoom | null;
+  verificationKey: VerificationKey | null;
   pubKey: string;
   privKey: string;
   isPlayerOne: boolean;
@@ -38,29 +39,33 @@ interface InitializeRoomProps {
 }
 
 interface HotnColdMinaState extends MinaState {
-  room: Room | null;
-  object: Object3D | null;
+  room: RoomType | null;
+  object: Object3DType | null;
   roomAndObjectCommitment: RoomAndObjectCommitment | null;
 }
 
 interface MinaContextValues {
+  initialized: boolean;
   mina: HotnColdMinaState | null;
   setMina: React.Dispatch<React.SetStateAction<HotnColdMinaState>> | null;
-  initializeRoom: (({ boxes, planes }: InitializeRoomProps) => Room) | null;
+  initZkProgram: () => Promise<void>;
+  initializeRoom: (({ boxes, planes }: InitializeRoomProps) => Promise<RoomType>) | null;
   commitRoomAndObject:
-    | (({
-        room,
-        objectRadius,
-        objectPosition,
-      }: CommitRoomAndObjectProps) => RoomAndObjectCommitment)
-    | null;
+  | (({
+    room,
+    objectRadius,
+    objectPosition,
+  }: CommitRoomAndObjectProps) => Promise<RoomAndObjectCommitment>)
+  | null;
   runValidateRoom: () => Promise<boolean>;
   isReadyToProve: boolean;
 }
 
 const MinaContext = createContext<MinaContextValues>({
+  initialized: false,
   mina: null,
   setMina: null,
+  initZkProgram: () => Promise.resolve(),
   initializeRoom: null,
   commitRoomAndObject: null,
   runValidateRoom: () => Promise.resolve(false),
@@ -89,7 +94,8 @@ function MinaProvider({
 }) {
   // should be defining the type of the useState dynamically
   const [mina, setMina] = useState<HotnColdMinaState>({
-    verificationKey: GAME_VERIFICATION_KEYS.get("Hot 'n Cold") ?? "",
+    zkProgram: null,
+    verificationKey: null,
     pubKey: localPlayer?.publicKey ?? "",
     privKey: localPlayer?.privateKey ?? "",
     isPlayerOne: localPlayer?.host ?? false,
@@ -97,11 +103,31 @@ function MinaProvider({
     object: null,
     roomAndObjectCommitment: null,
   });
-  const [zkProgram, _] = useState<typeof ValidateRoom>(ValidateRoom);
+  // const [zkProgram, _] = useState<typeof ValidateRoom>(null);
+
+  const initZkProgram = useCallback(async () => {
+
+    const { ValidateRoom } = await import("@zkarcade/mina");
+
+    const { verificationKey } = await ValidateRoom.compile();
+
+
+    setMina((prev) => ({
+      ...prev,
+      zkProgram: ValidateRoom,
+      verificationKey,
+    }));
+
+
+  }, [])
 
   const initializeRoom = useCallback(
-    ({ boxes, planes }: InitializeRoomProps) => {
-      const zkBoxes: Box[] = boxes.map((box) => {
+    async ({ boxes, planes }: InitializeRoomProps) => {
+
+      const { Real64, Vector3, Matrix4 } = await import("@zkarcade/mina/src/zk3d");
+      const { Box, Room, Plane } = await import("@zkarcade/mina/src/structs");
+
+      const zkBoxes: BoxType[] = boxes.map((box) => {
         const vertices = box.geometry.position.array;
 
         if (!vertices) {
@@ -117,7 +143,7 @@ function MinaProvider({
           }
 
           vertexPoints.push(
-            new ZkVector3({
+            new Vector3({
               x: Real64.from(vertices[i]!),
               y: Real64.from(vertices[i + 1]!),
               z: Real64.from(vertices[i + 2]!),
@@ -130,11 +156,11 @@ function MinaProvider({
 
         return Box.fromVertexPointsAndMatrix(
           vertexPoints,
-          zkMatrix4.fromElements(matrixElements),
+          Matrix4.fromElements(matrixElements),
         );
       });
 
-      const zkPlanes: Plane[] = planes.map((plane) => {
+      const zkPlanes: PlaneType[] = planes.map((plane) => {
         const vertices = plane.geometry.position.array;
 
         if (!vertices) {
@@ -150,7 +176,7 @@ function MinaProvider({
           }
 
           vertexPoints.push(
-            new ZkVector3({
+            new Vector3({
               x: Real64.from(vertices[i]!),
               y: Real64.from(vertices[i + 1]!),
               z: Real64.from(vertices[i + 2]!),
@@ -163,7 +189,7 @@ function MinaProvider({
 
         return Plane.fromVertexPointsAndMatrix(
           vertexPoints,
-          zkMatrix4.fromElements(matrixElements),
+          Matrix4.fromElements(matrixElements),
         );
       });
 
@@ -177,8 +203,14 @@ function MinaProvider({
   );
 
   const commitRoomAndObject = useCallback(
-    ({ room, objectRadius, objectPosition }: CommitRoomAndObjectProps) => {
-      const objectVector = new ZkVector3({
+    async ({ room, objectRadius, objectPosition }: CommitRoomAndObjectProps) => {
+
+      const { Real64, Vector3 } = await import("@zkarcade/mina/src/zk3d");
+      const { Object3D } = await import("@zkarcade/mina/src/structs");
+      const { RoomAndObjectCommitment } = await import("@zkarcade/mina");
+
+
+      const objectVector = new Vector3({
         x: Real64.from(objectPosition.x),
         y: Real64.from(objectPosition.y),
         z: Real64.from(objectPosition.z),
@@ -205,36 +237,42 @@ function MinaProvider({
       throw new Error("Mina is not initialized");
     }
 
-    const { object, roomAndObjectCommitment } = mina;
+    const { verify } = await import("o1js")
+
+    const { object, roomAndObjectCommitment, zkProgram, verificationKey } = mina;
+
+    if (!zkProgram || !verificationKey) {
+      throw new Error("zkProgram is not initialized or verificationKey not set");
+    }
 
     if (!roomAndObjectCommitment || !object) {
       throw new Error("Must commit room and object before validating room");
     }
 
-    // @ts-expect-error - We are declaring the type of the proof due to the error with the args
     const proof = (await zkProgram.run(
-      // @ts-expect-error - for some reason, the argument types are not being inferred correctly
       roomAndObjectCommitment,
       object,
-    )) as Proof<RoomAndObjectCommitment, void>;
+    ))
 
-    const proved = await verify(proof, mina.verificationKey);
+    const proved = await verify(proof, verificationKey);
 
     return proved;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mina.object, mina.roomAndObjectCommitment, zkProgram]);
+  }, [mina.object, mina.roomAndObjectCommitment, mina.zkProgram, mina.verificationKey]);
 
   const value = useMemo(() => {
     return {
+      initialized: mina.verificationKey && mina.zkProgram ? true : false,
       mina: mina,
       setMina: setMina,
+      initZkProgram: initZkProgram,
       initializeRoom: initializeRoom,
       commitRoomAndObject: commitRoomAndObject,
       runValidateRoom: runValidateRoom,
       isReadyToProve: !!mina.roomAndObjectCommitment && !!mina.object,
     };
-  }, [mina, setMina, runValidateRoom, initializeRoom, commitRoomAndObject]);
+  }, [mina, setMina, runValidateRoom, initializeRoom, commitRoomAndObject, initZkProgram]);
 
   return <MinaContext.Provider value={value}>{children}</MinaContext.Provider>;
 }
