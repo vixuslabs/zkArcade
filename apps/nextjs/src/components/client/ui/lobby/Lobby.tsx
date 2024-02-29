@@ -13,6 +13,7 @@ import type { GameNames, HotnColdPlayer, LobbyEventMap } from "@/lib/types";
 import { useUser } from "@clerk/nextjs";
 import { Transition } from "@headlessui/react";
 import type { PresenceChannel } from "pusher-js";
+import { MinaProvider } from "../../providers";
 
 function Lobby({
   hostUsername,
@@ -55,6 +56,7 @@ function Lobby({
     initGameEventsToPresenceChannel,
     setPresenceChannel,
     channel: presenceChannel,
+    me: lobbyMe,
   } = useLobbyStore();
 
   const lobbyEvents: LobbyEventMap = useMemo(() => {
@@ -256,7 +258,9 @@ function Lobby({
           leaveTo="opacity-0 scale-95"
           className="border-none"
         >
-          <HotnColdPreGame />
+          <MinaProvider localPlayer={lobbyMe}>
+            <HotnColdPreGame />
+          </MinaProvider>
         </Transition.Child>
       </Transition>
 
