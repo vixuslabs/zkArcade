@@ -7,7 +7,8 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useHotnCold, useLobbyStore } from "@/lib/stores";
+import { useHotnCold } from "@/lib/stores";
+
 import type {
   MeshesAndPlanesContextValue,
   MeshInfo,
@@ -20,9 +21,6 @@ import {
   useTrackedMeshes,
   useTrackedPlanes,
 } from "@coconut-xr/natuerlich/react";
-import { useShallow } from "zustand/react/shallow";
-
-import { useMinaContext } from "./MinaProvider";
 
 const MeshesAndPlanesContext = createContext<MeshesAndPlanesContextValue>({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -46,8 +44,6 @@ export const useMeshesAndPlanesContext = () => {
 function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
   const channel = useHotnCold().getGameChannel();
   const { setRoomLayout, me, opponent, setGameStatus, status } = useHotnCold();
-  const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
-  const { initializeRoom } = useMinaContext();
   const meshes = useTrackedMeshes();
   const planes = useTrackedPlanes();
   const [myMeshes, setMyMeshes] = useState<MyMeshInfo[]>([]);
@@ -62,9 +58,9 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       opponent.roomLayout.meshes.length === 0 ||
       opponent.roomLayout.planes.length === 0
     ) {
-      console.log(
-        "MeshesAndPlanesProvider: opponent.roomLayout exists already",
-      );
+      // console.log(
+      //   "MeshesAndPlanesProvider: opponent.roomLayout exists already",
+      // );
       return;
     }
 
@@ -72,14 +68,9 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       me.roomLayout.meshes.length === 0 ||
       me.roomLayout.planes.length === 0
     ) {
-      console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
+      // console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
       return;
     }
-
-    console.log("------ ROOM SYNC COMPLETE ------");
-    // console.log("me.roomLayout", me.roomLayout);
-    // console.log("opponent.roomLayout", opponent.roomLayout);
-    console.log("--------------------------------");
 
     setGameStatus(HotnColdGameStatus.BOTHHIDING);
   }, [me, opponent, setGameStatus, status]);
@@ -93,15 +84,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!meshes || !planes) return;
-    // if (meshes.length > 0 && planes.length > 0) {
-
-    console.log("------MeshesAndPlanesProvider: useEffect------");
-    // console.log("meshes.length", meshes.length);
-    // console.log("myMeshes.length", myMeshes.length);
-    // console.log("planes.length", planes.length);
-    // console.log("myPlanes.length", myPlanes.length);
-    console.log("------------");
-
     /**
      * The reasoning for this is that we are not including the global mesh inside of myMeshes, and planes does not have a global mesh, so it should be the same size
      * Revisiting this, much of this is uneeded, since we can just use the meshes and planes from the useTracked hooks and send them to the server
@@ -145,8 +127,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       });
 
       const formatedPlanes: PlaneInfo[] = myPlanes.map(({ plane, name }) => {
-        // const { plane, name } = _plane;
-
         if (!plane.geometry.attributes.position) {
           throw new Error(
             "MeshesAndPlanesProvider - planes: no position attribute",
@@ -183,16 +163,7 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
         };
       });
 
-      if (isMinaOn && initializeRoom) {
-        const room = initializeRoom({
-          boxes: formatedMeshes,
-          planes: formatedPlanes,
-        });
-
-        console.log("MeshesAndPlanesProvider: initialized Room", room);
-      }
-
-      setRoomLayout(
+      void setRoomLayout(
         {
           meshes: formatedMeshes,
           planes: formatedPlanes,

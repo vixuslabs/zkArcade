@@ -15,6 +15,7 @@ import type {
   PlanePusherData,
   Player,
   PusherUserInfo,
+  HotnColdMinaCallbacks,
 } from "@/lib/types";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { Channel, PresenceChannel } from "pusher-js";
@@ -86,6 +87,9 @@ export const initialHotnColdState: HotnColdGameState = {
   status: HotnColdGameStatus.LOBBY,
   gameEventsInitialized: false,
   startRoomSync: false,
+  minaCallbacks: null,
+  runningMinaCallback: false,
+  room: null,
   me: null,
   opponent: null,
 };
@@ -262,8 +266,7 @@ export const useFriendsStore = create(
         // get friends from db
         // console.log("userId", userId);
       },
-      addNewFriend: (friendId: string) => {
-        console.log("addNewFriend", friendId);
+      addNewFriend: (_: string) => {
         // check to make sure not already a friend
         // will just set to new friend now
         // this will be called after successfully called from the front end
@@ -606,7 +609,7 @@ export const useHotnCold = create(
           },
           "client-in-game": ({ inGame: oppInGame }: { inGame: boolean }) => {
             // console.log("client-in-game: opp-", oppInGame);
-            const { opponent, me, status } = get();
+            const { opponent, me } = get();
 
             const { setGameStatus } = useHotnCold.getState();
 
@@ -621,10 +624,6 @@ export const useHotnCold = create(
             if (!me) {
               throw new Error("client-in-game: Me is not set");
             }
-
-            console.log("me.inGame", me.inGame);
-
-            console.log("status", status);
 
             if (oppInGame) {
               me.inGame && setGameStatus(HotnColdGameStatus.LOADINGROOMS);
@@ -715,7 +714,7 @@ export const useHotnCold = create(
 
             // console.log("updatedPlanes", updatedPlanes);
 
-            setRoomLayout({ planes: updatedPlanes }, "opponent");
+            void setRoomLayout({ planes: updatedPlanes }, "opponent");
           },
           "client-roomLayout-meshes": ({
             meshes,
@@ -795,15 +794,13 @@ export const useHotnCold = create(
               throw new Error("client-roomLayout-meshes: Opponent is not set");
             }
 
-            // console.log("updatedMeshes", updatedMeshes);
-
-            setRoomLayout({ meshes: updatedMeshes }, "opponent");
+            void setRoomLayout({ meshes: updatedMeshes }, "opponent");
           },
           "client-hiding": () => {
-            console.log("client-hiding");
+            // console.log("client-hiding");
           },
           "client-done-hiding": () => {
-            console.log("client-done-hiding");
+            // console.log("client-done-hiding");
             const { opponent, me } = get();
             const { setGameStatus } = useHotnCold.getState();
             const { channel } = useLobbyStore.getState();
@@ -823,7 +820,7 @@ export const useHotnCold = create(
             }
 
             if (me.hiding) {
-              console.log("I am still hiding, but my opponent is not");
+              // console.log("I am still hiding, but my opponent is not");
               setGameStatus(HotnColdGameStatus.ONEHIDING);
               set({
                 opponent: { ...opponent, hiding: false },
@@ -832,7 +829,7 @@ export const useHotnCold = create(
                 status: HotnColdGameStatus.ONEHIDING,
               });
             } else {
-              console.log("I am not hiding, and my opponent is not");
+              // console.log("I am not hiding, and my opponent is not");
               setGameStatus(HotnColdGameStatus.SEEKING);
               set({
                 opponent: { ...opponent, hiding: false },
@@ -844,7 +841,7 @@ export const useHotnCold = create(
             }
           },
           "client-seeking": () => {
-            console.log("client-seeking");
+            // console.log("client-seeking");
           },
           "client-set-object": ({
             objectPosition,
@@ -863,19 +860,7 @@ export const useHotnCold = create(
 
             // console.log("before set - opponent", opponent);
 
-            setObjectPosition(objectPosition, "opponent");
-
-            // set({
-            //   opponent: {
-            //     ...opponent,
-            //     objectPosition,
-            //     // seeking: true,
-            //     hidObject: true,
-            //     hiding: false,
-            //   },
-            // });
-
-            // console.log("after set - opponent", opponent);
+            void setObjectPosition(objectPosition, "opponent");
           },
           "client-found-object": ({
             objectPosition,
@@ -976,10 +961,11 @@ export const useHotnCold = create(
         const { setMe, setOpponent } = useHotnCold.getState();
 
         if (status === currentStatus) {
-          // console.log("setGameStatus: Status is already", status);
-          throw new Error(
-            `setGameStatus: Status is already ${status}, cannot set to the same status`,
-          );
+          console.warn("setGameStatus: Status is already", status);
+          return;
+          // throw new Error(
+          //   `setGameStatus: Status is already ${status}, cannot set to the same status`,
+          // );
         }
 
         if (!me) {
@@ -990,23 +976,16 @@ export const useHotnCold = create(
           throw new Error("setGameStatus: Opponent is not set");
         }
 
-        console.log("setGameStatus: Passed Status is", status);
+        // console.log("setGameStatus: Passed Status is", status);
 
-        // console.log("me ", me);
-        // console.log("opponent ", opponent);
-
-        if (
-          // (!opponent && status !== HotnColdGameStatus.LOBBY) ||
-          !opponent &&
-          status !== HotnColdGameStatus.PREGAME
-        ) {
+        if (!opponent && status !== HotnColdGameStatus.PREGAME) {
           throw new Error("setGameStatus: Opponent is not set");
         }
 
         // test cases to make sure that the game status is being set correctly
         switch (status) {
           case HotnColdGameStatus.PREGAME:
-            console.log("setGameStatus: Pregame");
+            // console.log("setGameStatus: Pregame");
             if (!me.ready && !opponent?.ready) {
               throw new Error(
                 "setGameStatus: Both players are not ready, cannot set to pregame yet",
@@ -1014,7 +993,7 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.IDLE:
-            console.log("setGameStatus: Idle");
+            // console.log("setGameStatus: Idle");
             if (!me.inGame && !opponent?.inGame) {
               throw new Error(
                 "setGameStatus: Both players have not launched the game, cannot set to idle yet. One player must launch the game",
@@ -1023,7 +1002,7 @@ export const useHotnCold = create(
             break;
 
           case HotnColdGameStatus.LOADINGROOMS:
-            console.log("setGameStatus: LOADINGROOMS");
+            // console.log("setGameStatus: LOADINGROOMS");
             if (!me.inGame || !opponent.inGame) {
               throw new Error(
                 "setGameStatus: Both players are not in game yet, cannot set to loadingRooms yet",
@@ -1032,10 +1011,7 @@ export const useHotnCold = create(
             useHotnCold.setState({ startRoomSync: true });
             break;
           case HotnColdGameStatus.BOTHHIDING:
-            console.log("setGameStatus: BothHiding");
-
-            console.log("me.roomLayout ", me.roomLayout);
-            console.log("opponent.roomLayout ", opponent.roomLayout);
+            // console.log("setGameStatus: BothHiding");
 
             if (
               !me.roomLayout.meshes ||
@@ -1053,7 +1029,7 @@ export const useHotnCold = create(
 
             break;
           case HotnColdGameStatus.ONEHIDING:
-            console.log("setGameStatus: OneHiding");
+            // console.log("setGameStatus: OneHiding");
             if (me.hiding && opponent.hiding) {
               throw new Error(
                 "setGameStatus: Both players are still hiding the object, cannot set status to oneHiding until one player is no longer hiding",
@@ -1061,17 +1037,17 @@ export const useHotnCold = create(
             }
             break;
           case HotnColdGameStatus.SEEKING:
-            console.log("setGameStatus: Seeking");
+            // console.log("setGameStatus: Seeking");
             if (me.hiding || opponent.hiding) {
-              console.log("me.hiding", me.hiding);
-              console.log("opponent.hiding", opponent.hiding);
+              // console.log("me.hiding", me.hiding);
+              // console.log("opponent.hiding", opponent.hiding);
               throw new Error(
                 "setGameStatus: One player is still hiding the object, cannot set to seeking yet",
               );
             }
             break;
           case HotnColdGameStatus.GAMEOVER:
-            console.log("setGameStatus: GameOver");
+            // console.log("setGameStatus: GameOver");
             if (!me.foundObject && !opponent.foundObject) {
               throw new Error(
                 "setGameStatus: Neither player has found the object, cannot set to gameover yet",
@@ -1090,17 +1066,34 @@ export const useHotnCold = create(
       setOpponent: (opponent: HotnColdPlayer) => {
         set((state) => ({ opponent: { ...state.opponent, ...opponent } }));
       },
-      setRoomLayout: (
+      setMinaCallbacks: ({
+        initializeRoom,
+        commitRoomAndObject,
+        runValidateRoom,
+      }: HotnColdMinaCallbacks) => {
+        // console.log("setting Mina callbacks");
+        // console.log("callbacks: ", {
+        //   initializeRoom,
+        //   commitRoomAndObject,
+        //   runValidateRoom,
+        // });
+        set((state) => ({
+          ...state,
+          minaCallbacks: {
+            initializeRoom,
+            commitRoomAndObject,
+            runValidateRoom,
+          },
+        }));
+      },
+      setRoomLayout: async (
         roomLayout: {
           meshes?: MeshInfo[];
           planes?: PlaneInfo[];
         },
         user: "me" | "opponent",
       ) => {
-        // console.log("setRoomLayout called with user", user);
-        // console.log("setRoomLayout called with roomLayout", roomLayout);
-
-        const { me, opponent } = get();
+        const { me, opponent, minaCallbacks, runningMinaCallback } = get();
 
         const { setGameStatus } = useHotnCold.getState();
 
@@ -1149,20 +1142,45 @@ export const useHotnCold = create(
           });
         }
 
-        console.log("checking if roomLayout is ready");
+        const { me: updatedMe, opponent: updatedOpponent } = get();
 
-        // console.log("me.roomLayout", me.roomLayout);
-        // console.log("opponent.roomLayout", opponent.roomLayout);
+        if (!updatedMe) {
+          throw new Error("setRoomLayout: updatedMe is not set");
+        }
 
-        // console.log(`passed in roomLayout.meshes`, roomLayout.meshes);
-        // console.log(`passed in roomLayout.planes`, roomLayout.planes);
+        if (!updatedOpponent) {
+          throw new Error("setRoomLayout: updatedOpponent is not set");
+        }
 
         if (
-          me.roomLayout.meshes.length > 0 &&
-          me.roomLayout.planes.length > 0 &&
-          opponent.roomLayout.planes.length > 0 &&
-          opponent.roomLayout.meshes.length > 0
+          updatedMe.roomLayout.meshes.length > 0 &&
+          updatedMe.roomLayout.planes.length > 0 &&
+          updatedOpponent.roomLayout.planes.length > 0 &&
+          updatedOpponent.roomLayout.meshes.length > 0
         ) {
+          if (minaCallbacks && !runningMinaCallback) {
+            console.log("Inside setRoomLayout: if meshes/planes ready...");
+
+            set({ runningMinaCallback: true });
+
+            const room = await minaCallbacks.initializeRoom({
+              boxes: opponent.roomLayout.meshes,
+              planes: opponent.roomLayout.planes,
+            });
+            set({ room, runningMinaCallback: false });
+
+            // setGameStatus(HotnColdGameStatus.BOTHHIDING);
+
+            // console.log("room", room);
+          }
+          // else {
+          //   console.log(
+          //     "inside else of setRoomLayout: minaCallbacks not ready yet or runningMinaCallback is true...",
+          //   );
+          //   console.log("minaCallbacks", minaCallbacks);
+          //   console.log("runningMinaCallback", runningMinaCallback);
+          // }
+
           setGameStatus(HotnColdGameStatus.BOTHHIDING);
         }
       },
@@ -1226,8 +1244,13 @@ export const useHotnCold = create(
           });
         }
       },
-      setObjectPosition: (position: THREE.Vector3, user: "me" | "opponent") => {
+      setObjectPosition: async (
+        position: THREE.Vector3,
+        user: "me" | "opponent",
+      ) => {
         const { setGameStatus, getGameChannel } = useHotnCold.getState();
+
+        const { minaCallbacks, runningMinaCallback } = get();
 
         const channel = getGameChannel();
 
@@ -1246,17 +1269,6 @@ export const useHotnCold = create(
               objectPosition: position,
             });
 
-            // const seeking =
-            //   state.opponent.hidObject && !state.opponent.hiding ? true : false;
-
-            // if (
-            //   seeking &&
-            //   (status === HotnColdGameStatus.BOTHHIDING ||
-            //     status === HotnColdGameStatus.ONEHIDING)
-            // ) {
-            //   setGameStatus(HotnColdGameStatus.SEEKING);
-            // }
-
             return {
               me: {
                 ...state.me,
@@ -1271,9 +1283,27 @@ export const useHotnCold = create(
               // },
             };
           });
+
+          if (minaCallbacks && !runningMinaCallback) {
+            set({ runningMinaCallback: true });
+            const { roomAndObjectCommitment, object } =
+              await minaCallbacks.commitRoomAndObject({
+                objectRadius: 0.05,
+                objectPosition: position,
+              });
+
+            const isValid = await minaCallbacks.runValidateRoom(
+              roomAndObjectCommitment,
+              object,
+            );
+
+            if (isValid) console.log("is valid");
+            else console.log("is not valid");
+
+            set({ runningMinaCallback: false });
+          }
         } else if (user === "opponent") {
           set((state) => {
-            // console.log("setObjectPosition - opp: state", state);
             if (!state.me) {
               throw new Error("setObjectPosition - opp: Me is not set");
             }
@@ -1281,9 +1311,6 @@ export const useHotnCold = create(
             if (!state.opponent) {
               throw new Error("setObjectPosition - opp: Opponent is not set");
             }
-
-            // const seeking =
-            //   state.me.hidObject && !state.me.hiding ? true : false;
 
             return {
               opponent: {
@@ -1313,10 +1340,6 @@ export const useHotnCold = create(
           throw new Error("setObjectPosition: Opponent is not set");
         }
 
-        console.log("after setObjectPos if me, else if opp checks");
-        // console.log("me", me);
-        // console.log("opponent", opponent);
-
         if (
           !me.hiding &&
           me.hidObject &&
@@ -1325,13 +1348,6 @@ export const useHotnCold = create(
         ) {
           setGameStatus(HotnColdGameStatus.SEEKING);
         } else {
-          console.log("both players are not hiding and hid object ");
-          console.log({
-            meHiding: me.hiding,
-            meHidObject: me.hidObject,
-            oppHidObject: opponent.hidObject,
-            oppHiding: opponent.hiding,
-          });
           status !== HotnColdGameStatus.ONEHIDING &&
             setGameStatus(HotnColdGameStatus.ONEHIDING);
         }
