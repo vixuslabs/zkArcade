@@ -25,13 +25,6 @@ const ignorablePlane = (name: string) => {
 };
 
 function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
-  // console.log("\n-------------\n");
-  // console.log("inside FriendPlane component");
-  // console.log("name:", name);
-  // console.log("position:", position);
-  // console.log("index:", index);
-  // console.log("matrixData:", matrix);
-
   if (ignorablePlane(name)) {
     return null;
   }
@@ -79,8 +72,6 @@ function FriendPlane({ position, index, matrix, name }: FriendPlaneProps) {
   mesh.matrixAutoUpdate = false;
 
   mesh.applyMatrix4(matrixFour);
-
-  // console.log("FriendPlane - friend generated mesh:", mesh);
 
   return <primitive object={mesh} />;
 }

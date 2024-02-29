@@ -30,17 +30,17 @@ function GameMesh({ mesh, color = "black", name = "" }: GameMeshProps) {
     if (init) {
       return;
     } else if (!mesh) {
-      console.log("no mesh");
+      // console.log("no mesh");
       return;
     } else if (!ref.current) {
-      console.log("no ref");
+      // console.log("no ref");
       return;
     }
 
     if (status !== HotnColdGameStatus.LOADINGROOMS) return;
 
     void (() => {
-      console.log("inside IIFE");
+      // console.log("inside IIFE");
       setInit(true);
 
       setMyMeshes((prev) => {

@@ -20,7 +20,7 @@ function GameSphere({
   gameStatus,
 }: {
   name?: string;
-  position?: [number, number, number];
+  position?: [number, number, number] | THREE.Vector3;
   color?: string;
   inGame: boolean;
   gameStatus?: "hiding" | "seeking";

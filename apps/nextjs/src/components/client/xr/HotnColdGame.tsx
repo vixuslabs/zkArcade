@@ -3,15 +3,15 @@
 // import dynamic from "next/dynamic";
 import {
   ControllerStateProvider,
-  MinaProvider,
+  // MinaProvider,
 } from "@/components/client/providers";
 import { BuildRoom } from "@/components/client/xr";
 import { GameControllers } from "@/components/client/xr/inputDevices";
 import GameSphere from "@/components/client/xr/objects/GameSphere";
 import { FriendRoom } from "@/components/client/xr/rooms";
 import { Button } from "@/components/ui/button";
-// import { useHotnCold, useLobbyStore } from "@/lib/stores";
-import { useHotnCold } from "@/lib/stores";
+import { useHotnCold, useLobbyStore } from "@/lib/stores";
+// import { useHotnCold } from "@/lib/stores";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { HotnColdEvents } from "@/lib/types";
 import { clippingEvents } from "@coconut-xr/koestlich";
@@ -30,6 +30,8 @@ import { XRPhysics } from "@vixuslabs/newtonxr";
 import { useShallow } from "zustand/react/shallow";
 
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
+import { useEffect } from "react";
+import { useMinaContext } from "../providers/MinaProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
@@ -47,8 +49,10 @@ function HotnColdGame({
 
   const setGameStatus = useHotnCold(useShallow((state) => state.setGameStatus));
 
-  const { me, setMe, opponent, status, startRoomSync } = useHotnCold();
-  // const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
+  const { me, setMe, opponent, status, startRoomSync, setMinaCallbacks } =
+    useHotnCold();
+  const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
+  const mina = useMinaContext();
 
   const inputSources = useInputSources();
 
@@ -59,17 +63,38 @@ function HotnColdGame({
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
+  useEffect(() => {
+    // console.log("isMinaOn", isMinaOn);
+    // console.log("mina", mina);
+
+    if (isMinaOn) {
+      if (
+        !mina.commitRoomAndObject ||
+        !mina.initializeRoom ||
+        !mina.runValidateRoom
+      ) {
+        throw new Error("mina callbacks not set");
+      }
+
+      setMinaCallbacks({
+        commitRoomAndObject: mina.commitRoomAndObject,
+        initializeRoom: mina.initializeRoom,
+        runValidateRoom: mina.runValidateRoom,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mina.commitRoomAndObject, mina.initializeRoom, mina.runValidateRoom]);
+
   if (!me || !opponent) {
     return null;
   }
 
   return (
-    <MinaProvider>
+    <>
       <div className="relative z-30 mt-4 flex items-center justify-center">
         <Button
           variant={"default"}
           onClick={() => {
-            console.log("clicked!");
             void enterAR().then(() => {
               console.log("entered");
 
@@ -117,13 +142,11 @@ function HotnColdGame({
         gl={{ localClippingEnabled: true }}
       >
         <ControllerStateProvider>
-          {/* {startSync && ( */}
           <XRPhysics
             colliders={false}
             gravity={[0, 0, 0]}
-            interpolate={false}
-            timeStep={"vary"}
-            // debug
+            // interpolate={false}
+            // timeStep={"vary"}
           >
             <NonImmersiveCamera />
 
@@ -144,7 +167,6 @@ function HotnColdGame({
                   gameStatus="seeking"
                   name={"hiddenObject"}
                   color="yellow"
-                  // @ts-expect-error - this works i swear
                   position={opponent.objectPosition}
                 />
               )}
@@ -173,7 +195,7 @@ function HotnColdGame({
           </XRPhysics>
         </ControllerStateProvider>
       </XRCanvas>
-    </MinaProvider>
+    </>
   );
 }
 
