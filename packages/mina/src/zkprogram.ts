@@ -1,14 +1,17 @@
-import { Field, ZkProgram, Struct } from 'o1js';
+import { Field, ZkProgram, Struct } from "o1js";
 import { Room, Object3D } from "./structs";
 
-export class RoomAndObjectCommitment extends Struct({ room: Room, objectCommitment: Field}) {
-  constructor(value: { room: Room, objectCommitment: Field }) {
+export class RoomAndObjectCommitment extends Struct({
+  room: Room,
+  objectCommitment: Field,
+}) {
+  constructor(value: { room: Room; objectCommitment: Field }) {
     super(value);
   }
 }
 
 export const ValidateRoom = ZkProgram({
-  name: "validateToom",
+  name: "validateRoom",
   publicInput: RoomAndObjectCommitment, // opponent's room layout and commitment to the object's position
 
   methods: {
@@ -17,8 +20,11 @@ export const ValidateRoom = ZkProgram({
 
       method(publicInput: RoomAndObjectCommitment, object: Object3D) {
         // Validate that the object commitment matches the hidden object
-        publicInput.objectCommitment.assertEquals(object.getHash(), "object must match the previously commited object");
-        
+        publicInput.objectCommitment.assertEquals(
+          object.getHash(),
+          "object must match the previously commited object",
+        );
+
         // Check that an object is on the inner side of every plane
         publicInput.room.planes.forEach((plane) => {
           plane.assertObjectIsOnInnerSide(object);
@@ -30,5 +36,5 @@ export const ValidateRoom = ZkProgram({
         });
       },
     },
-  }
+  },
 });
