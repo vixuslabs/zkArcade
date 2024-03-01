@@ -51,7 +51,7 @@
     "@trpc/react-query": "^10.45.0",
     "@trpc/server": "^10.45.0",
     "@vercel/analytics": "^1.1.2",
-    "@vixuslabs/newtonxr": "^1.0.0",
+    "@vixuslabs/newtonxr": "^1.1.0",
     "@zkarcade/api": "workspace:^0.1.0",
     "@zkarcade/db": "workspace:^0.1.0",
     "@zkarcade/mina": "workspace:^0.1.0",
