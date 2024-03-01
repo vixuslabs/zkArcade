@@ -74,6 +74,7 @@ function ArcadeScene() {
       </Suspense>
 
       <Suspense fallback={null}>
+        {/* @ts-expect-error - ref works */}
         <ArcadeMachine ref={arcadeMachineRef} />
       </Suspense>
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 export default authMiddleware({
-  publicRoutes: ["/", "/arcade", "/sign-in", "/sign-up", "/new", "/sandbox"],
+  publicRoutes: ["/", "/arcade", "/sign-in", "/sign-up", "/test", "/sandbox"],
   apiRoutes: ["/api/(.*)"],
   afterAuth(auth, req) {
     if (auth.isApiRoute) {
