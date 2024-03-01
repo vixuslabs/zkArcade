@@ -1,5 +1,5 @@
-import { Sandbox } from "@/components/client/xr";
 import { BackButton } from "@/components/client/ui/lobby";
+import { Sandbox } from "@/components/client/xr";
 
 function SandboxPage() {
   return (

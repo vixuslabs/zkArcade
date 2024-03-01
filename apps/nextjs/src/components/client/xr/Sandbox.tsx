@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { ControllerStateProvider } from "@/components/client/providers";
 // import { BuildRoom } from "@/components/client/xr";
-import { SandboxControllers } from "@/components/client/xr/inputDevices";
 import { Button } from "@/components/ui/button";
 import type { SandboxProps } from "@/lib/types";
 // import { clippingEvents } from "@coconut-xr/koestlich";
 import { getInputSourceId } from "@coconut-xr/natuerlich";
-import { XRCanvas } from "@coconut-xr/natuerlich/defaults";
+import { PointerController, XRCanvas } from "@coconut-xr/natuerlich/defaults";
 import {
   FocusStateGuard,
   ImmersiveSessionOrigin,
@@ -20,15 +19,20 @@ import {
   useSessionChange,
   useSessionSupported,
 } from "@coconut-xr/natuerlich/react";
+// import { Container, Root } from "@react-three/uikit";
 import {
-  BuildPhysicalMeshes,
-  BuildPhysicalPlanes,
+  // BuildPhysicalMeshes,
+  // BuildPhysicalPlanes,
   PhysicalObject,
   TrueHand,
   XRPhysics,
 } from "@vixuslabs/newtonxr";
 
 import GameSphere from "./objects/GameSphere";
+import { RapierMeshes, RapierPlanes } from "./rapier";
+
+// import { ConfirmBall, ResetGame } from "./uikit";
+// import { DefaultColors } from "./uikit/kits/colors";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -82,69 +86,96 @@ function Sandbox({ username: _ }: SandboxProps) {
         </Button>
       </div>
 
-      <XRCanvas
-        frameBufferScaling={frameBufferScaling}
-        frameRate={frameRate}
-        dpr={[1, 2]}
-        // // @ts-expect-error - import error
-        // events={clippingEvents}
-        gl={{ localClippingEnabled: true }}
-      >
-        <ambientLight intensity={1} />
+      <Suspense fallback={null}>
+        <XRCanvas
+          frameBufferScaling={frameBufferScaling}
+          frameRate={frameRate}
+          // dpr={[1, 2]}
+          // // @ts-expect-error - import error
+          // events={clippingEvents}
+          gl={{ localClippingEnabled: true }}
+        >
+          <ambientLight intensity={1} />
 
-        <FocusStateGuard>
-          <ControllerStateProvider>
-            <XRPhysics
-              debug
+          <FocusStateGuard>
+            <ControllerStateProvider>
+              <XRPhysics
+              // debug
               // colliders={false}
-              gravity={[0, -5, 0]}
-            >
-              <NonImmersiveCamera />
+              // gravity={[0, -5, 0]}
+              >
+                <NonImmersiveCamera />
 
-              {startSync && (
-                <>
-                  <GameSphere
-                    inGame={false}
-                    color="blue"
-                    position={[0, 2, -0.3]}
-                  />
-                  <GameSphere inGame={false} position={[0, 1, -0.3]} />
-
-                  <Boxes />
-                </>
-              )}
-
-              <ImmersiveSessionOrigin>
                 {startSync && (
                   <>
-                    {/* <BuildRoom inGame={false} /> */}
-                    {/* <BuildPhysicalMeshes excludeGlobalMesh debug />
-                    <BuildPhysicalPlanes debug /> */}
+                    <GameSphere
+                      inGame={false}
+                      color="blue"
+                      position={[0, 2, -0.3]}
+                    />
+                    <GameSphere inGame={false} position={[0, 1, -0.3]} />
+
+                    <Boxes />
                   </>
                 )}
-                <BuildPhysicalMeshes excludeGlobalMesh />
-                <BuildPhysicalPlanes />
-                {inputSources?.map((inputSource) =>
-                  inputSource.hand ? (
-                    <TrueHand
-                      key={getInputSourceId(inputSource)}
-                      inputSource={inputSource}
-                      id={getInputSourceId(inputSource)}
-                      XRHand={inputSource.hand}
-                    />
-                  ) : (
-                    <SandboxControllers
-                      key={getInputSourceId(inputSource)}
-                      id={getInputSourceId(inputSource)}
-                      inputSource={inputSource}
-                    />
-                  ),
-                )}
-              </ImmersiveSessionOrigin>
-            </XRPhysics>
-          </ControllerStateProvider>
-        </FocusStateGuard>
-      </XRCanvas>
+
+                {/* <group position={[0, 1.5, -0.5]} scale={0.1}>
+                  <Root backgroundColor={0xffffff} pixelSize={0.01}>
+                    <DefaultColors />
+                    <Container
+                      backgroundOpacity={0}
+                      borderBend={10}
+                      borderRadius={16}
+                    >
+                      <ConfirmBall />
+                    </Container>
+                  </Root>
+                </group> */}
+
+                <ImmersiveSessionOrigin>
+                  {startSync && (
+                    <>
+                      <RapierMeshes excludeGlobalMesh />
+                      <RapierPlanes />
+
+                      {/* <group position={[0, 1.5, -0.5]} scale={0.1}>
+                        <Root backgroundColor={0xffffff} pixelSize={0.01}>
+                          <Container
+                            backgroundOpacity={0}
+                            borderBend={10}
+                            borderRadius={16}
+                          >
+                            <ResetGame />
+                          </Container>
+                        </Root>
+                      </group> */}
+                    </>
+                  )}
+                  {/* <BuildPhysicalMeshes excludeGlobalMesh />
+                <BuildPhysicalPlanes /> */}
+
+                  {inputSources?.map((inputSource) =>
+                    inputSource.hand ? (
+                      <TrueHand
+                        key={getInputSourceId(inputSource)}
+                        inputSource={inputSource}
+                        id={getInputSourceId(inputSource)}
+                        XRHand={inputSource.hand}
+                      />
+                    ) : (
+                      <PointerController
+                        key={getInputSourceId(inputSource)}
+                        id={getInputSourceId(inputSource)}
+                        inputSource={inputSource}
+                      />
+                    ),
+                  )}
+                </ImmersiveSessionOrigin>
+              </XRPhysics>
+            </ControllerStateProvider>
+          </FocusStateGuard>
+        </XRCanvas>
+      </Suspense>
     </>
   );
 }

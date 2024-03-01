@@ -1,12 +1,10 @@
 import React, { useRef } from "react";
 import { getMeshId } from "@coconut-xr/natuerlich";
-import { TrackedMesh } from "@coconut-xr/natuerlich/react";
-import type { ExtendedXRMesh } from "@coconut-xr/natuerlich/react";
+import { TrackedMesh, useTrackedMeshes } from "@coconut-xr/natuerlich/react";
 import { interactionGroups, RigidBody } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
 
 interface RapierMeshesProps {
-  meshes: readonly ExtendedXRMesh[] | undefined;
   children?: React.ReactNode;
   excludeGlobalMesh?: boolean;
   debug?: boolean;
@@ -16,8 +14,8 @@ export function RapierMeshes({
   children,
   excludeGlobalMesh = false,
   debug = false,
-  meshes,
 }: RapierMeshesProps) {
+  const meshes = useTrackedMeshes();
   const meshRef = useRef<THREE.Mesh>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
 
