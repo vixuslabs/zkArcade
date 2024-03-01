@@ -13,8 +13,6 @@ import {
   useInputSources,
   useSessionChange,
   useSessionSupported,
-  useTrackedMeshes,
-  useTrackedPlanes,
 } from "@coconut-xr/natuerlich/react";
 // import { Board } from "./Board";
 // import { Carrier } from "./Carrier";
@@ -43,8 +41,6 @@ export function XRSetup() {
 
   const inputSources = useInputSources();
   const enterAR = useEnterXR("immersive-ar", sessionOptions);
-  const meshes = useTrackedMeshes();
-  const planes = useTrackedPlanes();
 
   const isSupported = useSessionSupported("immersive-ar");
 
