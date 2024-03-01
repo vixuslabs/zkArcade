@@ -4,13 +4,13 @@ import {
   ActiveTabContent,
   NotificationButton,
   SidebarNav,
-} from "@/components/client/dashboard";
-import FriendsWS from "@/components/client/dashboard/FriendsWS";
-import { DashboardTabProvider } from "@/components/client/providers";
-import { AvatarSkeleton } from "@/components/client/skeletons";
-import { UserAvatar } from "@/components/client/ui";
-import ThemedLogo from "@/components/client/ui/ThemedLogo";
-import { ThemeToggle } from "@/components/client/ui/ToggleTheme";
+} from "@/components/dashboard";
+import FriendsWS from "@/components/dashboard/friends/FriendsWS";
+import { DashboardTabProvider } from "@/components/providers";
+import { AvatarSkeleton } from "@/components/skeletons";
+import { UserAvatar } from "@/components/utility";
+import ThemedLogo from "@/components/utility/ThemedLogo";
+import { ThemeToggle } from "@/components/utility/ToggleTheme";
 
 interface DashboardLayoutProps {
   primary: React.ReactNode;

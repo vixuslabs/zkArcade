@@ -1,4 +1,4 @@
-import { SettingsForm } from "@/components/client/dashboard";
+import { SettingsForm } from "@/components/dashboard";
 
 function Settings() {
   return (

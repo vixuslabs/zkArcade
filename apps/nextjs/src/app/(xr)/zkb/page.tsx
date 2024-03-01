@@ -3,7 +3,7 @@
 import React from "react";
 // import { Battleships } from "@/components/client/xr/zkBattleships/zkBattleship";
 // import { Stage } from "@/components/client/xr/zkBattleships";
-import { XRSetup } from "@/components/client/xr/zkBattleships/XRSetup";
+import { XRSetup } from "@/components/xr/zkBattleships/XRSetup";
 
 export default function Page() {
   return (

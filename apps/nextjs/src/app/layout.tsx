@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 
 import { Jura } from "next/font/google";
-import { ThemeProvider } from "@/components/client/providers";
+import { ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { PusherClientProvider } from "@/pusher/client";

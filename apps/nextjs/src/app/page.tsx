@@ -4,10 +4,10 @@ import {
   Footer,
   GamesSection,
   HeroSection,
-} from "@/components/client/landingPage";
-import ThemedLogo from "@/components/client/ui/ThemedLogo";
-import { ThemeToggle } from "@/components/client/ui/ToggleTheme";
+} from "@/components/landingPage";
 import { Button } from "@/components/ui/button";
+import ThemedLogo from "@/components/utility/ThemedLogo";
+import { ThemeToggle } from "@/components/utility/ToggleTheme";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function Page() {

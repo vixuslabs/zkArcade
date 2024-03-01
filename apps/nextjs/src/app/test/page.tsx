@@ -1,20 +1,19 @@
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   Features,
   Footer,
   GamesSection,
   HeroSection,
-} from "@/components/client/landingPage";
-import ThemedLogo from "@/components/client/ui/ThemedLogo";
-import { ThemeToggle } from "@/components/client/ui/ToggleTheme";
+} from "@/components/landingPage";
 import { Button } from "@/components/ui/button";
+import ThemedLogo from "@/components/utility/ThemedLogo";
+import { ThemeToggle } from "@/components/utility/ToggleTheme";
 import { currentUser } from "@clerk/nextjs";
 
-import dynamic from "next/dynamic";
-import { Suspense } from "react";
-
 const ArcadeBackground = dynamic(
-  () => import("@/components/client/landingPage/ArcadeBackground"),
+  () => import("@/components/landingPage/arcade/ArcadeBackground"),
   { ssr: false },
 );
 
