@@ -10,6 +10,8 @@ import "./src/env.mjs";
 const config = {
   transpilePackages: [
     "three",
+    "@react-three/uikit",
+    "@vixuslabs/newtonxr",
     "@zkarcade/db",
     "@zkarcade/api",
     "@zkarcade/mina",

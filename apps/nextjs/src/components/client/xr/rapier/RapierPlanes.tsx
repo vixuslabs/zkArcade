@@ -1,21 +1,16 @@
 import React, { useRef } from "react";
 import { getPlaneId } from "@coconut-xr/natuerlich";
-import type { ExtendedXRPlane } from "@coconut-xr/natuerlich/react";
-import { TrackedPlane } from "@coconut-xr/natuerlich/react";
+import { TrackedPlane, useTrackedPlanes } from "@coconut-xr/natuerlich/react";
 import { interactionGroups, RigidBody } from "@react-three/rapier";
 import type { RapierRigidBody } from "@react-three/rapier";
 
 interface RapierPlanesProps {
-  planes: readonly ExtendedXRPlane[] | undefined;
   children?: React.ReactNode;
   debug?: boolean;
 }
 
-export function RapierPlanes({
-  planes,
-  children,
-  debug = false,
-}: RapierPlanesProps) {
+export function RapierPlanes({ children, debug = false }: RapierPlanesProps) {
+  const planes = useTrackedPlanes();
   const planeRef = useRef<THREE.Mesh>(null);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
 
