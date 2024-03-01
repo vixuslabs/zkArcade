@@ -3,7 +3,15 @@
 import React from "react";
 import { useTexture } from "@react-three/drei";
 
-function Floor() {
+// import type { Vector3 } from "@react-three/fiber";
+
+type FloorMeshProps = JSX.IntrinsicElements["mesh"];
+
+interface FloorProps extends FloorMeshProps {
+  floorSize?: [number, number, number];
+}
+
+function Floor({ floorSize }: FloorProps) {
   const textures = useTexture({
     diffuseMap: "./assets/arcadeFloor/concrete/diffuse.jpg",
     roughnessMap: "./assets/arcadeFloor/concrete/roughness.jpg",
@@ -13,16 +21,6 @@ function Floor() {
     displacementMap: "./assets/arcadeFloor/concrete/displacement.jpg",
   });
 
-  // const textures = useTexture({
-  //   diffuseMap: "./assets/arcadeFloor/rubber/diffuse.jpg",
-  //   armMap: "./assets/arcadeFloor/rubber/arm.jpg",
-  //   aoMap: "./assets/arcadeFloor/rubber/ao.jpg",
-  //   normalMap: "./assets/arcadeFloor/rubber/normal.jpg",
-  //   displacementMap: "./assets/arcadeFloor/rubber/displacement.jpg",
-  // });
-
-  console.log("textures", textures);
-
   if (!textures) {
     console.log("no textures");
     return null;
@@ -30,9 +28,11 @@ function Floor() {
 
   return (
     <mesh receiveShadow position-y={-0.56} position-z={20}>
-      <boxGeometry args={[10, 0.1, 55]} />
+      <boxGeometry args={floorSize ?? [10, 0.1, 55]} />
 
       <meshStandardMaterial
+        transparent
+        opacity={0.2}
         map={textures.diffuseMap}
         normalMap={textures.normalMap}
         aoMap={textures.aoMap}

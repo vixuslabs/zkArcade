@@ -19,8 +19,6 @@ type GLTFResult = GLTF & {
 type ArcadeMachineGroup = JSX.IntrinsicElements["group"];
 
 interface ArcadeMachineProps extends ArcadeMachineGroup {
-  // arcadeMachine: React.RefObject<THREE.Object3D<THREE.Object3DEventMap>>;
-  // props: JSX.IntrinsicElements["group"];
   loadingManager?: THREE.LoadingManager;
 }
 
