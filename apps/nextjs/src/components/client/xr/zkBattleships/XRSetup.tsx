@@ -1,33 +1,32 @@
 "use client";
 
 import React, { useState } from "react";
+import { SandboxControllers } from "@/components/client/xr/inputDevices";
+import { RapierMeshes, RapierPlanes } from "@/components/client/xr/rapier";
+import { Button } from "@/components/ui/button";
+import { getInputSourceId } from "@coconut-xr/natuerlich";
 import { XRCanvas } from "@coconut-xr/natuerlich/defaults";
 import {
-  ImmersiveSessionOrigin,
-  useInputSources,
-  useEnterXR,
-  useSessionSupported,
-  useSessionChange,
   FocusStateGuard,
+  ImmersiveSessionOrigin,
+  useEnterXR,
+  useInputSources,
+  useSessionChange,
+  useSessionSupported,
   useTrackedMeshes,
   useTrackedPlanes,
 } from "@coconut-xr/natuerlich/react";
-import { getInputSourceId } from "@coconut-xr/natuerlich";
-import { SandboxControllers } from "@/components/client/xr/inputDevices";
-import { Button } from "@/components/ui/button";
-
 // import { Board } from "./Board";
 // import { Carrier } from "./Carrier";
 import {
-  XRPhysics,
   TrueHand,
+  XRPhysics,
   // BuildPhysicalMeshes,
   // BuildPhysicalPlanes,
 } from "@vixuslabs/newtonxr";
-import XRStage from "./XRStage";
-import { ControllerStateProvider } from "../../providers";
 
-import { RapierMeshes, RapierPlanes } from "@/components/client/xr/rapier";
+import { ControllerStateProvider } from "../../providers";
+import XRStage from "./XRStage";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: [
@@ -83,11 +82,11 @@ export function XRSetup() {
 
         <FocusStateGuard>
           <ControllerStateProvider>
-            <XRPhysics debug gravity={[0, 0, 0]}>
+            <XRPhysics debug gravity={[0, -2.5, 0]}>
               {startSync && <XRStage />}
 
-              <RapierMeshes meshes={meshes} />
-              <RapierPlanes planes={planes} />
+              <RapierMeshes excludeGlobalMesh />
+              <RapierPlanes />
 
               {/* <BuildPhysicalMeshes />
               <BuildPhysicalPlanes /> */}

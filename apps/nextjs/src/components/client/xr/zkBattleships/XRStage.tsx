@@ -1,9 +1,10 @@
 "use client";
 
-import { RigidBody } from "@react-three/rapier";
-import { Board } from "./Board";
-import { Carrier } from "./Carrier";
+// import { Preload } from "@react-three/drei";
 import type { Vector3 } from "@react-three/fiber";
+import { RigidBody } from "@react-three/rapier";
+
+import { Board, Carrier, Missile } from ".";
 
 export default function XRStage() {
   return (
@@ -17,11 +18,28 @@ export default function XRStage() {
       <PhysicsCarrier position={[-0, 1.5, 0.2]} />
 
       <PhysicsCarrier position={[0.3, 1.5, 0.2]} />
+
+      <PhysicsMissile position={[0, 1.7, 0]} />
+
+      {/* <Preload all /> */}
     </>
   );
 }
 
-const PhysicsBoard = ({ position }: { position: Vector3 }) => {
+export const PhysicsMissile = ({ position }: { position: Vector3 }) => {
+  return (
+    <RigidBody
+      type="dynamic"
+      density={10}
+      colliders="cuboid"
+      position={position}
+    >
+      <Missile />
+    </RigidBody>
+  );
+};
+
+export const PhysicsBoard = ({ position }: { position: Vector3 }) => {
   return (
     <RigidBody type="fixed" density={10} colliders="cuboid" position={position}>
       <Board />
@@ -29,7 +47,7 @@ const PhysicsBoard = ({ position }: { position: Vector3 }) => {
   );
 };
 
-const PhysicsCarrier = ({ position }: { position: Vector3 }) => {
+export const PhysicsCarrier = ({ position }: { position: Vector3 }) => {
   return (
     <RigidBody
       type="dynamic"

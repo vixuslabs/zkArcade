@@ -1,3 +1,5 @@
 export * from "./Stage";
 export * from "./XRStage";
-export * from "./zkBattleship";
+export * from "./Missile";
+export * from "./Board";
+export * from "./Carrier";
