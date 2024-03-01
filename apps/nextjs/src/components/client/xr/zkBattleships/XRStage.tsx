@@ -1,13 +1,43 @@
 "use client";
 
-import { XRCanvas } from "@coconut-xr/natuerlich/defaults";
+import { RigidBody } from "@react-three/rapier";
+import { Board } from "./Board";
+import { Carrier } from "./Carrier";
+import type { Vector3 } from "@react-three/fiber";
 
-import { Battleships } from "./zkBattleship";
-
-export function XRStage() {
+export default function XRStage() {
   return (
-    <XRCanvas className="relative">
-      <Battleships />
-    </XRCanvas>
+    <>
+      {/* <Board position={[0, 0, 0]} /> */}
+
+      <PhysicsBoard position={[0, 1.5, 0]} />
+
+      <PhysicsCarrier position={[-0.3, 1.5, 0.2]} />
+
+      <PhysicsCarrier position={[-0, 1.5, 0.2]} />
+
+      <PhysicsCarrier position={[0.3, 1.5, 0.2]} />
+    </>
   );
 }
+
+const PhysicsBoard = ({ position }: { position: Vector3 }) => {
+  return (
+    <RigidBody type="fixed" density={10} colliders="cuboid" position={position}>
+      <Board />
+    </RigidBody>
+  );
+};
+
+const PhysicsCarrier = ({ position }: { position: Vector3 }) => {
+  return (
+    <RigidBody
+      type="dynamic"
+      density={10}
+      colliders="trimesh"
+      position={position}
+    >
+      <Carrier />
+    </RigidBody>
+  );
+};

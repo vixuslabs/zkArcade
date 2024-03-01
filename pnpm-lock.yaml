@@ -138,8 +138,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       '@vixuslabs/newtonxr':
-        specifier: ^1.0.0
-        version: 1.0.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
+        specifier: ^1.0.1
+        version: 1.0.1(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0)
       '@zkarcade/api':
         specifier: workspace:^0.1.0
         version: link:../../packages/api
@@ -4958,8 +4958,8 @@ packages:
       server-only: 0.0.1
     dev: false
 
-  /@vixuslabs/newtonxr@1.0.0(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
-    resolution: {integrity: sha512-+Iw5qrmrpCW1JJExx6gw06mzgpq8tZ+ny1Rml5qWr7ECfk0PVJTiqjA4SCK49xhNprjVpsvILVpJXM5fEIVhJA==}
+  /@vixuslabs/newtonxr@1.0.1(@coconut-xr/koestlich@0.3.12)(@react-three/fiber@8.15.11)(@types/react@18.2.39)(react@18.2.0)(three@0.158.0):
+    resolution: {integrity: sha512-F4Sq+inLKogjUUOL3iXsUQ4Skdgp6ylLK4883s3cV9OvZMSN9OO9e6UaA4NAsqu2lLy6B9hGXIpwVtJxABwLGg==}
     peerDependencies:
       '@react-three/fiber': '*'
       react: '*'

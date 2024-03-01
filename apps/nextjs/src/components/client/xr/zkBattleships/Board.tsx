@@ -30,35 +30,35 @@ type GLTFResult = GLTF & {
   };
 };
 
-export function Battleships(props: JSX.IntrinsicElements["group"]) {
+export function Board(props: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF(BOARD_URL) as GLTFResult;
   const water = useRef<THREE.Mesh>(null);
 
-  useTexture(WATER_NORMAL_URL, (texture) => {
-    texture.wrapS = texture.wrapT = RepeatWrapping;
-    const waterMesh = new Water(nodes.water.geometry, {
-      textureHeight: 512,
-      textureWidth: 512,
-      waterNormals: texture,
-      sunDirection: new Vector3(),
-      sunColor: 0xffffff,
-      waterColor: 0x00faff,
-      distortionScale: 3.7,
-      fog: false,
-    });
-    waterMesh.position.copy(nodes.water.position);
-    nodes.water.material = waterMesh.material;
-    water.current?.copy(waterMesh);
-  });
+  // useTexture(WATER_NORMAL_URL, (texture) => {
+  //   texture.wrapS = texture.wrapT = RepeatWrapping;
+  //   const waterMesh = new Water(nodes.water.geometry, {
+  //     textureHeight: 512,
+  //     textureWidth: 512,
+  //     waterNormals: texture,
+  //     sunDirection: new Vector3(),
+  //     sunColor: 0xffffff,
+  //     waterColor: 0x00faff,
+  //     distortionScale: 3.7,
+  //     fog: false,
+  //   });
+  //   waterMesh.position.copy(nodes.water.position);
+  //   nodes.water.material = waterMesh.material;
+  //   water.current?.copy(waterMesh);
+  // });
 
-  useFrame((state, delta) => {
-    // @ts-expect-error - unfiforms is there
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    nodes.water.material.uniforms.time.value += delta;
-  });
+  // useFrame((state, delta) => {
+  //   // @ts-expect-error - unfiforms is there
+  //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  //   nodes.water.material.uniforms.time.value += delta;
+  // });
 
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} scale={0.3}>
       <mesh
         ref={water}
         castShadow
