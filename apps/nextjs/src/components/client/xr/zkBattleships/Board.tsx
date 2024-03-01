@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useRef } from "react";
-import { useGLTF, useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { RepeatWrapping, Vector3 } from "three";
+import { useGLTF } from "@react-three/drei";
+// import { useGLTF, useTexture } from "@react-three/drei";
+
+// import { useFrame } from "@react-three/fiber";
+// import { RepeatWrapping, Vector3 } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { Water } from "three/examples/jsm/Addons.js";
+// import { Water } from "three/examples/jsm/Addons.js";
 
 // const BOARD_URL = new URL(
 //   "../../public/battleships_board.glb",
@@ -18,7 +20,7 @@ import { Water } from "three/examples/jsm/Addons.js";
 // ).toString();
 
 const BOARD_URL = "assets/zkBattleships/battleships_board.glb";
-const WATER_NORMAL_URL = "assets/zkBattleships/waternormals.jpg";
+// const WATER_NORMAL_URL = "assets/zkBattleships/waternormals.jpg";
 
 type GLTFResult = GLTF & {
   nodes: {
