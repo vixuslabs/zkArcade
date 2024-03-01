@@ -1,4 +1,4 @@
-import { GameOverview } from "@/components/client/dashboard";
+import { GameOverview } from "@/components/dashboard";
 
 function SecondaryContent() {
   return (

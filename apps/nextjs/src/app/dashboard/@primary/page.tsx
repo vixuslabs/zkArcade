@@ -1,4 +1,4 @@
-import { GameCarousel } from "@/components/client/dashboard";
+import { GameCarousel } from "@/components/dashboard";
 
 function PrimaryContent() {
   return (

@@ -1,12 +1,10 @@
 import type {
   CommitRoomAndObjectProps,
   CommitRoomAndObjectReturn,
-} from "@/components/client/providers/MinaProvider";
+} from "@/components/providers/MinaProvider";
 import type { ButtonState } from "@coconut-xr/natuerlich/react";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";
-import type { RoomAndObjectCommitment } from "@zkarcade/mina";
-import type { Room, Object3D } from "@zkarcade/mina/src/structs";
 import type { PresenceChannel } from "pusher-js";
 import type {
   BufferGeometry,
@@ -18,6 +16,9 @@ import type {
   Quaternion,
   Vector3,
 } from "three";
+
+import type { RoomAndObjectCommitment } from "@zkarcade/mina";
+import type { Object3D, Room } from "@zkarcade/mina/src/structs";
 
 /**
  * UI Types

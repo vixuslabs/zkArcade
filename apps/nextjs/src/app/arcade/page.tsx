@@ -1,5 +1,5 @@
-import { ArcadeScene } from "@/components/client/arcade";
-import ArcadeCanvas from "@/components/client/arcade/ArcadeCanvas";
+import { ArcadeScene } from "@/components/landingPage/arcade";
+import ArcadeCanvas from "@/components/landingPage/arcade/ArcadeCanvas";
 
 export default function ArcadePage() {
   return (

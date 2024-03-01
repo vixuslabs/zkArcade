@@ -1,4 +1,4 @@
-import { Lobby, BackButton } from "@/components/client/ui/lobby";
+import { BackButton, Lobby } from "@/components/lobby";
 
 export const dynamic = "force-dynamic";
 

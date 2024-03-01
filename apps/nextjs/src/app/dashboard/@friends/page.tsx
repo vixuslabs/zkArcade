@@ -1,4 +1,4 @@
-import { AddFriend, FriendsCard } from "@/components/client/dashboard";
+import { AddFriend, FriendsCard } from "@/components/dashboard";
 
 function Friends() {
   return (
