@@ -32,10 +32,8 @@ function LobbySettings({
       <PopoverContent side="top" sideOffset={10} className="w-64">
         <div className="flex items-center space-x-2">
           <Switch
-            // className={!isHost ? "hover:cursor-not-allowed" : ""}
-            className={"hover:cursor-not-allowed"}
-            // disabled={!isHost}
-            disabled={true}
+            className={!isHost ? "hover:cursor-not-allowed" : ""}
+            disabled={!isHost}
             checked={isMinaOn}
             onCheckedChange={() => {
               console.log("isHost", isHost);

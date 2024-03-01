@@ -1,12 +1,17 @@
 "use client";
 
-import { ControllerStateProvider } from "@/components/client/providers";
+// import dynamic from "next/dynamic";
+import {
+  ControllerStateProvider,
+  // MinaProvider,
+} from "@/components/client/providers";
 import { BuildRoom } from "@/components/client/xr";
 import { GameControllers } from "@/components/client/xr/inputDevices";
 import GameSphere from "@/components/client/xr/objects/GameSphere";
 import { FriendRoom } from "@/components/client/xr/rooms";
 import { Button } from "@/components/ui/button";
 import { useHotnCold, useLobbyStore } from "@/lib/stores";
+// import { useHotnCold } from "@/lib/stores";
 import { HotnColdGameStatus } from "@/lib/types";
 import type { HotnColdEvents } from "@/lib/types";
 import { clippingEvents } from "@coconut-xr/koestlich";
@@ -24,14 +29,9 @@ import {
 import { XRPhysics } from "@vixuslabs/newtonxr";
 import { useShallow } from "zustand/react/shallow";
 
-import dynamic from "next/dynamic";
-
-const MinaStartButton = dynamic(
-  () => import("@/components/client/mina/MinaStartButton"),
-  { ssr: false },
-);
-
 import MeshesAndPlanesProvider from "../providers/MeshesAndPlanesProvider";
+import { useEffect } from "react";
+import { useMinaContext } from "../providers/MinaProvider";
 
 const sessionOptions: XRSessionInit = {
   requiredFeatures: ["local-floor", "mesh-detection", "plane-detection"],
@@ -49,8 +49,10 @@ function HotnColdGame({
 
   const setGameStatus = useHotnCold(useShallow((state) => state.setGameStatus));
 
-  const { me, setMe, opponent, status, startRoomSync } = useHotnCold();
+  const { me, setMe, opponent, status, startRoomSync, setMinaCallbacks } =
+    useHotnCold();
   const isMinaOn = useLobbyStore(useShallow((state) => state.isMinaOn));
+  const mina = useMinaContext();
 
   const inputSources = useInputSources();
 
@@ -61,6 +63,28 @@ function HotnColdGame({
   const frameBufferScaling = useNativeFramebufferScaling();
   const frameRate = useHeighestAvailableFrameRate();
 
+  useEffect(() => {
+    // console.log("isMinaOn", isMinaOn);
+    // console.log("mina", mina);
+
+    if (isMinaOn) {
+      if (
+        !mina.commitRoomAndObject ||
+        !mina.initializeRoom ||
+        !mina.runValidateRoom
+      ) {
+        throw new Error("mina callbacks not set");
+      }
+
+      setMinaCallbacks({
+        commitRoomAndObject: mina.commitRoomAndObject,
+        initializeRoom: mina.initializeRoom,
+        runValidateRoom: mina.runValidateRoom,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mina.commitRoomAndObject, mina.initializeRoom, mina.runValidateRoom]);
+
   if (!me || !opponent) {
     return null;
   }
@@ -68,54 +92,45 @@ function HotnColdGame({
   return (
     <>
       <div className="relative z-30 mt-4 flex items-center justify-center">
-        {isMinaOn ? (
-          <MinaStartButton />
-        ) : (
-          <Button
-            variant={"default"}
-            onClick={() => {
-              console.log("clicked!");
-              void enterAR().then(() => {
-                console.log("entered");
+        <Button
+          variant={"default"}
+          onClick={() => {
+            void enterAR().then(() => {
+              console.log("entered");
 
-                const channel = getGameChannel();
+              const channel = getGameChannel();
 
-                const { opponent } = useHotnCold.getState();
+              const { opponent } = useHotnCold.getState();
 
-                channel.trigger("client-in-game" as HotnColdEvents, {
-                  inGame: true,
-                });
-
-                setMe({ ...me, inGame: true });
-
-                if (!opponent) {
-                  throw new Error("void enterAR().then: no opponent");
-                }
-
-                // console.log("void enterAR().then: opponent", opponent);
-
-                // console.log("void enterAR().then: me", me);
-
-                if (opponent.inGame) {
-                  console.log(
-                    "void enterAR().then: opponent in game, setting status to SEEKING",
-                  );
-                  setGameStatus(HotnColdGameStatus.LOADINGROOMS);
-                } else {
-                  console.log(
-                    "void enterAR().then: opponent not in game, setting status to IDLE",
-                  );
-                  setGameStatus(HotnColdGameStatus.IDLE);
-                }
-
-                // setStartSync(true);
+              channel.trigger("client-in-game" as HotnColdEvents, {
+                inGame: true,
               });
-            }}
-            disabled={!isSupported || !gameEventsInitialized}
-          >
-            {!isSupported ? "XR Not Supported" : "Launch XR"}
-          </Button>
-        )}
+
+              setMe({ ...me, inGame: true });
+
+              if (!opponent) {
+                throw new Error("void enterAR().then: no opponent");
+              }
+
+              if (opponent.inGame) {
+                console.log(
+                  "void enterAR().then: opponent in game, setting status to SEEKING",
+                );
+                setGameStatus(HotnColdGameStatus.LOADINGROOMS);
+              } else {
+                console.log(
+                  "void enterAR().then: opponent not in game, setting status to IDLE",
+                );
+                setGameStatus(HotnColdGameStatus.IDLE);
+              }
+
+              // setStartSync(true);
+            });
+          }}
+          disabled={!isSupported || !gameEventsInitialized}
+        >
+          {!isSupported ? "XR Not Supported" : "Launch XR"}
+        </Button>
       </div>
 
       <XRCanvas
@@ -127,13 +142,11 @@ function HotnColdGame({
         gl={{ localClippingEnabled: true }}
       >
         <ControllerStateProvider>
-          {/* {startSync && ( */}
           <XRPhysics
             colliders={false}
             gravity={[0, 0, 0]}
-            interpolate={false}
-            timeStep={"vary"}
-            // debug
+            // interpolate={false}
+            // timeStep={"vary"}
           >
             <NonImmersiveCamera />
 
@@ -154,7 +167,6 @@ function HotnColdGame({
                   gameStatus="seeking"
                   name={"hiddenObject"}
                   color="yellow"
-                  // @ts-expect-error - this works i swear
                   position={opponent.objectPosition}
                 />
               )}

@@ -11,30 +11,19 @@ function FriendRoom() {
 
   if (!opponent) {
     throw new Error("FriendRoom: opponent is null");
-    return;
   }
 
   if (opponent.roomLayout === null) {
     throw new Error("FriendRoom: opponent.roomLayout is null");
-    return;
   }
 
   if (opponent.roomLayout.meshes === null) {
     throw new Error("FriendRoom: opponent.roomLayout.meshes is null");
-    return;
   }
 
   if (opponent.roomLayout.planes === null) {
     throw new Error("FriendRoom: opponent.roomLayout.planes is null");
-    return;
   }
-
-  console.log("\n-------------\n");
-
-  console.log(
-    "Inside FriendRoom component with opp roomlayout:",
-    opponent.roomLayout,
-  );
 
   return (
     <>
@@ -51,7 +40,6 @@ function FriendRoom() {
       </group>
 
       <group key={"planes"}>
-        {/* <SpacialPlane /> */}
         {opponent.roomLayout.planes.map(({ geometry, matrix, name }) => (
           <FriendPlane
             key={id}

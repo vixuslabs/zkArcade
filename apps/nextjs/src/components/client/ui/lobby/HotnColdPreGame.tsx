@@ -1,4 +1,6 @@
-import { forwardRef, Fragment } from "react";
+"use client";
+
+import { forwardRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -8,12 +10,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useHotnCold } from "@/lib/stores";
+import { useHotnCold, useLobbyStore } from "@/lib/stores";
 import { HotnColdGame } from "@/components/client/xr";
 import { GameBugsTooltip } from "./";
+import { useMinaContext } from "../../providers/MinaProvider";
+import { LoadingSpinner } from "..";
+
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 
 const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
+  const [pressed, setPressed] = useState(false);
   const { gameEventsInitialized } = useHotnCold();
+  const { isMinaOn } = useLobbyStore();
+  const { initialized, initZkProgram } = useMinaContext();
 
   return (
     <>
@@ -37,10 +47,11 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
             Overview
           </Badge>
           <p className="text-sm">
-            Once you and your opponent are in the game, each of you will be
-            placed in each other&apos;s &quot;room.&quot; Their walls, ceiling,
-            and will be visible, as well the furniture they specified during
-            Meta&apos;s Space Setup.
+            First, recenter your room now! Where you are looking now is where
+            your opponent will show up. Once you and your opponent are in the
+            game, each of you will be placed in each other&apos;s
+            &quot;room.&quot; Their walls, ceiling, and will be visible, as well
+            the furniture they specified during Meta&apos;s Space Setup.
           </p>
           <Badge className="max-w-fit text-black hover:cursor-default">
             Hiding
@@ -89,7 +100,37 @@ const HotnColdPreGame = forwardRef<HTMLDivElement>((_, ref) => {
           </CardFooter>
         </div>
       </Card>
-      <HotnColdGame gameEventsInitialized={gameEventsInitialized} />
+
+      {isMinaOn && !initialized && !pressed ? (
+        <div className="w-full flex items-center justify-center">
+          <Button
+            disabled={pressed}
+            className="relative z-30 mt-4 flex items-center justify-center"
+            variant="default"
+            type="button"
+            onClick={() => {
+              setPressed(true);
+
+              toast({
+                variant: "default",
+                title: "Initializing zk program",
+                description:
+                  "If this is your first time, it may take a couple minutes. Please be patient.",
+                duration: 5000,
+              });
+              void initZkProgram();
+            }}
+          >
+            Compile ZkProgram
+          </Button>
+        </div>
+      ) : pressed && !initialized ? (
+        <div className="relative w-full z-30 mt-4 flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <HotnColdGame gameEventsInitialized={gameEventsInitialized} />
+      )}
     </>
   );
 });

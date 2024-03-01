@@ -1,6 +1,12 @@
+import type {
+  CommitRoomAndObjectProps,
+  CommitRoomAndObjectReturn,
+} from "@/components/client/providers/MinaProvider";
 import type { ButtonState } from "@coconut-xr/natuerlich/react";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";
+import type { RoomAndObjectCommitment } from "@zkarcade/mina";
+import type { Room, Object3D } from "@zkarcade/mina/src/structs";
 import type { PresenceChannel } from "pusher-js";
 import type {
   BufferGeometry,
@@ -283,10 +289,31 @@ export enum HotnColdGameStatus {
   GAMEOVER = "gameover",
 }
 
+export interface HotnColdMinaCallbacks {
+  initializeRoom: ({
+    boxes,
+    planes,
+  }: {
+    boxes: MeshInfo[];
+    planes: PlaneInfo[];
+  }) => Promise<Room>;
+  commitRoomAndObject: ({
+    objectRadius,
+    objectPosition,
+  }: CommitRoomAndObjectProps) => Promise<CommitRoomAndObjectReturn>;
+  runValidateRoom: (
+    roomAndObjectCommitment: RoomAndObjectCommitment,
+    object: Object3D,
+  ) => Promise<boolean>;
+}
+
 export interface HotnColdGameState {
   gameEventsInitialized: boolean;
   startRoomSync: boolean;
   status: HotnColdGameStatus;
+  minaCallbacks: HotnColdMinaCallbacks | null;
+  runningMinaCallback: boolean;
+  room: Room | null;
   me: HotnColdPlayer | null;
   opponent: HotnColdPlayer | null;
 }

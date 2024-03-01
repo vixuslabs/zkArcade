@@ -31,17 +31,17 @@ function GamePlane({ plane, name = "", color = "black" }: SpacialPlane) {
     if (init) {
       return;
     } else if (!plane) {
-      console.log("no plane");
+      // console.log("no plane");
       return;
     } else if (!ref.current) {
-      console.log("no ref");
+      // console.log("no ref");
       return;
     }
 
     if (status !== HotnColdGameStatus.LOADINGROOMS) return;
 
     void (() => {
-      console.log("inside IIFE");
+      // console.log("inside IIFE");
       setInit(true);
 
       setMyPlanes((prev) => {

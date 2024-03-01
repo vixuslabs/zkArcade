@@ -1,10 +1,15 @@
 {
-  "extends": "@zkarcade/tsconfig/base.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // "extends": "@zkarcade/tsconfig/base.json",
   "compilerOptions": {
+    "incremental": true,
     "tsBuildInfoFile": "build/tsconfig.tsbuildinfo",
     "target": "es2022",
     "module": "es2022",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "outDir": "./build",
     "rootDir": ".",
     "strict": true,
@@ -21,6 +26,10 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

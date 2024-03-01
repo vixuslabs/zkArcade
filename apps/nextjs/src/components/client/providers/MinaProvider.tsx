@@ -7,14 +7,27 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { HOTNCOLD_ADDRESS } from "@/lib/constants";
-import type { PrivateKey, PublicKey } from "o1js";
+import type { MeshInfo, PlaneInfo, Player } from "@/lib/types";
+import type { Vector3Object } from "@react-three/rapier";
+import type { PrivateKey, PublicKey, VerificationKey } from "o1js";
+import type { Vector3 as ZkVector3 } from "@zkarcade/mina/src/zk3d";
 
-import type ZkappWorkerClient from "../mina/zkAppWorkerClient";
+import type { RoomAndObjectCommitment, ValidateRoom } from "@zkarcade/mina";
+import type {
+  Box as BoxType,
+  Object3D as Object3DType,
+  Plane as PlaneType,
+  Room as RoomType,
+} from "@zkarcade/mina/src/structs";
+
+export interface CommitRoomAndObjectProps {
+  objectPosition: Vector3Object;
+  objectRadius: number;
+}
 
 interface MinaState {
-  zkappWorkerClient: ZkappWorkerClient | null;
-  initialized: boolean;
+  zkProgram: typeof ValidateRoom | null;
+  verificationKey: VerificationKey | null;
   pubKey: string;
   privKey: string;
   isPlayerOne: boolean;
@@ -22,142 +35,334 @@ interface MinaState {
   zkAppPrivateKey?: PrivateKey;
 }
 
-interface InitiateMinaReturn {
-  zkAppClient: ZkappWorkerClient;
-  zkAppPublicKey: PublicKey;
+interface InitializeRoomProps {
+  boxes: MeshInfo[];
+  planes: PlaneInfo[];
+}
+
+interface HotnColdMinaState extends MinaState {
+  room: RoomType | null;
+  object: Object3DType | null;
+  roomAndObjectCommitment: RoomAndObjectCommitment | null;
+}
+
+export interface CommitRoomAndObjectReturn {
+  roomAndObjectCommitment: RoomAndObjectCommitment;
+  object: Object3DType;
 }
 
 interface MinaContextValues {
-  mina: MinaState | null;
-  setMina: React.Dispatch<React.SetStateAction<MinaState | null>> | null;
-  initiateMina: ({
-    isPlayerOne,
-    publicKey,
-    privateKey,
-  }: {
-    isPlayerOne: boolean;
-    publicKey: string;
-    privateKey: string;
-  }) => Promise<InitiateMinaReturn | null>;
-  zkappWorkerClient: ZkappWorkerClient | null;
-  zkAppPublicKey: PublicKey | null;
   initialized: boolean;
-  // setPlayer: React.Dispatch<React.SetStateAction<Player | null>>;
+  mina: HotnColdMinaState | null;
+  setMina: React.Dispatch<React.SetStateAction<HotnColdMinaState>> | null;
+  initZkProgram: () => Promise<void>;
+  initializeRoom:
+    | (({ boxes, planes }: InitializeRoomProps) => Promise<RoomType>)
+    | null;
+  commitRoomAndObject:
+    | (({
+        objectRadius,
+        objectPosition,
+      }: CommitRoomAndObjectProps) => Promise<CommitRoomAndObjectReturn>)
+    | null;
+  runValidateRoom:
+    | ((
+        roomAndObjectCommitment: RoomAndObjectCommitment,
+        object: Object3DType,
+      ) => Promise<boolean>)
+    | null;
+  isReadyToProve: boolean;
 }
 
 const MinaContext = createContext<MinaContextValues>({
+  initialized: false,
   mina: null,
   setMina: null,
-  initiateMina: async () => await Promise.resolve(null),
-  zkappWorkerClient: null,
-  zkAppPublicKey: null,
-  initialized: false,
+  initZkProgram: () => Promise.resolve(),
+  initializeRoom: null,
+  commitRoomAndObject: null,
+  runValidateRoom: null,
+  isReadyToProve: false,
 });
 
 export const useMinaContext = () => {
   const context = useContext(MinaContext);
 
-  if (!context) {
-    throw new Error("useMinaContext must be used within a MinaProvider");
-  }
+  // if (!context) {
+  //   throw new Error("useMinaContext must be used within a MinaProvider");
+  // }
 
   return context;
 };
 
 function MinaProvider({
-  children, // player,
+  children,
+  localPlayer,
 }: {
   children: React.ReactNode;
-  // player?: Player;
+  localPlayer: Player | null;
 }) {
-  const [mina, setMina] = useState<MinaState | null>(null);
+  const [mina, setMina] = useState<HotnColdMinaState>({
+    zkProgram: null,
+    verificationKey: null,
+    pubKey: localPlayer?.publicKey ?? "",
+    privKey: localPlayer?.privateKey ?? "",
+    isPlayerOne: localPlayer?.host ?? false,
+    room: null,
+    object: null,
+    roomAndObjectCommitment: null,
+  });
+  const initZkProgram = useCallback(async () => {
+    console.log("importing ValidateRoom from @zkarcade/mina...");
+    const { ValidateRoom } = await import("@zkarcade/mina");
+    console.log("compiling ValidateRoom...");
 
-  const timeout = useCallback(async function timeout(
-    seconds: number,
-  ): Promise<void> {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, seconds * 1000);
+    const { verificationKey } = await ValidateRoom.compile({
+      // cache: {
+      //   canWrite: true,
+      //   debug: true,
+      //   write: (key, value) => {
+      //     console.log("writing to cache: ", key, value);
+      //     const localStorage = window.localStorage;
+      //     const keyStr = key.persistentId;
+      //     if (keyStr === undefined) {
+      //       throw new Error("key.persistentId is undefined");
+      //     }
+      //     const decoder = new TextDecoder();
+      //     console.log("converting from uint8array to string...");
+      //     const valueStr = decoder.decode(value);
+      //     console.log("done converting from uint8array to string...");
+      //     console.log("valueStr:", valueStr);
+      //     localStorage.setItem(key.persistentId, valueStr);
+      //   },
+      //   read: (key) => {
+      //     console.log("reading from cache: ", key);
+      //     const localStorage = window.localStorage;
+      //     const encoder = new TextEncoder();
+      //     if (key.persistentId === undefined) {
+      //       throw new Error("key.persistentId is undefined");
+      //     }
+      //     const valueStr = localStorage.getItem(key.persistentId);
+      //     console.log("valueStr:", valueStr);
+      //     if (valueStr === null) {
+      //       throw new Error("valueStr is null");
+      //     }
+      //     console.log("converyign from string to uint8array...");
+      //     const value = encoder.encode(valueStr);
+      //     console.log("done converting from string to uint8array...");
+      //     console.log("value:", value);
+      //     return value;
+      //   },
+      // },
+      forceRecompile: true,
     });
+
+    // console.log("Done compiling zk program");
+    console.log("verification key: ", verificationKey);
+
+    setMina((prev) => ({
+      ...prev,
+      zkProgram: ValidateRoom,
+      verificationKey,
+    }));
   }, []);
 
-  const initiateMina = useCallback(
-    async ({
-      isPlayerOne,
-      publicKey,
-      privateKey,
-    }: {
-      isPlayerOne: boolean;
-      publicKey: string;
-      privateKey: string;
-    }): Promise<InitiateMinaReturn | null> => {
-      if (mina) {
-        return null;
-      }
-      if (!publicKey || !privateKey) {
-        throw new Error("Both public and private keys must be provided");
-      }
+  const initializeRoom = useCallback(
+    async ({ boxes, planes }: InitializeRoomProps) => {
+      console.log(
+        "inside initializeRoom, importing from @zkarcade/mina/src/zk3d...",
+      );
+      const { Real64, Vector3, Matrix4 } = await import(
+        "@zkarcade/mina/src/zk3d"
+      );
+      console.log("done importing from @zkarcade/mina/src/zk3d");
+      console.log("----");
+      console.log("importing from @zkarcade/mina/src/structs...");
+      const { Box, Room, Plane } = await import("@zkarcade/mina/src/structs");
+      console.log("done importing from @zkarcade/mina/src/structs");
 
-      console.log("publicKey and privateKey are provided, initiating Mina...");
+      console.log("creating zkBoxes...");
+      const zkBoxes: BoxType[] = boxes.map((box) => {
+        const vertices = box.geometry.position.array;
 
-      try {
-        const { PublicKey } = await import("o1js");
-        const ZkappWorkerClient = (
-          await import("@/components/client/mina/zkAppWorkerClient")
-        ).default;
+        if (!vertices) {
+          console.error("No vertices found for box: ", box);
+          throw new Error("No vertices found for box");
+        }
 
-        console.log("Successfully imported ZkappWorkerClient");
+        const vertexPoints: ZkVector3[] = [];
+        for (let i = 0; i < vertices.length; i += 3) {
+          if (
+            typeof vertices[i] === "undefined" ||
+            typeof vertices[i + 1] === "undefined" ||
+            typeof vertices[i + 2] === "undefined"
+          ) {
+            console.error("One or more vertices are undefined: ", vertices);
+            // throw new Error("One or more vertices are undefined");
+          }
 
-        const zkappWorkerClient = new ZkappWorkerClient();
-        await timeout(10);
+          vertexPoints.push(
+            new Vector3({
+              x: Real64.from(vertices[i]!),
+              y: Real64.from(vertices[i + 1]!),
+              z: Real64.from(vertices[i + 2]!),
+            }),
+          );
+        }
 
-        await zkappWorkerClient.setActiveInstanceToBerkeley();
+        // matrixWorld or matrix?
+        const matrixElements = box.matrix.elements.map((x) => Real64.from(x));
 
-        const zkAppPublicKey = PublicKey.fromBase58(
-          HOTNCOLD_ADDRESS, // deploy009
+        return Box.fromVertexPointsAndMatrix(
+          vertexPoints,
+          Matrix4.fromElements(matrixElements),
         );
+      });
 
-        console.log("zkappWorkerClient - instance set to Berkeley");
+      console.log("creating zkPlanes...");
+      const zkPlanes: PlaneType[] = planes.map((plane) => {
+        const vertices = plane.geometry.position.array;
 
-        setMina({
-          zkappWorkerClient: zkappWorkerClient,
-          zkAppPublicKey,
-          initialized: true,
-          isPlayerOne,
-          pubKey: publicKey,
-          privKey: privateKey,
-        });
+        if (!vertices) {
+          console.error("No vertices found for plane: ", plane);
+          throw new Error("No vertices found for plane");
+        }
 
-        return { zkAppClient: zkappWorkerClient, zkAppPublicKey };
-      } catch (err) {
-        console.log("err", err);
-        return Promise.reject(null);
-      }
+        const vertexPoints: ZkVector3[] = [];
+        for (let i = 0; i < vertices.length; i += 3) {
+          if (
+            typeof vertices[i] === "undefined" ||
+            typeof vertices[i + 1] === "undefined" ||
+            typeof vertices[i + 2] === "undefined"
+          ) {
+            console.error("One or more vertices are undefined: ", vertices);
+            // throw new Error("One or more vertices are undefined");
+          }
+
+          vertexPoints.push(
+            new Vector3({
+              x: Real64.from(vertices[i]!),
+              y: Real64.from(vertices[i + 1]!),
+              z: Real64.from(vertices[i + 2]!),
+            }),
+          );
+        }
+
+        const matrixElements = plane.matrix.elements.map((x) => Real64.from(x));
+        matrixElements[15] = Real64.from(1);
+
+        return Plane.fromVertexPointsAndMatrix(
+          vertexPoints,
+          Matrix4.fromElements(matrixElements),
+        );
+      });
+
+      console.log("running Room.fromPlanesAndBoxes...");
+
+      const room = Room.fromPlanesAndBoxes(zkPlanes, zkBoxes);
+      console.log("done running Room.fromPlanesAndBoxes");
+      console.log("setting mina.room...");
+
+      setMina((prev) => ({ ...prev, room }));
+      console.log("done setting mina.room...");
+
+      console.log("room", room);
+
+      return room;
     },
-    [mina, timeout],
+    [],
+  );
+
+  const commitRoomAndObject = useCallback(
+    async ({ objectRadius, objectPosition }: CommitRoomAndObjectProps) => {
+      const { Real64, Vector3 } = await import("@zkarcade/mina/src/zk3d");
+      const { Object3D } = await import("@zkarcade/mina/src/structs");
+      const { RoomAndObjectCommitment } = await import("@zkarcade/mina");
+
+      const objectVector = new Vector3({
+        x: Real64.from(objectPosition.x),
+        y: Real64.from(objectPosition.y),
+        z: Real64.from(objectPosition.z),
+      });
+      const object = Object3D.fromPointAndRadius(
+        objectVector,
+        Real64.from(objectRadius),
+      );
+
+      if (!mina.room) {
+        throw new Error("Room is not initialized");
+      }
+
+      const roomAndObjectCommitment = new RoomAndObjectCommitment({
+        room: mina.room,
+        objectCommitment: object.getHash(),
+      });
+
+      setMina((prev) => ({ ...prev, object, roomAndObjectCommitment }));
+
+      return { roomAndObjectCommitment, object };
+    },
+    [mina.room],
+  );
+
+  const runValidateRoom = useCallback(
+    async (
+      roomAndObjectCommitment: RoomAndObjectCommitment,
+      object: Object3DType,
+    ) => {
+      if (!mina) {
+        throw new Error("Mina is not initialized");
+      }
+
+      const { verify } = await import("o1js");
+
+      const { zkProgram, verificationKey } = mina;
+
+      if (!zkProgram || !verificationKey) {
+        throw new Error(
+          "zkProgram is not initialized or verificationKey not set",
+        );
+      }
+
+      console.log("running zkProgram.run...");
+
+      console.log("roomAndObjectCommitment", roomAndObjectCommitment);
+      console.log("object", object);
+
+      const proof = await zkProgram.run(roomAndObjectCommitment, object);
+
+      const proved = await verify(proof, verificationKey);
+
+      return proved;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      mina.object,
+      mina.roomAndObjectCommitment,
+      mina.zkProgram,
+      mina.verificationKey,
+    ],
   );
 
   const value = useMemo(() => {
-    if (mina && setMina)
-      return {
-        mina: mina,
-        setMina: setMina,
-        initiateMina,
-        zkappWorkerClient: mina.zkappWorkerClient,
-        zkAppPublicKey: mina.zkAppPublicKey ?? null,
-        initialized: mina.initialized,
-      };
-    else
-      return {
-        mina: null,
-        setMina: null,
-        initiateMina,
-        zkappWorkerClient: null,
-        zkAppPublicKey: null,
-        initialized: false,
-      };
-  }, [mina, initiateMina, setMina]);
+    return {
+      initialized: mina.verificationKey && mina.zkProgram ? true : false,
+      mina: mina,
+      setMina: setMina,
+      initZkProgram: initZkProgram,
+      initializeRoom: initializeRoom,
+      commitRoomAndObject: commitRoomAndObject,
+      runValidateRoom: runValidateRoom,
+      isReadyToProve: !!mina.roomAndObjectCommitment && !!mina.object,
+    };
+  }, [
+    mina,
+    setMina,
+    runValidateRoom,
+    initializeRoom,
+    commitRoomAndObject,
+    initZkProgram,
+  ]);
 
   return <MinaContext.Provider value={value}>{children}</MinaContext.Provider>;
 }

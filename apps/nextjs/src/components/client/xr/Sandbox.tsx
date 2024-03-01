@@ -97,7 +97,7 @@ function Sandbox({ username: _ }: SandboxProps) {
             <XRPhysics
               debug
               // colliders={false}
-              gravity={[0, 0, 0]}
+              gravity={[0, -5, 0]}
             >
               <NonImmersiveCamera />
 

@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useHotnCold } from "@/lib/stores";
+
 import type {
   MeshesAndPlanesContextValue,
   MeshInfo,
@@ -57,9 +58,9 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       opponent.roomLayout.meshes.length === 0 ||
       opponent.roomLayout.planes.length === 0
     ) {
-      console.log(
-        "MeshesAndPlanesProvider: opponent.roomLayout exists already",
-      );
+      // console.log(
+      //   "MeshesAndPlanesProvider: opponent.roomLayout exists already",
+      // );
       return;
     }
 
@@ -67,14 +68,9 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       me.roomLayout.meshes.length === 0 ||
       me.roomLayout.planes.length === 0
     ) {
-      console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
+      // console.log("MeshesAndPlanesProvider: me.roomLayout exists already");
       return;
     }
-
-    console.log("------ ROOM SYNC COMPLETE ------");
-    // console.log("me.roomLayout", me.roomLayout);
-    // console.log("opponent.roomLayout", opponent.roomLayout);
-    console.log("--------------------------------");
 
     setGameStatus(HotnColdGameStatus.BOTHHIDING);
   }, [me, opponent, setGameStatus, status]);
@@ -88,15 +84,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!meshes || !planes) return;
-    // if (meshes.length > 0 && planes.length > 0) {
-
-    console.log("------MeshesAndPlanesProvider: useEffect------");
-    // console.log("meshes.length", meshes.length);
-    // console.log("myMeshes.length", myMeshes.length);
-    // console.log("planes.length", planes.length);
-    // console.log("myPlanes.length", myPlanes.length);
-    console.log("------------");
-
     /**
      * The reasoning for this is that we are not including the global mesh inside of myMeshes, and planes does not have a global mesh, so it should be the same size
      * Revisiting this, much of this is uneeded, since we can just use the meshes and planes from the useTracked hooks and send them to the server
@@ -140,8 +127,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       });
 
       const formatedPlanes: PlaneInfo[] = myPlanes.map(({ plane, name }) => {
-        // const { plane, name } = _plane;
-
         if (!plane.geometry.attributes.position) {
           throw new Error(
             "MeshesAndPlanesProvider - planes: no position attribute",
@@ -178,7 +163,7 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
         };
       });
 
-      setRoomLayout(
+      void setRoomLayout(
         {
           meshes: formatedMeshes,
           planes: formatedPlanes,
@@ -188,9 +173,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
 
       console.log("MeshesAndPlanesProvider: sending roomLayout to server");
 
-      // console.log("formatedMeshes", formatedMeshes);
-      // console.log("formatedPlanes", formatedPlanes);
-
       channel.trigger("client-roomLayout-meshes", {
         meshes: formatedMeshes,
       });
@@ -198,13 +180,6 @@ function MeshesAndPlanesProvider({ children }: { children: React.ReactNode }) {
       channel.trigger("client-roomLayout-planes", {
         planes: formatedPlanes,
       });
-
-      // channel?.trigger("client-roomLayout-complete", {
-      //   roomLayout: {
-      //     meshes: formatedMeshes,
-      //     planes: formatedPlanes,
-      //   },
-      // });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myMeshes, myPlanes]);

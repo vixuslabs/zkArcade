@@ -29,12 +29,9 @@ export const useFriendsChannel = (events: FriendsEventMap) => {
       return;
     }
 
-    console.log("pusher initialized - inside useFriendsChannel");
-
     const rawId = user.user?.id.split("_")[1];
 
     const friendsChannel = subscribeToChannel(`user-${rawId}-friends`);
-    console.log(friendsChannel);
     if (!friendsChannel) {
       throw new Error(
         `Could not subscribe to friends channel: user-${rawId}-friends`,
@@ -44,7 +41,6 @@ export const useFriendsChannel = (events: FriendsEventMap) => {
     friendsStore.addFriendEvents(events);
 
     return () => {
-      console.log("unsubscribing from friends channel");
       if (pusher) unsubscribeFromChannel(friendsChannel.name);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

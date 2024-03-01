@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useInView } from "react-intersection-observer";
+import { useInView } from "@react-spring/three";
 
 export default function HeroSection() {
-  const { ref, inView } = useInView({
-    triggerOnce: true,
+  const [ref, inView] = useInView({
+    once: true,
   });
 
   return (

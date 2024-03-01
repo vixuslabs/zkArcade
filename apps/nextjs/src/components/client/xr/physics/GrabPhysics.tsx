@@ -1,13 +1,11 @@
 "use client";
 
-/* eslint-disable react/display-name */
 import React, { forwardRef, useCallback, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import { useControllerStateContext } from "@/components/client/providers/ControllerStateProvider";
 import useTrackControllers from "@/lib/hooks/useTrackControllers";
 import { useHotnCold } from "@/lib/stores";
 import type { GrabProps, ObjectHeldCheck, RigidAndMeshRefs } from "@/lib/types";
-// import { HotnColdGameStatus } from "@/lib/types";
 import { ButtonState } from "@coconut-xr/natuerlich/react";
 import { isXIntersection } from "@coconut-xr/xinteraction";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -126,7 +124,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
           meshRef.current.position,
         );
 
-        setObjectPosition(myObjectPosition, "me");
+        void setObjectPosition(myObjectPosition, "me");
       }
     }, [rigidRef, meshRef, me, setObjectPosition, isObjectSet]);
 
@@ -191,7 +189,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
             rightController &&
             rightController.gamepad.buttons["b-button"] === ButtonState.PRESSED
           ) {
-            console.log('unanchoring from "b" button press');
+            // console.log('unanchoring from "b" button press');
             // handleUnanchor();
             return;
           }
@@ -242,5 +240,7 @@ const GrabPhysics = forwardRef<RigidAndMeshRefs, GrabProps>(
     );
   },
 );
+
+GrabPhysics.displayName = "GrabPhysics";
 
 export default React.memo(GrabPhysics);
