@@ -1,6 +1,6 @@
 import { Field, Poseidon, Struct, Provable } from "o1js";
 
-import { Vector3, Real64, Matrix4 } from './zk3d';
+import { Vector3, Real64, Matrix4, Box3 } from './zk3d';
 
 // An object is a sphere.
 export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {
@@ -73,7 +73,12 @@ export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
   }
 }
 
-export class Box extends Struct({ minX: Real64, maxX: Real64, minY: Real64, maxY: Real64, minZ: Real64, maxZ: Real64 }) {
+export class Box extends Box3 {
+  constructor(value: { minX: Real64, maxX: Real64, minY: Real64, maxY: Real64, minZ: Real64, maxZ: Real64 }) {
+    const newValue = { min: new Vector3({ x: value.minX, y: value.minY, z: value.minZ }), max: new Vector3({ x: value.maxX, y: value.maxY, z: value.maxZ }) }
+    super(newValue);
+  }
+
   static fromVertexPointsAndMatrix(vertexPoints: Vector3[], matrix: Matrix4) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyMatrix4(matrix);
@@ -105,12 +110,12 @@ export class Box extends Struct({ minX: Real64, maxX: Real64, minY: Real64, maxY
   }
 
   assertObjectIsOutside(object: Object3D) {
-    object.maxX().sub(this.minX).isPositive().not()
-      .or(object.maxY().sub(this.minY).isPositive().not())
-      .or(object.maxZ().sub(this.minZ).isPositive().not())
-      .or(object.minX().sub(this.maxX).isPositive())
-      .or(object.minY().sub(this.maxY).isPositive())
-      .or(object.minZ().sub(this.maxZ).isPositive())
+    object.maxX().sub(this.min.x).isPositive().not()
+      .or(object.maxY().sub(this.min.y).isPositive().not())
+      .or(object.maxZ().sub(this.min.z).isPositive().not())
+      .or(object.minX().sub(this.max.x).isPositive())
+      .or(object.minY().sub(this.max.y).isPositive())
+      .or(object.minZ().sub(this.max.z).isPositive())
       .assertTrue("Object must be outside the box");
   }
 }
