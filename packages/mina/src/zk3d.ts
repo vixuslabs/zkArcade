@@ -141,11 +141,16 @@ interface Vector3Class {
   multiplyScalar: (s: Real64) => Vector3;
   multiplyVectors: (a: Vector3, b: Vector3) => Vector3;
   applyMatrix4: (m: Matrix4) => Vector3;
+  setFromMatrixColumn: (m: Matrix4, index: number) => Vector3;
+  // setFromMatrix3Column: (m: Matrix3, index: number) => Vector3;
+  equals: (v: Vector3) => Bool;
+  fromArray: (array: Real64[], offset: number) => Vector3;
   divide: (v: Vector3) => Vector3;
   divideScalar: (s: Real64) => Vector3;
   negate: () => Vector3;
   dot: (v: Vector3) => Real64;
   lengthSq: () => Real64;
+  quasiNormalize: () => Vector3;
   lerp: (v: Vector3, alpha: Real64) => Vector3;
   lerpVectors: (v1: Vector3, v2: Vector3, alpha: Real64) => Vector3;
   cross: (v: Vector3) => Vector3;
@@ -154,15 +159,23 @@ interface Vector3Class {
 }
 
 export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) implements Vector3Class {
-  constructor(value: { x: Real64; y: Real64; z: Real64 }) {
+  constructor(value: { x: Real64; y: Real64; z: Real64 }) { 
     super(value);
   }
 
-  static fromNumbers(x: number, y: number, z: number) {
-    return new Vector3({
+  static fromNumbers(x: number , y: number, z: number) {
+    return new Vector3({ 
       x: Real64.from(x),
       y: Real64.from(y),
       z: Real64.from(z),
+    });
+  }
+
+  static empty() {
+    return new Vector3({
+      x: Real64.zero,
+      y: Real64.zero,
+      z: Real64.zero,
     });
   }
 
@@ -170,7 +183,7 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     return `Vector3( ${this.x.toString()}, ${this.y.toString()}, ${this.z.toString()} )`;
   }
 
-  set(x: Real64, y: Real64, z: Real64) {
+  set(x: Real64, y: Real64, z: Real64 ) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -310,12 +323,18 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     return this;
   }
 
+  // TODO: applyEuler
+
+  // TODO: applyAxisAngle
+
+  // TODO: applyMatrix3
+
   applyMatrix4(m: Matrix4) {
     const x = this.x;
     const y = this.y;
     const z = this.z;
-
-    const w = m.n14.mul(x).add(m.n24.mul(y)).add(m.n34.mul(z)).add(m.n44);
+    
+    const w = m.n14.mul(x) .add(m.n24.mul(y)) .add(m.n34.mul(z)) .add(m.n44);
     const invw = w.inv();
 
     this.x = m.n11.mul(x).add(m.n21.mul(y)).add(m.n31.mul(z)).add(m.n41).mul(invw);
@@ -324,6 +343,44 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
 
     return this;
   }
+
+  setFromMatrixColumn(m: Matrix4, index: number) {
+    return this.fromArray(m.toArray(), index * 4);
+  }
+
+  // setFromMatrix3Column(m: Matrix3, index: number) {
+  //   return this.fromArray(m.toArray(), index * 3);
+  // }
+
+  equals(v: Vector3) {
+    return Bool.and(
+      this.x.equals(v.x),
+      Bool.and(this.y.equals(v.y), this.z.equals(v.z))
+    );
+  }
+
+  fromArray(array: Real64[], offset: number = 0) {
+    this.x = array[offset];
+    this.y = array[offset + 1];
+    this.z = array[offset + 2];
+    return this;
+  }
+
+  toArray() {
+    return [this.x, this.y, this.z];
+  }
+
+  // transformDirection(m: Matrix4) {
+  //   const x = this.x;
+  //   const y = this.y;
+  //   const z = this.z;
+
+  //   this.x = m.n11.mul(x).add(m.n21.mul(y)).add(m.n31.mul(z)).mul(i64SCALE);
+  //   this.y = m.n12.mul(x).add(m.n22.mul(y)).add(m.n32.mul(z)).mul(i64SCALE);
+  //   this.z = m.n13.mul(x).add(m.n23.mul(y)).add(m.n33.mul(z)).mul(i64SCALE);
+
+  //   return this.normalize();
+  // }
 
   divide(v: Vector3) {
     this.x = this.x.div(v.x);
@@ -340,9 +397,9 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
   }
 
   negate() {
-    this.x.neg();
-    this.y.neg();
-    this.z.neg();
+    this.x = this.x.neg();
+    this.y = this.y.neg();
+    this.z = this.z.neg();
     return this;
   }
 
@@ -352,6 +409,10 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
 
   lengthSq() {
     return this.x.mul(this.x).add(this.y.mul(this.y)).add(this.z.mul(this.z));
+  }
+
+  quasiNormalize() {
+    return this.divideScalar(this.lengthSq());
   }
 
   lerp(v: Vector3, alpha: Real64) {
@@ -390,7 +451,7 @@ export class Vector3 extends Struct({ x: Real64, y: Real64, z: Real64 }) impleme
     const dz = this.z.sub(v.z);
     return dx.mul(dx).add(dy.mul(dy)).add(dz.mul(dz));
   }
-
+  
 }
 
 export class Matrix4 extends Struct({
@@ -1048,4 +1109,133 @@ export class Box3 extends Struct({
     );
   }
   
+}
+
+interface PlaneClass {
+  normal: Vector3;
+  constant: Real64;
+  set: (normal: Vector3, constant: Real64) => Plane;
+  setComponents: (x: Real64, y: Real64, z: Real64, w: Real64) => Plane;
+  setFromNormalAndCoplanarPoint: (normal: Vector3, point: Vector3) => Plane;
+  setFromCoplanarPoints: (a: Vector3, b: Vector3, c: Vector3) => Plane;
+  copy: (plane: Plane) => Plane;
+  negate: () => Plane;
+  distanceToPoint: (point: Vector3) => Real64;
+  // distanceToSphere: (sphere: Sphere) => Real64;
+  projectPoint: (point: Vector3, target: Vector3) => Vector3;
+  intersectLine: (start: Vector3, end: Vector3) => Vector3;
+  intersectsLine: (start: Vector3, end: Vector3) => Bool;
+  // intersectsSphere: (sphere: Sphere) => Bool;
+  coplanarPoint: () => Vector3;
+  translate: (offset: Vector3) => Plane;
+  equals: (plane: Plane) => Bool;
+  clone: () => Plane;
+}
+
+export class Plane extends Struct({
+  normal: Vector3,
+  constant: Real64,
+}) implements PlaneClass {
+  constructor(value: {
+    normal: Vector3,
+    constant: Real64,
+  }) {
+    super(value);
+  }
+
+  set(normal: Vector3, constant: Real64) {
+    this.normal = normal;
+    this.constant = constant;
+    return this;
+  }
+
+  toArray() {
+    return [this.normal.x, this.normal.y, this.normal.z, this.constant];
+  }
+
+  setComponents(x: Real64, y: Real64, z: Real64, w: Real64) {
+    this.normal.set(x, y, z);
+    this.constant.set(w);
+    return this;
+  }
+
+  setFromNormalAndCoplanarPoint(normal: Vector3, point: Vector3) {
+    this.normal = normal;
+    this.constant = normal.dot(point);
+    return this;
+  }
+
+  setFromCoplanarPoints(a: Vector3, b: Vector3, c: Vector3) {
+    const v1 = Vector3.empty();
+    const v2 = Vector3.empty();
+    const normal = v1.subVectors(c, b).cross(v2.subVectors(a, b)).quasiNormalize();
+    this.setFromNormalAndCoplanarPoint(normal, a);
+    return this;
+  }
+
+  copy(plane: Plane) {
+    this.normal = plane.normal.clone();
+    this.constant = plane.constant.clone();
+    return this;
+  }
+
+  negate() {
+    this.constant = this.constant.neg();
+    this.normal = this.normal.negate();
+    return this;
+  }
+
+  distanceToPoint(point: Vector3) {
+    return this.normal.dot(point).add(this.constant);
+  }
+
+  // distanceToSphere(sphere: Sphere) {
+  //   return this.distanceToPoint(sphere.center).sub(sphere.radius);
+  // }
+
+  projectPoint(point: Vector3, target: Vector3) {
+    return target.copy(this.normal).multiplyScalar(this.distanceToPoint(point).neg()).add(point);
+  }
+
+  intersectLine(start: Vector3, end: Vector3) {
+    const startDistance = this.distanceToPoint(start);
+    const endDistance = this.distanceToPoint(end);
+    const t = startDistance.div(startDistance.sub(endDistance));
+    return start.clone().add(end.clone().sub(start).multiplyScalar(t));
+  }
+
+  intersectsLine(start: Vector3, end: Vector3) {
+    const startSign = this.distanceToPoint(start).isPositive();
+    const endSign = this.distanceToPoint(end).isPositive();
+    return startSign.equals(endSign).not();
+  }
+
+  // TODO: intersectsBox
+
+  // intersectsSphere(sphere: Sphere) {
+  //   return this.distanceToSphere(sphere).isPositive().not();
+  // }
+
+  coplanarPoint() {
+    return this.normal.clone().multiplyScalar(this.constant.neg());
+  }
+
+  // TODO: applyMatrix4
+
+  translate(offset: Vector3) {
+    this.constant = this.constant.sub(this.normal.dot(offset));
+    return this;
+  }
+
+  equals(plane: Plane) {
+    return Bool.and(this.normal.equals(plane.normal), this.constant.equals(plane.constant));
+  }
+
+  clone() {
+    return new Plane({
+      normal: this.normal.clone(),
+      constant: this.constant.clone(),
+    });
+  }
+
 }

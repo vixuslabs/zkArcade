@@ -2,6 +2,8 @@ import { Field, Poseidon, Struct, Provable } from "o1js";
 
 import { Vector3, Real64, Matrix4, Box3 } from './zk3d';
 
+import * as ZK3D from './zk3d';
+
 // An object is a sphere.
 export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {
   constructor(value: { radius: Real64; center: Vector3 }) {
@@ -37,40 +39,32 @@ export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {
   }
 }
 
-// A plane is defined by 3 points.
-export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
-  constructor(value: { a: Vector3; b: Vector3; c: Vector3 }) {
+export class Plane extends ZK3D.Plane {
+  constructor(value: { normal: Vector3, constant: Real64 }) {
     super(value);
-  }
-
-  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
-    return new Plane({ a, b, c });
   }
 
   static fromVertexPointsAndMatrix(vertexPoints: Vector3[], matrix: Matrix4) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyMatrix4(matrix);
     });
-    return new Plane({
-      a: translatedVertexPoints[0]!,
-      b: translatedVertexPoints[1]!,
-      c: translatedVertexPoints[2]!,
-    });
+    return Plane.fromPoints(translatedVertexPoints[0], translatedVertexPoints[1], translatedVertexPoints[2]);
   }
 
-  normalVector() {
-    return this.b.sub(this.a).cross(this.c.sub(this.a));
+  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
+    const plane = new Plane({ normal: Vector3.empty(), constant: Real64.zero });
+    return plane.setFromCoplanarPoints(a, b, c);
   }
-
 
   // Check that the object is on the inner side of the plane.
   assertObjectIsOnInnerSide(object: Object3D) {
     const objectCenter = object.center.clone();
-    const planeNormalVector = this.normalVector();
-    const planePoint = this.a;
+    const planeNormalVector = this.normal.clone();
+    const planePoint = this.coplanarPoint().negate();
     const planeToCenterVector = objectCenter.sub(planePoint);
     planeNormalVector.dot(planeToCenterVector).isPositive().not().assertTrue("Object must be on the inner side of the plane");
   }
+
 }
 
 export class Box extends Box3 {
