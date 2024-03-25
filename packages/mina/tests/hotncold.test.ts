@@ -1,6 +1,7 @@
+import { Bool, Proof, Void } from "o1js";
 import { Box, Object3D, Plane, Room } from "../src/structs";
 import { Vector3, Real64 } from "../src/zk3d";
-import { ValidateRoom, RoomAndObjectCommitment } from "../src/zkprogram";
+import { ValidatePlanes, PlaneAndObjectCommitment, ValidatePlanesProof } from "../src/zkprogram";
 
 describe("Basic Functionality", () => {
   describe("Plane Validation", () => {
@@ -374,10 +375,11 @@ describe("Basic Functionality", () => {
 
 describe("ZkProgram", () => {
   let planes: Plane[];
+  //eslint-disable-next-line
   let boxes: Box[];
-  let room: Room;
+  let baseProof: Proof<PlaneAndObjectCommitment, void>;
 
-  beforeAll(() => {
+  beforeAll( async () => {
     planes = [
       Plane.fromPoints(
         new Vector3({
@@ -500,14 +502,31 @@ describe("ZkProgram", () => {
         maxZ: Real64.from(1),
       }),
     ];
-    room = new Room({
-      planes: planes,
-      boxes: boxes,
+    let dummyObject = new Object3D({
+      center: new Vector3({
+        x: Real64.from(0.5),
+        y: Real64.from(0.5),
+        z: Real64.from(0.5),
+      }),
+      radius: Real64.from(0),
     });
+    let dummyPlaneAndObjectCommitment = new PlaneAndObjectCommitment({
+      plane: planes[0],
+      objectCommitment: dummyObject.getHash(),
+    });
+    await ValidatePlanes.compile();
+    let dummyProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
+    baseProof = await ValidatePlanes.run(
+      dummyPlaneAndObjectCommitment,
+      dummyObject,
+      dummyProof,
+      Bool(false)
+    );
   });
 
-  it("ValidateRoom.run() should not validate an object whose hash is different from the previously commited one", async () => {
-    await ValidateRoom.compile();
+  it("ValidatePlanes.run() should not validate an object whose hash is different from the previously commited one", async () => {
+    let nextProof = baseProof;
+    await ValidatePlanes.compile();
     const object = Object3D.fromPointAndRadius(
       new Vector3({
         x: Real64.from(0.5),
@@ -516,8 +535,9 @@ describe("ZkProgram", () => {
       }),
       Real64.from(0.02),
     );
-    const roomAndObjectCommitment = new RoomAndObjectCommitment({
-      room: room,
+
+    const planeAndObjectCommitment = new PlaneAndObjectCommitment({
+      plane: planes[0],
       objectCommitment: object.getHash(),
     });
     const differentObject = Object3D.fromPointAndRadius(
@@ -531,12 +551,13 @@ describe("ZkProgram", () => {
 
     return expect(
       async () =>
-        await ValidateRoom.run(roomAndObjectCommitment, differentObject),
+        nextProof = await ValidatePlanes.run(planeAndObjectCommitment, differentObject, nextProof, Bool(true)),
     ).rejects.toThrow("object must match the previously commited object");
   });
 
-  it("ValidateRoom.run() should validate that the object is inside a cubic room and does not collide with two pieces of furniture.", async () => {
-    await ValidateRoom.compile();
+  it("ValidatePlanes.run() should validate that the object is inside a cubic room and does not collide with two pieces of furniture.", async () => {
+    let nextProof = baseProof;
+    await ValidatePlanes.compile();
     const object = Object3D.fromPointAndRadius(
       new Vector3({
         x: Real64.from(0.5),
@@ -545,14 +566,15 @@ describe("ZkProgram", () => {
       }),
       Real64.from(0.02),
     );
-    const roomAndObjectCommitment = new RoomAndObjectCommitment({
-      room: room,
-      objectCommitment: object.getHash(),
-    });
-
-    const proofRaw = await ValidateRoom.run(roomAndObjectCommitment, object);
-    const proofJson = proofRaw.toJSON();
-    const proof = proofJson.proof;
-    expect(proof).toBeTruthy();
+    for (let plane of planes) {
+      const planeAndObjectCommitment = new PlaneAndObjectCommitment({
+        plane: plane,
+        objectCommitment: object.getHash(),
+      });
+      nextProof = await ValidatePlanes.run(planeAndObjectCommitment, object, nextProof, Bool(true));
+      const proofJson = nextProof.toJSON();
+      const proof = proofJson.proof;
+      expect(proof).toBeTruthy();
+    }
   });
 });

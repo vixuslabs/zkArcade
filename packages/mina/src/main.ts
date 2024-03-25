@@ -1,8 +1,8 @@
-import { verify } from "o1js";
+import { verify, Proof, Bool, Void } from "o1js";
 import { boxes, planes, realWorldHiddenObject } from "./scene";
-import { Box, Object3D, Plane, Room } from "./structs";
+import { Box, Object3D, Plane } from "./structs";
 import { Vector3, Real64, Matrix4 } from "./zk3d";
-import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
+import { ValidatePlanes, PlaneAndObjectCommitment, ValidatePlanesProof } from "./zkprogram";
 
 // Import the hidden object coordinates
 if (
@@ -67,26 +67,47 @@ if (
     scenePlanes.push(plane);
   });
 
-  // Instantiate the room from the planes and boxes
-  const room = Room.fromPlanesAndBoxes(scenePlanes, sceneBoxes);
+  const { verificationKey } = await ValidatePlanes.compile();
 
-  const { verificationKey } = await ValidateRoom.compile();
-
-  const roomAndObjectCommitment = new RoomAndObjectCommitment({
-    room: room,
-    objectCommitment: object.getHash(),
+  let dummyObject = new Object3D({
+    center: new Vector3({
+      x: Real64.from(0),
+      y: Real64.from(0),
+      z: Real64.from(0),
+    }),
+    radius: Real64.from(0),
   });
+  let dummyPlaneAndObjectCommitment = new PlaneAndObjectCommitment({
+    plane: scenePlanes[0],
+    objectCommitment: dummyObject.getHash(),
+  });
+  let baseProof: Proof<PlaneAndObjectCommitment, void>;
+  let dummyProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
+  baseProof = await ValidatePlanes.run(
+    dummyPlaneAndObjectCommitment,
+    dummyObject,
+    dummyProof,
+    Bool(false)
+  );
+  let nextProof = baseProof;
 
-  const begin = performance.now();
-  const proof = await ValidateRoom.run(roomAndObjectCommitment, object);
-  const end = performance.now();
-  console.log("proof generation took: ", end - begin, " ms");
+  for (let plane of scenePlanes) {
+    const planeAndObjectCommitment = new PlaneAndObjectCommitment({
+      plane: plane,
+      objectCommitment: object.getHash(),
+    });
 
-  const ok = await verify(proof, verificationKey);
+    const begin = performance.now();
+    nextProof = await ValidatePlanes.run(planeAndObjectCommitment, object, nextProof, Bool(true));
+    const end = performance.now();
+    console.log("proof generation took: ", end - begin, " ms");
 
-  if (ok) {
-    console.log("proof is valid");
+    const ok = await verify(nextProof, verificationKey);
+    if (ok) {
+      console.log("proof is valid");
+    }
   }
 } else {
   throw new Error("Object coordinates are undefined");
 }
+

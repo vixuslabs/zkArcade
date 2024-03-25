@@ -1,3 +1,3 @@
-import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
+import { ValidatePlanes, PlaneAndObjectCommitment } from "./zkprogram";
 
-export { ValidateRoom,  RoomAndObjectCommitment };
+export { ValidatePlanes,  PlaneAndObjectCommitment };
