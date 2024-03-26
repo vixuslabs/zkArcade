@@ -2,7 +2,7 @@ import { verify, Proof, Bool, Void } from "o1js";
 import { boxes, planes, realWorldHiddenObject } from "./scene";
 import { Box, Object3D, Plane } from "./structs";
 import { Vector3, Real64, Matrix4 } from "./zk3d";
-import { ValidatePlanes, PlaneAndObjectCommitment, ValidatePlanesProof } from "./zkprogram";
+import { ValidatePlanes, ValidateBoxes, PlaneAndObjectCommitment, BoxAndObjectCommitment, ValidatePlanesProof, ValidateBoxesProof } from "./zkprogram";
 
 // Import the hidden object coordinates
 if (
@@ -67,8 +67,8 @@ if (
     scenePlanes.push(plane);
   });
 
-  const { verificationKey } = await ValidatePlanes.compile();
-
+  // Validate the planes
+  let { verificationKey } = await ValidatePlanes.compile();
   let dummyObject = new Object3D({
     center: new Vector3({
       x: Real64.from(0),
@@ -81,15 +81,15 @@ if (
     plane: scenePlanes[0],
     objectCommitment: dummyObject.getHash(),
   });
-  let baseProof: Proof<PlaneAndObjectCommitment, void>;
-  let dummyProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
-  baseProof = await ValidatePlanes.run(
+  let basePlaneProof: Proof<PlaneAndObjectCommitment, void>;
+  let dummyPlaneProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
+  basePlaneProof = await ValidatePlanes.run(
     dummyPlaneAndObjectCommitment,
     dummyObject,
-    dummyProof,
+    dummyPlaneProof,
     Bool(false)
   );
-  let nextProof = baseProof;
+  let nextPlaneProof = basePlaneProof;
 
   for (let plane of scenePlanes) {
     const planeAndObjectCommitment = new PlaneAndObjectCommitment({
@@ -98,11 +98,44 @@ if (
     });
 
     const begin = performance.now();
-    nextProof = await ValidatePlanes.run(planeAndObjectCommitment, object, nextProof, Bool(true));
+    nextPlaneProof = await ValidatePlanes.run(planeAndObjectCommitment, object, nextPlaneProof, Bool(true));
     const end = performance.now();
     console.log("proof generation took: ", end - begin, " ms");
 
-    const ok = await verify(nextProof, verificationKey);
+    const ok = await verify(nextPlaneProof, verificationKey);
+    if (ok) {
+      console.log("proof is valid");
+    }
+  }
+
+  // Validate the boxes
+  ({ verificationKey } = await ValidateBoxes.compile());
+  let dummyBoxAndObjectCommitment = new BoxAndObjectCommitment({
+    box: sceneBoxes[0],
+    objectCommitment: dummyObject.getHash(),
+  });
+  let baseBoxProof: Proof<BoxAndObjectCommitment, void>;
+  let dummyBoxProof = await ValidateBoxesProof.dummy(dummyBoxAndObjectCommitment, Void, 1);
+  baseBoxProof = await ValidateBoxes.run(
+    dummyBoxAndObjectCommitment,
+    dummyObject,
+    dummyBoxProof,
+    Bool(false)
+  );
+  let nextBoxProof = baseBoxProof;
+
+  for (let box of sceneBoxes) {
+    const boxAndObjectCommitment = new BoxAndObjectCommitment({
+      box: box,
+      objectCommitment: object.getHash(),
+    });
+
+    const begin = performance.now();
+    nextBoxProof = await ValidateBoxes.run(boxAndObjectCommitment, object, nextBoxProof, Bool(true));
+    const end = performance.now();
+    console.log("proof generation took: ", end - begin, " ms");
+
+    const ok = await verify(nextBoxProof, verificationKey);
     if (ok) {
       console.log("proof is valid");
     }

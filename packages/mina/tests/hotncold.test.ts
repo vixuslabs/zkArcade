@@ -1,7 +1,7 @@
 import { Bool, Proof, Void } from "o1js";
 import { Box, Object3D, Plane, Room } from "../src/structs";
 import { Vector3, Real64 } from "../src/zk3d";
-import { ValidatePlanes, PlaneAndObjectCommitment, ValidatePlanesProof } from "../src/zkprogram";
+import { ValidatePlanes, ValidateBoxes, PlaneAndObjectCommitment, BoxAndObjectCommitment, ValidatePlanesProof, ValidateBoxesProof } from "../src/zkprogram";
 
 describe("Basic Functionality", () => {
   describe("Plane Validation", () => {
@@ -377,7 +377,8 @@ describe("ZkProgram", () => {
   let planes: Plane[];
   //eslint-disable-next-line
   let boxes: Box[];
-  let baseProof: Proof<PlaneAndObjectCommitment, void>;
+  let basePlaneProof: Proof<PlaneAndObjectCommitment, void>;
+  let baseBoxProof: Proof<BoxAndObjectCommitment, void>;
 
   beforeAll( async () => {
     planes = [
@@ -510,22 +511,38 @@ describe("ZkProgram", () => {
       }),
       radius: Real64.from(0),
     });
+    // Create the base proof for planes
     let dummyPlaneAndObjectCommitment = new PlaneAndObjectCommitment({
       plane: planes[0],
       objectCommitment: dummyObject.getHash(),
     });
     await ValidatePlanes.compile();
-    let dummyProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
-    baseProof = await ValidatePlanes.run(
+    let dummyPlaneProof = await ValidatePlanesProof.dummy(dummyPlaneAndObjectCommitment, Void, 1);
+    basePlaneProof = await ValidatePlanes.run(
       dummyPlaneAndObjectCommitment,
       dummyObject,
-      dummyProof,
+      dummyPlaneProof,
       Bool(false)
     );
+
+    // Create the base proof for boxes
+    let dummyBoxAndObjectCommitment = new BoxAndObjectCommitment({
+      box: boxes[0],
+      objectCommitment: dummyObject.getHash(),
+    });
+    await ValidateBoxes.compile();
+    let dummyBoxProof = await ValidateBoxesProof.dummy(dummyBoxAndObjectCommitment, Void, 1);
+    baseBoxProof = await ValidateBoxes.run(
+      dummyBoxAndObjectCommitment,
+      dummyObject,
+      dummyBoxProof,
+      Bool(false)
+    );
+
   });
 
   it("ValidatePlanes.run() should not validate an object whose hash is different from the previously commited one", async () => {
-    let nextProof = baseProof;
+    let nextProof = basePlaneProof;
     await ValidatePlanes.compile();
     const object = Object3D.fromPointAndRadius(
       new Vector3({
@@ -555,8 +572,39 @@ describe("ZkProgram", () => {
     ).rejects.toThrow("object must match the previously commited object");
   });
 
+  it ("ValidateBoxes.run() should not validate an object whose hash is different from the previously commited one", async () => {
+    let nextProof = baseBoxProof;
+    await ValidateBoxes.compile();
+    const object = Object3D.fromPointAndRadius(
+      new Vector3({
+        x: Real64.from(0.5),
+        y: Real64.from(0.5),
+        z: Real64.from(0.5),
+      }),
+      Real64.from(0.02),
+    );
+
+    const boxAndObjectCommitment = new BoxAndObjectCommitment({
+      box: boxes[0],
+      objectCommitment: object.getHash(),
+    });
+    const differentObject = Object3D.fromPointAndRadius(
+      new Vector3({
+        x: Real64.from(0.75),
+        y: Real64.from(0.75),
+        z: Real64.from(0.75),
+      }),
+      Real64.from(0.02),
+    );
+
+    return expect(
+      async () =>
+        nextProof = await ValidateBoxes.run(boxAndObjectCommitment, differentObject, nextProof, Bool(true)),
+    ).rejects.toThrow("object must match the previously commited object");
+  });
+
   it("ValidatePlanes.run() should validate that the object is inside a cubic room and does not collide with two pieces of furniture.", async () => {
-    let nextProof = baseProof;
+    let nextProof = basePlaneProof;
     await ValidatePlanes.compile();
     const object = Object3D.fromPointAndRadius(
       new Vector3({
@@ -572,6 +620,29 @@ describe("ZkProgram", () => {
         objectCommitment: object.getHash(),
       });
       nextProof = await ValidatePlanes.run(planeAndObjectCommitment, object, nextProof, Bool(true));
+      const proofJson = nextProof.toJSON();
+      const proof = proofJson.proof;
+      expect(proof).toBeTruthy();
+    }
+  });
+
+  it("ValidateBoxes.run() should validate that the object is inside a cubic room and does not collide with two pieces of furniture.", async () => {
+    let nextProof = baseBoxProof;
+    await ValidateBoxes.compile();
+    const object = Object3D.fromPointAndRadius(
+      new Vector3({
+        x: Real64.from(0.5),
+        y: Real64.from(0.5),
+        z: Real64.from(0.5),
+      }),
+      Real64.from(0.02),
+    );
+    for (let box of boxes) {
+      const boxAndObjectCommitment = new BoxAndObjectCommitment({
+        box: box,
+        objectCommitment: object.getHash(),
+      });
+      nextProof = await ValidateBoxes.run(boxAndObjectCommitment, object, nextProof, Bool(true));
       const proofJson = nextProof.toJSON();
       const proof = proofJson.proof;
       expect(proof).toBeTruthy();
