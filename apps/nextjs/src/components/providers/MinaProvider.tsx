@@ -10,7 +10,7 @@ import React, {
 import type { MeshInfo, PlaneInfo, Player } from "@/lib/types";
 import type { Vector3Object } from "@react-three/rapier";
 import type { PrivateKey, PublicKey, VerificationKey } from "o1js";
-import type { Vector3 as ZkVector3 } from "@zkarcade/mina/src/zk3d";
+import type { Vector3 as ZkVector3 } from "zk3d";
 
 import type { RoomAndObjectCommitment, ValidateRoom } from "@zkarcade/mina";
 import type {
@@ -170,12 +170,12 @@ function MinaProvider({
   const initializeRoom = useCallback(
     async ({ boxes, planes }: InitializeRoomProps) => {
       console.log(
-        "inside initializeRoom, importing from @zkarcade/mina/src/zk3d...",
+        "inside initializeRoom, importing from zk3d...",
       );
       const { Real64, Vector3, Matrix4 } = await import(
-        "@zkarcade/mina/src/zk3d"
+        "zk3d"
       );
-      console.log("done importing from @zkarcade/mina/src/zk3d");
+      console.log("done importing from zk3d");
       console.log("----");
       console.log("importing from @zkarcade/mina/src/structs...");
       const { Box, Room, Plane } = await import("@zkarcade/mina/src/structs");
@@ -275,7 +275,7 @@ function MinaProvider({
 
   const commitRoomAndObject = useCallback(
     async ({ objectRadius, objectPosition }: CommitRoomAndObjectProps) => {
-      const { Real64, Vector3 } = await import("@zkarcade/mina/src/zk3d");
+      const { Real64, Vector3 } = await import("zk3d");
       const { Object3D } = await import("@zkarcade/mina/src/structs");
       const { RoomAndObjectCommitment } = await import("@zkarcade/mina");
 

@@ -1,4 +1,4 @@
-import { Real64, Vector3, Matrix4 } from "./zk3d";
+import { Real64, Vector3, Matrix4 } from "zk3d";
 import * as THREE from "three";
 
 const originalMatrix = [
