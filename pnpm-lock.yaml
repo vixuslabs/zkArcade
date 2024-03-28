@@ -224,6 +224,9 @@ importers:
       three-stdlib:
         specifier: ^2.29.1
         version: 2.29.1(three@0.158.0)
+      zk3d:
+        specifier: ^0.24.0
+        version: 0.24.0(encoding@0.1.13)
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -374,6 +377,9 @@ importers:
       o1js:
         specifier: 0.15.3
         version: 0.15.3(encoding@0.1.13)
+      zk3d:
+        specifier: ^0.24.0
+        version: 0.24.0(encoding@0.1.13)
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.16.4
@@ -10453,6 +10459,10 @@ packages:
   /three@0.158.0:
     resolution: {integrity: sha512-TALj4EOpdDPF1henk2Q+s17K61uEAAWQ7TJB68nr7FKxqwyDr3msOt5IWdbGm4TaWKjrtWS8DJJWe9JnvsWOhQ==}
 
+  /three@0.160.1:
+    resolution: {integrity: sha512-Bgl2wPJypDOZ1stAxwfWAcJ0WQf7QzlptsxkjYiURPz+n5k4RBDLsq+6f9Y75TYxn6aHLcWz+JNmwTOXWrQTBQ==}
+    dev: false
+
   /through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
     dev: true
@@ -11231,6 +11241,15 @@ packages:
 
   /yoga-wasm-web@0.3.3:
     resolution: {integrity: sha512-N+d4UJSJbt/R3wqY7Coqs5pcV0aUj2j9IaQ3rNj9bVCLld8tTGKRa2USARjnvZJWVx1NDmQev8EknoczaOQDOA==}
+    dev: false
+
+  /zk3d@0.24.0(encoding@0.1.13):
+    resolution: {integrity: sha512-IPbI8pbneeQaan/SjCPUc9bQqTPEiPhwn9rOlON+C9aAzAmczw/RLwU7+5h2YdhUNuLG1OY7EBUSLFP6eZK7nA==}
+    dependencies:
+      o1js: 0.15.3(encoding@0.1.13)
+      three: 0.160.1
+    transitivePeerDependencies:
+      - encoding
     dev: false
 
   /zod@3.22.4:
