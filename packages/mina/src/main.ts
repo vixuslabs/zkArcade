@@ -1,7 +1,7 @@
 import { verify } from "o1js";
 import { boxes, planes, realWorldHiddenObject } from "./scene";
 import { Box, Object3D, Plane, Room } from "./structs";
-import { Vector3, Real64, Matrix4 } from "./zk3d";
+import { Vector3, Real64, Matrix4 } from "zk3d";
 import { ValidateRoom, RoomAndObjectCommitment } from "./zkprogram";
 
 // Import the hidden object coordinates
