@@ -1,9 +1,11 @@
 import { Field, Poseidon, Struct, Provable } from "o1js";
 
-import { Vector3, Real64, Matrix4 } from 'zk3d';
+import { Vector3, Real64, Matrix4, Sphere, Box3 } from 'zk3d';
+
+import * as ZK3D from 'zk3d';
 
 // An object is a sphere.
-export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {
+export class Object3D extends Sphere {
   constructor(value: { radius: Real64; center: Vector3 }) {
     super(value);
   }
@@ -37,43 +39,40 @@ export class Object3D extends Struct({ center: Vector3, radius: Real64 }) {
   }
 }
 
-// A plane is defined by 3 points.
-export class Plane extends Struct({ a: Vector3, b: Vector3, c: Vector3 }) {
-  constructor(value: { a: Vector3; b: Vector3; c: Vector3 }) {
+export class Plane extends ZK3D.Plane {
+  constructor(value: { normal: Vector3, constant: Real64 }) {
     super(value);
-  }
-
-  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
-    return new Plane({ a, b, c });
   }
 
   static fromVertexPointsAndMatrix(vertexPoints: Vector3[], matrix: Matrix4) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyMatrix4(matrix);
     });
-    return new Plane({
-      a: translatedVertexPoints[0]!,
-      b: translatedVertexPoints[1]!,
-      c: translatedVertexPoints[2]!,
-    });
+    return Plane.fromPoints(translatedVertexPoints[0], translatedVertexPoints[1], translatedVertexPoints[2]);
   }
 
-  normalVector() {
-    return this.b.sub(this.a).cross(this.c.sub(this.a));
+  static fromPoints(a: Vector3, b: Vector3, c: Vector3) {
+    const plane = new Plane({ normal: Vector3.empty(), constant: Real64.zero });
+    return plane.setFromCoplanarPoints(a, b, c);
   }
-
 
   // Check that the object is on the inner side of the plane.
   assertObjectIsOnInnerSide(object: Object3D) {
     const objectCenter = object.center.clone();
-    const planeNormalVector = this.normalVector();
-    const planePoint = this.a;
+    const planeNormalVector = this.normal.clone();
+    const planePoint = this.coplanarPoint().negate();
     const planeToCenterVector = objectCenter.sub(planePoint);
     planeNormalVector.dot(planeToCenterVector).isPositive().not().assertTrue("Object must be on the inner side of the plane");
   }
+
 }
 
-export class Box extends Struct({ minX: Real64, maxX: Real64, minY: Real64, maxY: Real64, minZ: Real64, maxZ: Real64 }) {
+export class Box extends Box3 {
+  constructor(value: { minX: Real64, maxX: Real64, minY: Real64, maxY: Real64, minZ: Real64, maxZ: Real64 }) {
+    const newValue = { min: new Vector3({ x: value.minX, y: value.minY, z: value.minZ }), max: new Vector3({ x: value.maxX, y: value.maxY, z: value.maxZ }) }
+    super(newValue);
+  }
+
   static fromVertexPointsAndMatrix(vertexPoints: Vector3[], matrix: Matrix4) {
     const translatedVertexPoints = vertexPoints.map((p) => {
       return p.applyMatrix4(matrix);
@@ -105,12 +104,12 @@ export class Box extends Struct({ minX: Real64, maxX: Real64, minY: Real64, maxY
   }
 
   assertObjectIsOutside(object: Object3D) {
-    object.maxX().sub(this.minX).isPositive().not()
-      .or(object.maxY().sub(this.minY).isPositive().not())
-      .or(object.maxZ().sub(this.minZ).isPositive().not())
-      .or(object.minX().sub(this.maxX).isPositive())
-      .or(object.minY().sub(this.maxY).isPositive())
-      .or(object.minZ().sub(this.maxZ).isPositive())
+    object.maxX().sub(this.min.x).isPositive().not()
+      .or(object.maxY().sub(this.min.y).isPositive().not())
+      .or(object.maxZ().sub(this.min.z).isPositive().not())
+      .or(object.minX().sub(this.max.x).isPositive())
+      .or(object.minY().sub(this.max.y).isPositive())
+      .or(object.minZ().sub(this.max.z).isPositive())
       .assertTrue("Object must be outside the box");
   }
 }
