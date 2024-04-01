@@ -4,7 +4,7 @@
 
 Hey there! Thanks for checking out zkArcade, our project submission for the [Mina Navigators Program](https://minafoundation.notion.site/Mina-Navigators-Program-Information-e8d0490aa0e04c28b061887a8cc22f9a).
 
-zkArcade focues on XR games of incomplete information (also known as fog-of-war games) built on top of [Mina](https://minaprotocol.com/)'s zero knowledge technology. Mina blockchain uses zero knowledge proofs to create a private and secure infrastructure to run zero-knowledge applications or "zkApps".
+zkArcade focuses on XR games of incomplete information (also known as fog-of-war games) built on top of [Mina](https://minaprotocol.com/)'s zero knowledge technology. Mina blockchain uses zero knowledge proofs to create a private and secure infrastructure to run zero-knowledge applications or "zkApps".
 
 The private nature of the Mina blockchain makes it possible to build games of incomplete information that don't rely on trust between the players, but instead use the power of zero knowledge proofs to enforce the rules of the game.
 
